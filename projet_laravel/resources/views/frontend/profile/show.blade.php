@@ -37,6 +37,51 @@
                         </div>
                     </div>
 
+                    <!-- Sécurité -->
+                    <div class="card eco-card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-shield-alt me-2"></i>Sécurité
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                    <div>
+                                        <strong>Email vérifié</strong>
+                                        <br>
+                                        <small class="text-muted">Votre email est confirmé</small>
+                                    </div>
+                                    <span class="badge bg-success rounded-pill">
+                                        <i class="fas fa-check"></i>
+                                    </span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                    <div>
+                                        <strong>2FA</strong>
+                                        <br>
+                                        <small class="text-muted">
+                                            @if($user->two_factor_enabled)
+                                                Activé
+                                            @else
+                                                Non activé
+                                            @endif
+                                        </small>
+                                    </div>
+                                    @if($user->two_factor_enabled)
+                                        <span class="badge bg-success rounded-pill">
+                                            <i class="fas fa-check"></i>
+                                        </span>
+                                    @else
+                                        <a href="{{ route('2fa.setup') }}" class="btn btn-sm btn-eco">
+                                            Activer
+                                        </a>
+                                    @endif
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
                     @if($user->profile && $user->profile->interests)
                         <div class="card eco-card mt-3">
                             <div class="card-header">
@@ -181,4 +226,30 @@
         </div>
     </div>
 </div>
+
+@push('styles')
+<style>
+.btn-eco {
+    background-color: #2d5a27;
+    border-color: #2d5a27;
+    color: white;
+}
+.btn-eco:hover {
+    background-color: #234420;
+    border-color: #234420;
+    color: white;
+}
+.text-eco {
+    color: #2d5a27;
+}
+.eco-card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.3s ease;
+}
+.eco-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+</style>
+@endpush
 @endsection

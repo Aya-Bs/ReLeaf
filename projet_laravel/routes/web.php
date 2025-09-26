@@ -69,3 +69,4 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
 });
 
 require __DIR__.'/auth.php';
+require __DIR__.'/2fa.php';

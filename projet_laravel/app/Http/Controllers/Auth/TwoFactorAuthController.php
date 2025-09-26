@@ -63,8 +63,8 @@ class TwoFactorAuthController extends Controller
         $user->two_factor_recovery_codes = $this->generateRecoveryCodes();
         $user->save();
 
-        return redirect()->route('profile.security')
-            ->with('success', 'L\'authentification à deux facteurs a été activée.');
+        return redirect()->route('profile.show')
+            ->with('success', 'L\'authentification à deux facteurs a été activée avec succès.');
     }
 
     /**
@@ -87,28 +87,8 @@ class TwoFactorAuthController extends Controller
         $user->two_factor_recovery_codes = null;
         $user->save();
 
-        return redirect()->route('profile.security')
+        return redirect()->route('profile.show')
             ->with('success', 'L\'authentification à deux facteurs a été désactivée.');
-    }
-
-    /**
-     * Vérifier le code 2FA lors de la connexion
-     */
-    public function verify(Request $request)
-    {
-        $request->validate([
-            'code' => 'required|string|size:6',
-        ]);
-
-        $user = auth()->user();
-        $google2fa = new Google2FA();
-
-        if ($google2fa->verifyKey($user->two_factor_secret, $request->code)) {
-            session(['2fa_verified' => true]);
-            return redirect()->intended(route('dashboard'));
-        }
-
-        return back()->withErrors(['code' => 'Le code est invalide.']);
     }
 
     /**
@@ -154,5 +134,58 @@ class TwoFactorAuthController extends Controller
             );
         }
         return json_encode($codes);
+    }
+
+    /**
+     * Afficher la page de vérification 2FA
+     */
+    public function showVerification()
+    {
+        return view('auth.2fa.verify');
+    }
+
+    /**
+     * Vérifier le code 2FA
+     */
+    public function verify(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|size:6',
+        ]);
+
+        $user = auth()->user();
+        $google2fa = new Google2FA();
+
+        if ($google2fa->verifyKey($user->two_factor_secret, $request->code)) {
+            session(['2fa_verified' => true]);
+            return redirect()->intended(route('home'));
+        }
+
+        return back()->withErrors(['code' => 'Le code est invalide.']);
+    }
+
+    /**
+     * Vérifier un code de récupération
+     */
+    public function verifyRecovery(Request $request)
+    {
+        $request->validate([
+            'recovery_code' => 'required|string',
+        ]);
+
+        $user = auth()->user();
+        $recoveryCodes = json_decode($user->two_factor_recovery_codes, true);
+
+        if (in_array($request->recovery_code, $recoveryCodes)) {
+            // Retirer le code utilisé
+            $recoveryCodes = array_diff($recoveryCodes, [$request->recovery_code]);
+            $user->two_factor_recovery_codes = json_encode(array_values($recoveryCodes));
+            $user->save();
+
+            session(['2fa_verified' => true]);
+            return redirect()->intended(route('home'));
+        }
+
+        return back()->withErrors(['recovery_code' => 'Le code de récupération est invalide.']);
     }
 }

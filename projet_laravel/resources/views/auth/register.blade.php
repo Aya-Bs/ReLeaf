@@ -154,11 +154,17 @@
                             name="country"
                             autocomplete="country">
                         <option value="">Sélectionnez un pays</option>
+                        <option value="TN" {{ old('country') == 'TN' ? 'selected' : '' }}>Tunisie</option>
                         <option value="FR" {{ old('country') == 'FR' ? 'selected' : '' }}>France</option>
+                        <option value="DZ" {{ old('country') == 'DZ' ? 'selected' : '' }}>Algérie</option>
+                        <option value="MA" {{ old('country') == 'MA' ? 'selected' : '' }}>Maroc</option>
                         <option value="BE" {{ old('country') == 'BE' ? 'selected' : '' }}>Belgique</option>
                         <option value="CH" {{ old('country') == 'CH' ? 'selected' : '' }}>Suisse</option>
                         <option value="CA" {{ old('country') == 'CA' ? 'selected' : '' }}>Canada</option>
-                        <!-- Ajoutez d'autres pays selon vos besoins -->
+                        <option value="LB" {{ old('country') == 'LB' ? 'selected' : '' }}>Liban</option>
+                        <option value="EG" {{ old('country') == 'EG' ? 'selected' : '' }}>Égypte</option>
+                        <option value="SN" {{ old('country') == 'SN' ? 'selected' : '' }}>Sénégal</option>
+                        <option value="CI" {{ old('country') == 'CI' ? 'selected' : '' }}>Côte d'Ivoire</option>
                     </select>
                     @error('country')
                         <div class="invalid-feedback">
