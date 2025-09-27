@@ -174,9 +174,7 @@
                     <i class="fas fa-info-circle me-2"></i>
                     Aucun événement récent. Créez le premier événement de notre communauté !
                 </div>
-                <a href="#" class="btn btn-success mt-3">
-                    <i class="fas fa-plus me-2"></i>Créer un événement
-                </a>
+               
             </div>
             @endforelse
         </div>

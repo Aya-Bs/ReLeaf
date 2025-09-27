@@ -134,6 +134,11 @@ class Event extends Model
         return $this->status === 'cancelled';
     }
 
+    public function isRejected(): bool
+{
+    return $this->status === 'rejected';
+}
+
     /**
      * Check if event can be edited (only draft or pending events)
      */
@@ -156,5 +161,17 @@ class Event extends Model
     public function submitForApproval(): bool
     {
         return $this->update(['status' => 'pending']);
+    }
+
+
+      public function getImageUrlsAttribute()
+    {
+        if (!$this->images) {
+            return [];
+        }
+        
+        return collect($this->images)->map(function ($image) {
+            return Storage::url($image);
+        })->toArray();
     }
 }

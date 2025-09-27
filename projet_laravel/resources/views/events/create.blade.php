@@ -1,5 +1,4 @@
-@extends('layouts.app')
-
+@extends('events.app')
 @section('title', 'Créer un Événement')
 
 @section('content')

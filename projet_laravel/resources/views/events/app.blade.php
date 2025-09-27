@@ -125,7 +125,7 @@
             <!-- Brand Logo -->
             <a href="{{ route('backend.dashboard') }}" class="brand-link">
                 <i class="fas fa-leaf brand-image img-circle elevation-3 ml-3 mr-2" style="color: var(--eco-accent);"></i>
-                <span class="brand-text font-weight-light">EcoEvents Admin</span>
+                <span class="brand-text font-weight-light">EcoEvents </span>
             </a>
 
             <!-- Sidebar -->
@@ -134,7 +134,7 @@
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                         <li class="nav-item">
-                            <a href="{{ route('backend.dashboard') }}" class="nav-link {{ request()->routeIs('backend.dashboard') ? 'active' : '' }}">
+                            <a href="" class="nav-link">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
                                 <p>Tableau de bord</p>
                             </a>
@@ -143,14 +143,14 @@
                         <li class="nav-header">GESTION</li>
                         
                         <li class="nav-item">
-                            <a href="{{ route('backend.users.index') }}" class="nav-link {{ request()->routeIs('backend.users.*') ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-users"></i>
-                                <p>Utilisateurs</p>
+                            <a href="" class="nav-link">
+                                <i class="nav-icon fas fa-home"></i>
+                                <p>Locations</p>
                             </a>
                         </li>
                         
                         <li class="nav-item">
-    <a href="{{ route('backend.events.index') }}" class="nav-link {{ request()->routeIs('backend.events.*') ? 'active' : '' }}">
+    <a href="{{ route('events.index') }}" class="nav-link {{ request()->routeIs('events.*') ? 'active' : '' }}">
         <i class="nav-icon fas fa-calendar-alt"></i>
         <p>Événements</p>
     </a>
@@ -178,9 +178,7 @@
             <div class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
-                        <div class="col-sm-6">
-                            <h1 class="m-0">@yield('page-title', 'Administration')</h1>
-                        </div>
+                        
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
                                 @yield('breadcrumb')

@@ -67,6 +67,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
     Route::resource('users', BackendUserController::class);
     Route::post('users/{user}/toggle-eco-ambassador', [BackendUserController::class, 'toggleEcoAmbassador'])
         ->name('users.toggle-eco-ambassador');
+
+    Route::get('/events', function () {
+        $events = \App\Models\Event::with('user')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        
+        return view('backend.events.index', compact('events'));
+    })->name('events.index');
+
+    Route::get('/events/{event}', function (\App\Models\Event $event) {
+        $event->load('user'); // Charger la relation user
+        return view('backend.events.show', compact('event'));
+    })->name('events.show');
 });
 
 

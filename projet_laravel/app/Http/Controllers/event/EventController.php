@@ -75,18 +75,24 @@ class EventController extends Controller
 
         ]);
 
-        // Handle image upload
-        if ($request->hasFile('images')) {
-            $imagePaths = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('events/' . $event->id, 'public');
-                $imagePaths[] = $path;
-            }
-            $event->update(['images' => $imagePaths]);
-        }
+if ($request->hasFile('images')) {
+    $imagePaths = [];
+    
+    foreach ($request->file('images') as $image) {
+        // Stockez l'image correctement
+        $path = $image->store('events/' . $event->id, 'public');
+        
+        // Assurez-vous que le chemin utilise des slashs normaux
+        $cleanPath = str_replace('\\', '/', $path);
+        $imagePaths[] = $cleanPath;
+    }
+    
+    $event->images = $imagePaths;
+    $event->save();
 
         return redirect()->route('events.index')->with('success', 'Événement créé avec succès. Vous pouvez maintenant le soumettre pour approbation.');
     }
+}
 
     /**
      * Display the specified resource.
