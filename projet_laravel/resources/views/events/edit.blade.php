@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('events.app')
 
 @section('title', 'Modifier l\'Événement')
 
