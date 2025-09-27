@@ -150,14 +150,11 @@
                         </li>
                         
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-calendar-alt"></i>
-                                <p>
-                                    Événements
-                                    <span class="badge badge-info right">Bientôt</span>
-                                </p>
-                            </a>
-                        </li>
+    <a href="{{ route('backend.events.index') }}" class="nav-link {{ request()->routeIs('backend.events.*') ? 'active' : '' }}">
+        <i class="nav-icon fas fa-calendar-alt"></i>
+        <p>Événements</p>
+    </a>
+</li>
                         
                         <li class="nav-header">STATISTIQUES</li>
                         
