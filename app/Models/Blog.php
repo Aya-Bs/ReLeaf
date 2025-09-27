@@ -20,4 +20,10 @@ class Blog extends Model
     {
         return $this->belongsTo(User::class, 'author_id');
     }
+
+    // Relation avec les reviews
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'blog_id');
+    }
 }

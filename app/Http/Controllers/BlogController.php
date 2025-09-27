@@ -12,7 +12,11 @@ class BlogController extends Controller
      */
     public function cards()
     {
-        $blogs = Blog::where('author_id', auth()->id())->latest()->get();
+        if (auth()->user()->role === 'user') {
+            $blogs = Blog::latest()->get();
+        } else {
+            $blogs = Blog::where('author_id', auth()->id())->latest()->get();
+        }
         return view('backend.blogs.cards', compact('blogs'));
     }
     /**

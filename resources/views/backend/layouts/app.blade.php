@@ -170,6 +170,14 @@
                                     </li>
                                 </ul>
                             </li>
+                        @elseif(auth()->user() && auth()->user()->role === 'user')
+                            <li class="nav-header">UTILISATEUR</li>
+                            <li class="nav-item">
+                                <a href="{{ route('auteur.blogs.cards') }}" class="nav-link {{ request()->routeIs('auteur.blogs.cards') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-th"></i>
+                                    <p>AllBlogs</p>
+                                </a>
+                            </li>
                         @else
                             <li class="nav-item">
                                 <a href="{{ route('backend.dashboard') }}" class="nav-link {{ request()->routeIs('backend.dashboard') ? 'active' : '' }}">

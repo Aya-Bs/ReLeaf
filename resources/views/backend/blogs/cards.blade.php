@@ -1,3 +1,4 @@
+
 @extends('backend.layouts.app')
 
 @section('title', 'Mes Blogs - Cards')
@@ -10,7 +11,7 @@
 
 @section('content')
 <div class="row">
-    @foreach($blogs as $blog)
+    @forelse($blogs as $blog)
         <div class="col-md-4 mb-4">
             <div class="card card-eco h-100 shadow-lg border-0 rounded-4" style="overflow:hidden;">
                 @if($blog->image_url)
@@ -26,10 +27,14 @@
                             @endif
                         @endforeach
                     </div>
-                    <a href="{{ route('auteur.blogs.show', $blog) }}" class="btn btn-info btn-block mt-2" style="border-radius:20px;">Voir détails</a>
+                    <a href="{{ route('auteur.blogs.show', $blog) }}" class="btn btn-info btn-block mt-2" style="border-radius:20px;">Voir détails & Commenter</a>
                 </div>
             </div>
         </div>
-    @endforeach
+    @empty
+        <div class="col-12">
+            <div class="alert alert-info text-center">Aucun blog trouvé.</div>
+        </div>
+    @endforelse
 </div>
 @endsection

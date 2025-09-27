@@ -58,7 +58,32 @@
                                 <form action="{{ route('auteur.blogs.destroy', $blog) }}" method="POST" style="display:inline-block;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer ce blog ?')"><i class="fas fa-trash"></i></button>
+                                    <!-- Bouton pour ouvrir le modal -->
+                                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteBlogModal{{ $blog->id }}"><i class="fas fa-trash"></i></button>
+                                    <!-- Modal Bootstrap -->
+                                    <div class="modal fade" id="deleteBlogModal{{ $blog->id }}" tabindex="-1" role="dialog" aria-labelledby="deleteBlogLabel{{ $blog->id }}" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deleteBlogLabel{{ $blog->id }}">Confirmation</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Voulez-vous supprimer cet article ?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                                    <form action="{{ route('auteur.blogs.destroy', $blog) }}" method="POST" style="display:inline;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger">Confirmer</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </form>
                             </td>
                         </tr>

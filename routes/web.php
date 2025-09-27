@@ -39,6 +39,9 @@ require __DIR__.'/2fa.php';
 // Routes Auteur
 require __DIR__.'/auteur.php';
 
+// Routes Review
+require __DIR__.'/review.php';
+
 Route::middleware(['auth'])->group(function () {
     // Profil utilisateur (Breeze original)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -74,7 +77,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
 
 require __DIR__.'/auth.php';
 require __DIR__.'/2fa.php';
-// Routes Blog
-require __DIR__.'/blog.php';
+
 // Routes Auteur
 require __DIR__.'/auteur.php';
+require __DIR__.'/review.php';
