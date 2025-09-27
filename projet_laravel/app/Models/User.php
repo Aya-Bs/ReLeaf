@@ -61,6 +61,11 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    public function events(): HasMany
+{
+    return $this->hasMany(Event::class);
+}
+
     /**
      * Get the user's profile.
      */
@@ -127,5 +132,25 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         return $this->name;
+    }
+
+    /**
+    * Check if user is organizer.
+    */
+    public function isOrganizer(): bool
+    {
+        return $this->role === 'organizer';
+    }
+
+    /**
+     * Check if user has any of the given roles.
+     */
+    public function hasRole($roles): bool
+    {
+        if (is_array($roles)) {
+            return in_array($this->role, $roles);
+        }
+        
+        return $this->role === $roles;
     }
 }

@@ -85,6 +85,31 @@
             @enderror
         </div>
 
+<!-- Role Selection -->
+<div class="mb-3">
+    <label for="role" class="form-label">
+        <i class="fas fa-user-tag me-2"></i>Type de compte
+    </label>
+    <select class="form-select @error('role') is-invalid @enderror"
+            id="role"
+            name="role"
+            required>
+        <option value="user" {{ old('role', 'user') == 'user' ? 'selected' : '' }}>
+            Utilisateur 
+        </option>
+        <option value="organizer" {{ old('role') == 'organizer' ? 'selected' : '' }}>
+            Organisateur 
+        </option>
+    </select>
+    @error('role')
+        <div class="invalid-feedback">
+            <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
+        </div>
+    @enderror
+  
+</div>
+
+
         <!-- Phone -->
         <div class="mb-3">
             <label for="phone" class="form-label">
@@ -258,6 +283,9 @@
     </form>
 </div>
 
+
+
+
 @push('scripts')
 <script>
 function togglePassword(fieldId) {
@@ -290,10 +318,20 @@ function updateNameField() {
     }
 }
 
-document.getElementById('first_name').addEventListener('input', updateNameField);
-document.getElementById('last_name').addEventListener('input', updateNameField);
+// Show/hide organizer information
+function toggleOrganizerInfo() {
+    const organizerInfo = document.getElementById('organizerInfo');
+    const organizerRadio = document.getElementById('role_organizer');
+    
+    if (organizerRadio.checked) {
+        organizerInfo.style.display = 'block';
+    } else {
+        organizerInfo.style.display = 'none';
+    }
+}
 
-// Form validation
+
+// Form validation 
 document.getElementById('registerForm').addEventListener('submit', function(e) {
     const firstName = document.getElementById('first_name').value;
     const lastName = document.getElementById('last_name').value;
@@ -323,11 +361,13 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
     // Update name field before submission
     updateNameField();
 });
-
-// Initialize name field on page load
+// Initialize name field and organizer info on page load
 document.addEventListener('DOMContentLoaded', function() {
     updateNameField();
+    toggleOrganizerInfo();
 });
+
+
 </script>
 @endpush
 @endsection

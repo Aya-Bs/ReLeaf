@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Backend\AdminController;
 use App\Http\Controllers\Backend\UserController as BackendUserController;
+use App\Http\Controllers\event\EventController; // CHANGE THIS LINE
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
 use App\Http\Controllers\ProfileController;
@@ -67,6 +68,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
     Route::post('users/{user}/toggle-eco-ambassador', [BackendUserController::class, 'toggleEcoAmbassador'])
         ->name('users.toggle-eco-ambassador');
 });
+
+
+// Events routes for organizers
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::resource('events', EventController::class);
+    Route::post('/events/{event}/submit', [EventController::class, 'submitForApproval'])->name('events.submit');
+    Route::post('/events/{event}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
+    Route::post('/events/{event}/remove-image', [EventController::class, 'removeImage'])->name('events.remove-image');
+});
+
 
 require __DIR__.'/auth.php';
 require __DIR__.'/2fa.php';
