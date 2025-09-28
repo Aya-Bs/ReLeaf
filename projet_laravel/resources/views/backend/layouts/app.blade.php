@@ -149,7 +149,7 @@
                             </a>
                         </li>
                         
-                        <li class="nav-item">
+                                                <li class="nav-item">
     <a href="{{ route('backend.events.index') }}" class="nav-link {{ request()->routeIs('backend.events.*') ? 'active' : '' }}">
         <i class="nav-icon fas fa-calendar-alt"></i>
         <p>Événements</p>

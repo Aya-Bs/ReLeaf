@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\Backend\AdminController;
 use App\Http\Controllers\Backend\UserController as BackendUserController;
-use App\Http\Controllers\event\EventController; // CHANGE THIS LINE
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Backend\CampaignController;
+use App\Http\Controllers\Backend\ResourceController;
+use App\Http\Controllers\Backend\EventController; 
 
 /*
 |--------------------------------------------------------------------------
@@ -82,15 +84,60 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
     })->name('events.show');
 });
 
+/*
+|--------------------------------------------------------------------------
+| ROUTES CAMPAIGNS & RESOURCES - ACCESSIBLES À TOUS LES UTILISATEURS CONNECTÉS
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    // ✅ ROUTES CAMPAIGNS - Accessibles à tous les utilisateurs connectés
+    Route::prefix('campaigns')->name('campaigns.')->group(function () {
+        Route::get('/', [CampaignController::class, 'index'])->name('index');
+        Route::get('/create', [CampaignController::class, 'create'])->name('create');
+        Route::post('/', [CampaignController::class, 'store'])->name('store');
+        Route::get('/{campaign}', [CampaignController::class, 'show'])->name('show');
+        Route::get('/{campaign}/edit', [CampaignController::class, 'edit'])->name('edit');
+        Route::put('/{campaign}', [CampaignController::class, 'update'])->name('update');
+        Route::delete('/{campaign}', [CampaignController::class, 'destroy'])->name('destroy');
+        
+        // Routes supplémentaires
+        Route::post('/{campaign}/toggle-visibility', [CampaignController::class, 'toggleVisibility'])
+             ->name('toggle-visibility');
+        Route::get('/statistics', [CampaignController::class, 'statistics'])->name('statistics');
+    });
 
-// Events routes for organizers
-Route::middleware(['auth', 'verified'])->group(function () {
+    // ✅ ROUTES RESOURCES - Chemin personnalisé : /resources  
+    Route::prefix('resources')->name('resources.')->group(function () {
+        Route::get('/', [ResourceController::class, 'index'])->name('index');
+        Route::get('/create', [ResourceController::class, 'create'])->name('create');
+        Route::post('/', [ResourceController::class, 'store'])->name('store');
+        Route::get('/{resource}', [ResourceController::class, 'show'])->name('show');
+        Route::get('/{resource}/edit', [ResourceController::class, 'edit'])->name('edit');
+        Route::put('/{resource}', [ResourceController::class, 'update'])->name('update');
+        Route::delete('/{resource}', [ResourceController::class, 'destroy'])->name('destroy');
+        
+        // Routes supplémentaires
+        Route::post('/{resource}/update-status', [ResourceController::class, 'updateStatus'])
+             ->name('update-status');
+        Route::post('/{resource}/pledge', [ResourceController::class, 'pledge'])
+             ->name('pledge');
+        Route::get('/high-priority', [ResourceController::class, 'highPriority'])
+             ->name('high-priority');
+    });
+});
+
+
+
+/*
+|--------------------------------------------------------------------------
+| ROUTES EVENTS & LOCATIONS
+|--------------------------------------------------------------------------
+*/Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('events', EventController::class);
     Route::post('/events/{event}/submit', [EventController::class, 'submitForApproval'])->name('events.submit');
     Route::post('/events/{event}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
     Route::post('/events/{event}/remove-image', [EventController::class, 'removeImage'])->name('events.remove-image');
 });
-
 
 require __DIR__.'/auth.php';
 require __DIR__.'/2fa.php';

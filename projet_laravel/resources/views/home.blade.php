@@ -51,7 +51,9 @@
                     <p class="card-text">
                         Créez votre propre événement et contribuez à un avenir plus vert.
                     </p>
-                    
+                    <a href="#" class="btn btn-eco">
+                        <i class="fas fa-plus me-2"></i>Créer un événement
+                    </a>
                 </div>
             </div>
         </div>

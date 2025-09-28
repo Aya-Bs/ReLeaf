@@ -45,57 +45,30 @@
 
                 <div class="card-body">
 <!-- Event Images -->
-@php
-    // Nettoyer les chemins d'images
-    $cleanedImages = [];
-    if ($event->images && is_array($event->images)) {
-        foreach ($event->images as $image) {
-            if (!empty($image) && $image !== 'null') {
-                // Remplacer les \/ par /
-                $cleanedImage = str_replace('\/', '/', $image);
-                $cleanedImages[] = $cleanedImage;
-            }
-        }
-    }
-@endphp
-
-@if(count($cleanedImages) > 0)
+@if($event->images && is_array($event->images) && count($event->images) > 0)
 <div class="mb-4">
-    <h5><i class="fas fa-images me-2"></i>Images ({{ count($cleanedImages) }})</h5>
     <div class="row">
-        @foreach($cleanedImages as $image)
-        <div class="col-md-3 mb-3">
-            <div class="card">
-                <img src="{{ Storage::url($image) }}" 
-                     class="card-img-top" 
-                     style="height: 200px; object-fit: cover;"
-                     alt="Image de l'événement"
-                     onerror="console.log('Image error:', this.src); this.src='https://via.placeholder.com/300x200?text=Image+Non+Trouvée'">
-                <div class="card-body p-2">
-                    <small class="text-muted">Path: {{ $image }}</small>
+        @foreach($event->images as $image)
+            @if(!empty($image))
+            <div class="col-md-3 mb-3">
+                <div class="card">
+                    <!-- Try both methods to see which one works -->
+                    <img src="{{ asset('storage/' . $image) }}" 
+                         class="card-img-top" 
+                         style="height: 200px; object-fit: cover;"
+                         onerror="this.src='https://via.placeholder.com/300x200?text=Image+Not+Found'">
+                    
                 </div>
             </div>
-        </div>
+            @endif
         @endforeach
     </div>
 </div>
-@else
-<div class="alert alert-info">
-    <i class="fas fa-info-circle me-2"></i>
-    Aucune image disponible pour cet événement.
-    <br><small>Images brutes: {{ json_encode($event->images) }}</small>
-</div>
 @endif
 
-<div class="alert alert-warning">
-    <i class="fas fa-exclamation-triangle me-2"></i>
-    Aucune image trouvée pour cet événement.
-    @if($event->images)
-        Images data: {{ json_encode($event->images) }}
-    @else
-        Images data is null or empty.
-    @endif
-</div>
+
+
+
 
                     <div class="row">
                         <!-- Left Column - Event Details -->
@@ -174,6 +147,23 @@
                                             @endif
                                         </div>
                                     </div>
+
+                                                                        <!-- Campaign Information -->
+@if($event->campaign)
+<div class="mb-3">
+    <small class="text-muted">Campagne associée</small>
+    <div>
+        <strong>{{ $event->campaign->name }}</strong>
+        <br>
+        <small class="text-muted">
+            {{ $event->campaign->description }}
+            @if($event->campaign->end_date->isFuture())
+                <br><span class="badge bg-info">J-{{ $event->campaign->days_remaining }}</span>
+            @endif
+        </small>
+    </div>
+</div>
+@endif
 
                                     <!-- Admin Actions -->
                                     <div class="mt-4">
