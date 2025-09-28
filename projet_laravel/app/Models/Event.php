@@ -25,7 +25,8 @@ class Event extends Model
         'status',
         'images',
         'user_id',
-        'duration'
+        'duration',
+        'campaign_id'
     ];
 
     /**
@@ -38,6 +39,15 @@ class Event extends Model
         'images' => 'array',
     ];
 
+
+        /**
+     * Get the campaign that owns the event.
+     */
+    public function campaign(): BelongsTo
+    {
+        return $this->belongsTo(Campaign::class);
+    }
+    
     /**
      * Get the user that owns the event.
      */
@@ -45,14 +55,6 @@ class Event extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    // /**
-    //  * Get the event participations.
-    //  */
-    // public function participations(): HasMany
-    // {
-    //     return $this->hasMany(EventParticipation::class);
-    // }
 
     /**
      * Scope for pending events (waiting for admin approval)

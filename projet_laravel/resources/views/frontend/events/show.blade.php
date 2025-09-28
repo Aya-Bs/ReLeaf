@@ -1,4 +1,4 @@
-@extends('events.app')
+@extends('layouts.frontend')
 
 @section('title', $event->title)
 
@@ -135,6 +135,23 @@
                                             @endif
                                         </div>
                                     </div>
+
+                                    <!-- Campaign Information -->
+@if($event->campaign)
+<div class="mb-3">
+    <small class="text-muted">Campagne associée</small>
+    <div>
+        <strong>{{ $event->campaign->name }}</strong>
+        <br>
+        <small class="text-muted">
+            {{ $event->campaign->description }}
+            @if($event->campaign->end_date->isFuture())
+                <br><span class="badge bg-info">J-{{ $event->campaign->days_remaining }}</span>
+            @endif
+        </small>
+    </div>
+</div>
+@endif
 
                                     <!-- Action Buttons -->
                                     <div class="mt-4">

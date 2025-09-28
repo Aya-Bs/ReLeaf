@@ -1,4 +1,5 @@
-@extends('events.app')
+@extends('layouts.app')
+
 @section('title', 'Créer un Événement')
 
 @section('content')
@@ -127,6 +128,39 @@
                             <small class="form-text text-muted">Optionnel - Laissez vide si pas de limite</small>
                         </div>
 
+                        <!-- Campaign Selection -->
+<div class="mb-3">
+    <label for="campaign_id" class="form-label">
+        <i class="fas fa-bullhorn me-2"></i>Associer à une campagne
+    </label>
+    <select class="form-select @error('campaign_id') is-invalid @enderror" 
+            id="campaign_id" 
+            name="campaign_id">
+        <option value="">Sélectionnez une campagne</option>
+        @php
+            $userCampaigns = \App\Models\Campaign::where('organizer_id', auth()->id())
+                ->where('status', 'active')
+                ->get();
+        @endphp
+        @foreach($userCampaigns as $campaign)
+            <option value="{{ $campaign->id }}" {{ old('campaign_id') == $campaign->id ? 'selected' : '' }}>
+                {{ $campaign->name }} 
+                @if($campaign->end_date->isFuture())
+                    (J-{{ $campaign->days_remaining }})
+                @else
+                    (Terminée)
+                @endif
+            </option>
+        @endforeach
+    </select>
+    @error('campaign_id')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+    <small class="form-text text-muted">
+       Associez cet événement à l'une de vos campagnes actives.
+    </small>
+</div>
+
                         <!-- Images - Drag & Drop Style -->
                         <div class="mb-4">
                             <label class="form-label">
@@ -173,7 +207,7 @@
                             <a href="{{ route('events.index') }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left me-2"></i>Retour
                             </a>
-                            <button type="submit" class="btn btn-eco">
+                            <button type="submit" class="btn btn-eco" style="background-color: #2d5a27; border-color: #2d5a27; color: white;">
                                 <i class="fas fa-save me-2"></i>Créer l'événement
                             </button>
                         </div>
