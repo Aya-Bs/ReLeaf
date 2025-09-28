@@ -131,6 +131,7 @@
 </section>
 
 <!-- Recent Events Section -->
+<!-- Recent Events Section -->
 <section class="recent-events-section py-5 bg-light">
     <div class="container">
         <div class="row">
@@ -144,42 +145,128 @@
             </div>
         </div>
 
+        <!-- Events Carousel -->
         <div class="row">
-            @forelse($recentEvents as $event)
-            <div class="col-md-4 mb-4">
-                <div class="card event-card h-100 shadow-sm">
-                    <div class="card-body">
-                        <div class="event-date mb-3">
-                            <small class="text-success fw-bold">
-                                <i class="fas fa-calendar me-1"></i>
-                                {{ $event->date ?? 'Date à définir' }}
-                            </small>
-                        </div>
-                        <h5 class="card-title">{{ $event->title ?? 'Événement écologique' }}</h5>
-                        <p class="card-text text-muted">
-                            {{ Str::limit($event->description ?? 'Description de l\'événement...', 100) }}
-                        </p>
-                        <div class="event-meta">
-                            <small class="text-muted">
-                                <i class="fas fa-map-marker-alt me-1"></i>
-                                {{ $event->location ?? 'Lieu à définir' }}
-                            </small>
-                        </div>
+            <div class="col-12">
+                <div id="eventsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="30000">
+                    <!-- Carousel Indicators -->
+                    <div class="carousel-indicators mb-4">
+                        @for($i = 0; $i < ceil($recentEvents->count() / 4); $i++)
+                            <button type="button" data-bs-target="#eventsCarousel" data-bs-slide-to="{{ $i }}" 
+                                    class="{{ $i === 0 ? 'active' : '' }}" aria-current="{{ $i === 0 ? 'true' : 'false' }}"></button>
+                        @endfor
                     </div>
+
+                    <!-- Carousel Inner -->
+                    <div class="carousel-inner">
+                        @foreach($recentEvents->chunk(4) as $chunkIndex => $eventsChunk)
+                            <div class="carousel-item {{ $chunkIndex === 0 ? 'active' : '' }}">
+                                <div class="row">
+                                    @foreach($eventsChunk as $event)
+                                    <div class="col-lg-3 col-md-6 mb-4">
+                                        <div class="card event-card h-100 shadow-sm border-0">
+                                            <!-- Event Image -->
+                                        @if($event->images && is_array($event->images) && count($event->images) > 0 && !empty($event->images[0]))
+    <img src="{{ asset('storage/' . $event->images[0]) }}" 
+         class="card-img-top w-100" 
+         style="height: 200px; object-fit: cover;" 
+         onerror="this.src='https://via.placeholder.com/300x200?text=Image+Not+Found'">
+@endif
+
+
+
+
+                                            <!-- Event Status Badge -->
+                                            <div class="event-badge">
+                                                @if($event->isPublished())
+                                                    <span class="badge bg-success">Publié</span>
+                                                @elseif($event->isPending())
+                                                    <span class="badge bg-warning">En attente</span>
+                                                @endif
+                                            </div>
+
+                                            <div class="card-body d-flex flex-column">
+                                                <!-- Event Date -->
+                                                <div class="event-date mb-2">
+                                                    <small class="text-success fw-bold">
+                                                        <i class="fas fa-calendar me-1"></i>
+                                                        {{ $event->date->format('d/m/Y à H:i') }}
+                                                    </small>
+                                                </div>
+
+                                                <!-- Event Title -->
+                                                <h5 class="card-title text-dark">{{ $event->title }}</h5>
+
+                                                <!-- Event Description -->
+                                                <p class="card-text text-muted flex-grow-1">
+                                                    {{ Str::limit($event->description, 80) }}
+                                                </p>
+
+                                                <!-- Event Meta Information -->
+                                                <div class="event-meta mt-auto">
+                                                    <div class="row text-center">
+                                                        <div class="col-4">
+                                                            <small class="text-primary">
+                                                                <i class="fas fa-money-bill-wave me-1"></i>
+                                                                {{ $event->price ? $event->price . 'TND' : '100TND' }}
+                                                            </small>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <small class="text-info">
+                                                                <i class="fas fa-users me-1"></i>
+                                                                {{ $event->max_participants ?? 0 }}
+                                                            </small>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <small class="text-muted">
+                                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                                {{ Str::limit($event->location, 10) }}
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- View Event Button -->
+                                                <div class="mt-3">
+                                                    <a href="{{ route('events.show', $event) }}" class="btn btn-outline-success btn-sm w-100">
+                                                        <i class="fas fa-eye me-1"></i>Voir l'événement
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <!-- Carousel Controls -->
+                    <button class="carousel-control-prev" type="button" data-bs-target="#eventsCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon bg-success rounded-circle p-3" aria-hidden="true"></span>
+                        <span class="visually-hidden">Précédent</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#eventsCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon bg-success rounded-circle p-3" aria-hidden="true"></span>
+                        <span class="visually-hidden">Suivant</span>
+                    </button>
                 </div>
             </div>
-            @empty
+        </div>
+
+        <!-- No Events Message -->
+        @if($recentEvents->count() === 0)
+        <div class="row">
             <div class="col-12 text-center">
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle me-2"></i>
                     Aucun événement récent. Créez le premier événement de notre communauté !
                 </div>
-                <a href="#" class="btn btn-success mt-3">
-                    <i class="fas fa-plus me-2"></i>Créer un événement
-                </a>
             </div>
-            @endforelse
         </div>
+        @endif
+
+  
     </div>
 </section>
 
@@ -303,6 +390,140 @@
         font-size: 1rem;
     }
 }
+
+/* Event Cards Styling */
+.event-card {
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.event-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+}
+
+.event-image {
+    transition: transform 0.3s ease;
+}
+
+.event-card:hover .event-image {
+    transform: scale(1.05);
+}
+
+.event-image-placeholder {
+    height: 200px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px 15px 0 0;
+}
+
+.event-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}
+
+.event-badge .badge {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+}
+
+.event-date {
+    background: rgba(40, 167, 69, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    display: inline-block;
+}
+
+.event-meta {
+    border-top: 1px solid #e9ecef;
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+
+.event-meta .col-4 {
+    border-right: 1px solid #e9ecef;
+}
+
+.event-meta .col-4:last-child {
+    border-right: none;
+}
+
+/* Carousel Styling */
+.carousel-indicators button {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #6c757d;
+    border: 2px solid transparent;
+}
+
+.carousel-indicators .active {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    width: 50px;
+    opacity: 0.8;
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    opacity: 1;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-size: 1.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .event-card {
+        margin-bottom: 2rem;
+    }
+    
+    .event-meta .col-4 {
+        margin-bottom: 0.5rem;
+        border-right: none;
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 0.5rem;
+    }
+    
+    .event-meta .col-4:last-child {
+        border-bottom: none;
+    }
+    
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 40px;
+    }
+}
+
+/* Animation for card entrance */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.carousel-item .row > div {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.carousel-item .row > div:nth-child(1) { animation-delay: 0.1s; }
+.carousel-item .row > div:nth-child(2) { animation-delay: 0.2s; }
+.carousel-item .row > div:nth-child(3) { animation-delay: 0.3s; }
+.carousel-item .row > div:nth-child(4) { animation-delay: 0.4s; }
+
 </style>
 @endpush
 
@@ -323,6 +544,36 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.addEventListener('scroll', animateStats);
     animateStats(); // Animation initiale
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const carousel = document.getElementById('eventsCarousel');
+    
+    // Auto-rotate carousel every 30 seconds
+    if (carousel) {
+        setInterval(() => {
+            const nextButton = carousel.querySelector('.carousel-control-next');
+            if (nextButton) {
+                nextButton.click();
+            }
+        }, 30000);
+    }
+
+    // Add hover effects
+    const eventCards = document.querySelectorAll('.event-card');
+    eventCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px)';
+            this.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.15)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 2px 15px rgba(0, 0, 0, 0.1)';
+        });
+    });
 });
 </script>
 @endpush

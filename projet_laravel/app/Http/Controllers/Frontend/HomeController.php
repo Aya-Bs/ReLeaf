@@ -24,8 +24,12 @@ class HomeController extends Controller
             })->count(),
         ];
 
-        // Récupérer les événements récents publiés et à venir
-        $recentEvents = collect(); // À corriger après migration
+       $recentEvents = Event::where('status', 'published')
+        ->where('date', '>=', now())
+        ->orderBy('created_at', 'desc')
+        ->take(12) // Get 12 events for 3 slides of 4
+        ->get();
+
 
         // Récupérer les ambassadeurs écologiques
         $ecoAmbassadors = User::whereHas('profile', function($query) {
