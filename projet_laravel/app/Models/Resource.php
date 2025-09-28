@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Resource extends Model
 {
@@ -85,4 +86,38 @@ class Resource extends Model
         
         $this->updateStatus();
     }
+
+    /**
+     * Vérifier si la ressource peut être modifiée
+     * ✅ AJOUTÉ : Même pattern que Event et Campaign
+     */
+    public function canBeEdited()
+    {
+        // Logique 1: Vérifier si l'utilisateur est connecté
+        if (!Auth::check()) {
+            return false;
+        }
+
+        // Logique 2: Vérifier si la ressource appartient à une campagne de l'utilisateur
+        // ou si l'utilisateur est admin
+        $user = Auth::user();
+        if ($user->isAdmin() || ($this->campaign && $this->campaign->organizer_id === $user->id)) {
+            return true;
+        }
+
+        // Logique 3: Vérifier le statut - certaines ressources ne peuvent pas être modifiées
+        // Exemple: les ressources "received" ne peuvent plus être modifiées
+        return !in_array($this->status, ['received']);
+    }
+
+    /**
+     * Vérifier si la ressource peut être supprimée
+     * ✅ AJOUTÉ : Logique supplémentaire pour la suppression
+     */
+    public function canBeDeleted()
+    {
+        // Exemple: les ressources avec des promesses ne peuvent pas être supprimées
+        return $this->quantity_pledged == 0;
+    }
+
 }

@@ -16,11 +16,12 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->datetime('date');
-            $table->string('location');
+            $table->string('location'); // Keep as string for now, or change to location_id if you have a locations table
             $table->integer('max_participants')->nullable();
-            $table->enum('status', ['draft', 'published', 'cancelled'])->default('draft');
-            $table->string('image')->nullable();
+            $table->enum('status', ['draft', 'pending', 'published', 'cancelled', 'rejected'])->default('draft');
+            $table->json('images')->nullable(); // Changed from 'image' to 'images' and made it JSON
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('duration')->nullable();
             $table->timestamps();
 
             $table->index(['date', 'status']);

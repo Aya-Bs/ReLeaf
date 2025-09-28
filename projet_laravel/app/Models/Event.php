@@ -23,8 +23,10 @@ class Event extends Model
         'location',
         'max_participants',
         'status',
-        'image',
+        'images',
         'user_id',
+        'duration',
+        'campaign_id'
     ];
 
     /**
@@ -34,8 +36,18 @@ class Event extends Model
      */
     protected $casts = [
         'date' => 'datetime',
+        'images' => 'array',
     ];
 
+
+        /**
+     * Get the campaign that owns the event.
+     */
+    public function campaign(): BelongsTo
+    {
+        return $this->belongsTo(Campaign::class);
+    }
+    
     /**
      * Get the user that owns the event.
      */
@@ -45,19 +57,35 @@ class Event extends Model
     }
 
     /**
-     * Get the event participations.
+     * Scope for pending events (waiting for admin approval)
      */
-    public function participations(): HasMany
+    public function scopePending($query)
     {
-        return $this->hasMany(EventParticipation::class);
+        return $query->where('status', 'pending');
     }
 
     /**
-     * Scope pour les événements publiés.
+     * Scope for published events (approved by admin)
      */
     public function scopePublished($query)
     {
         return $query->where('status', 'published');
+    }
+
+    /**
+     * Scope for draft events
+     */
+    public function scopeDraft($query)
+    {
+        return $query->where('status', 'draft');
+    }
+
+    /**
+     * Scope for events by organizer
+     */
+    public function scopeByOrganizer($query, $userId)
+    {
+        return $query->where('user_id', $userId);
     }
 
     /**
@@ -77,6 +105,14 @@ class Event extends Model
     }
 
     /**
+     * Check if event is pending approval.
+     */
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    /**
      * Check if event is published.
      */
     public function isPublished(): bool
@@ -85,10 +121,59 @@ class Event extends Model
     }
 
     /**
-     * Check if event is upcoming.
+     * Check if event is draft.
      */
-    public function isUpcoming(): bool
+    public function isDraft(): bool
     {
-        return $this->date >= now();
+        return $this->status === 'draft';
+    }
+
+    /**
+     * Check if event is cancelled.
+     */
+    public function isCancelled(): bool
+    {
+        return $this->status === 'cancelled';
+    }
+
+    public function isRejected(): bool
+{
+    return $this->status === 'rejected';
+}
+
+    /**
+     * Check if event can be edited (only draft or pending events)
+     */
+    public function canBeEdited(): bool
+    {
+        return in_array($this->status, ['draft', 'pending']);
+    }
+
+    /**
+     * Check if event can be deleted (only draft, pending, cancelled or past events)
+     */
+    public function canBeDeleted(): bool
+    {
+        return in_array($this->status, ['draft', 'pending', 'cancelled']) || $this->date < now();
+    }
+
+    /**
+     * Submit event for admin approval
+     */
+    public function submitForApproval(): bool
+    {
+        return $this->update(['status' => 'pending']);
+    }
+
+
+      public function getImageUrlsAttribute()
+    {
+        if (!$this->images) {
+            return [];
+        }
+        
+        return collect($this->images)->map(function ($image) {
+            return Storage::url($image);
+        })->toArray();
     }
 }

@@ -8,6 +8,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Backend\CampaignController;
 use App\Http\Controllers\Backend\ResourceController;
+use App\Http\Controllers\Backend\EventController; 
 
 /*
 |--------------------------------------------------------------------------
@@ -68,6 +69,65 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
     Route::resource('users', BackendUserController::class);
     Route::post('users/{user}/toggle-eco-ambassador', [BackendUserController::class, 'toggleEcoAmbassador'])
         ->name('users.toggle-eco-ambassador');
+
+    Route::get('/events', function () {
+        $events = \App\Models\Event::with('user')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        
+        return view('backend.events.index', compact('events'));
+    })->name('events.index');
+
+    Route::get('/events/{event}', function (\App\Models\Event $event) {
+        $event->load('user'); // Charger la relation user
+        return view('backend.events.show', compact('event'));
+    })->name('events.show');
+
+
+    // ✅ AJOUTÉ : Gestion des campagnes (backend) - Même pattern que events
+    Route::get('/campaigns', function () {
+        $campaigns = \App\Models\Campaign::with('organizer')
+            ->withCount(['resources', 'events'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        
+        return view('backend.campaigns.index', compact('campaigns'));
+    })->name('campaigns.index');
+
+    Route::get('/campaigns/{campaign}', function (\App\Models\Campaign $campaign) {
+        $campaign->load('organizer');
+        $campaign->loadCount(['resources', 'events']);
+        return view('backend.campaigns.show', compact('campaign'));
+    })->name('campaigns.show');
+
+    // ✅ AJOUTÉ : Gestion des ressources (backend) - Même pattern
+    Route::get('/resources', function () {
+        $resources = \App\Models\Resource::with('campaign')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        
+        return view('backend.resources.index', compact('resources'));
+    })->name('resources.index');
+
+    Route::get('/resources/{resource}', function (\App\Models\Resource $resource) {
+        $resource->load('campaign.organizer');
+        return view('backend.resources.show', compact('resource'));
+    })->name('resources.show');
+    
+});
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| ROUTES EVENTS & LOCATIONS
+|--------------------------------------------------------------------------
+*/Route::middleware(['auth', 'verified'])->group(function () {
+    Route::resource('events', EventController::class);
+    Route::post('/events/{event}/submit', [EventController::class, 'submitForApproval'])->name('events.submit');
+    Route::post('/events/{event}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
+    Route::post('/events/{event}/remove-image', [EventController::class, 'removeImage'])->name('events.remove-image');
 });
 
 /*
