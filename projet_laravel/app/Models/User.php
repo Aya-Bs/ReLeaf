@@ -121,6 +121,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role === 'user';
     }
 
+       /**
+     * Check if user is auteur.
+     */
+    public function isAuteur(): bool
+    {
+        return $this->role === 'auteur';
+    }
+
     public function isCampaignOwner(Campaign $campaign)
 {
     return $this->id === $campaign->organizer_id;
@@ -185,4 +193,18 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasManyThrough(Certification::class, Reservation::class);
     }
+
+      /**
+     * Relation avec les blogs créés par l'utilisateur
+     */
+    public function blogs()
+    {
+        return $this->hasMany(Blog::class, 'author_id');
+    }
+    
+        // Relation avec les reviews postés par l'utilisateur
+        public function reviews()
+        {
+            return $this->hasMany(Review::class);
+        }
 }

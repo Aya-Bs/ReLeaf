@@ -21,8 +21,13 @@
 
                 @auth
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('events.*') ? 'active' : '' }}" href="#">
+                    <a class="nav-link {{ request()->routeIs('events.*') ? 'active' : '' }}" href="{{ route('events.index') }}">
                         <i class="fas fa-calendar-alt me-1"></i>Événements
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('auteur.blogs.*') ? 'active' : '' }}" href="{{ route('auteur.blogs.cards') }}">
+                        <i class="fas fa-blog me-1"></i>Blogs
                     </a>
                 </li>
 
@@ -40,11 +45,7 @@
                 </li>
                 @endif
                 
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('events.*') ? 'active' : '' }}" href="{{ route('events.index') }}">
-                        <i class="fas fa-calendar-alt me-1"></i>Événements
-                    </a>
-                </li>
+                @endauth
 
                 @auth
                     @if(auth()->user()->role === 'admin')
@@ -84,60 +85,7 @@
                     </a>
                 </li>
 
-                <!-- User Dropdown -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                        <img src="{{ auth()->user()->avatar_url }}" alt="Avatar" class="rounded-circle me-1" width="24">
-                        {{ auth()->user()->name }}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <a class="dropdown-item" href="{{ route('profile.show') }}">
-                                <i class="fas fa-user me-2"></i>Mon profil
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                <i class="fas fa-cog me-2"></i>Paramètres
-                            </a>
-                        </li>
-                        @if(auth()->user()->role === 'sponsor' && auth()->user()->sponsor)
-                        <li>
-                            <a class="dropdown-item" href="{{ route('profile.show') }}">
-                                <i class="fas fa-building me-2"></i>Profil sponsor
-                            </a>
-                        </li>
-                        @if(auth()->user()->sponsor->isDeletionRequested())
-                        <li>
-                            <span class="dropdown-item text-warning">
-                                <i class="fas fa-clock me-2"></i>Suppression demandée
-                            </span>
-                        </li>
-                        @else
-                        <li>
-                            <form method="POST" action="{{ route('sponsor.self.requestDeletion') }}" onsubmit="return confirm('Confirmer la demande de suppression de votre compte sponsor ?');">
-                                @csrf
-                                <button type="submit" class="dropdown-item text-danger">
-                                    <i class="fas fa-user-slash me-2"></i>Demande suppression sponsor
-                                </button>
-                            </form>
-                        </li>
-                        @endif
-                        @endif
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="dropdown-item text-danger">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
-                </li>
-                    <!-- User Dropdown -->
+                <!-- User Dropdown (unique) -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-user-circle me-1"></i>
@@ -155,6 +103,11 @@
                                 </a>
                             </li>
                             <li>
+                                <a class="dropdown-item" href="{{ route('auteur.blogs.cards') }}">
+                                    <i class="fas fa-blog me-2"></i>Blogs
+                                </a>
+                            </li>
+                            <li>
                                 <a class="dropdown-item" href="{{ route('chatbot.index') }}">
                                     <i class="fas fa-robot me-2"></i>Assistant IA
                                 </a>
@@ -164,6 +117,19 @@
                                     <i class="fas fa-cog me-2"></i>Paramètres
                                 </a>
                             </li>
+                            @if(auth()->user()->role === 'sponsor' && auth()->user()->sponsor)
+                                <li><hr class="dropdown-divider"></li>
+                                @if(auth()->user()->sponsor->isDeletionRequested())
+                                    <li><span class="dropdown-item text-warning"><i class="fas fa-clock me-2"></i>Suppression demandée</span></li>
+                                @else
+                                    <li>
+                                        <form method="POST" action="{{ route('sponsor.self.requestDeletion') }}" onsubmit="return confirm('Confirmer la demande de suppression de votre compte sponsor ?');">
+                                            @csrf
+                                            <button type="submit" class="dropdown-item text-danger"><i class="fas fa-user-slash me-2"></i>Demande suppression sponsor</button>
+                                        </form>
+                                    </li>
+                                @endif
+                            @endif
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
