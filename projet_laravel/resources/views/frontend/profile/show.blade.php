@@ -211,23 +211,95 @@
                         </div>
                         <div class="card-body">
                             <div class="row text-center">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="border-end">
-                                        <h4 class="text-eco">0</h4>
+                                        <h4 class="text-eco">{{ $stats['events_created'] }}</h4>
                                         <small class="text-muted">Événements créés</small>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="border-end">
-                                        <h4 class="text-eco">0</h4>
+                                        <h4 class="text-eco">{{ $stats['participations'] }}</h4>
                                         <small class="text-muted">Participations</small>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <h4 class="text-eco">{{ $user->created_at->diffInDays() }}</h4>
+                                <div class="col-md-3">
+                                    <div class="border-end">
+                                        <h4 class="text-eco">{{ $stats['certificates_earned'] }}</h4>
+                                        <small class="text-muted">Certificats obtenus</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <h4 class="text-eco">{{ $stats['days_on_platform'] }}</h4>
                                     <small class="text-muted">Jours sur la plateforme</small>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Certificats -->
+                    <div class="card eco-card mt-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-certificate me-2"></i>Mes Certificats
+                            </h5>
+                            <div class="btn-group">
+                                <a href="{{ route('certificates.verify') }}" class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-search me-1"></i>Vérifier Certificat
+                                </a>
+                                @if($certifications->count() > 0)
+                                    <a href="{{ route('user.certificates.index') }}" class="btn btn-sm btn-outline-eco">
+                                        <i class="fas fa-eye me-1"></i>Voir tous
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            @if($certifications->count() > 0)
+                                <div class="row">
+                                    @foreach($certifications->take(3) as $certification)
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card border-eco h-100">
+                                                <div class="card-body text-center">
+                                                    <div class="mb-2">
+                                                        <i class="fas fa-certificate fa-2x text-eco"></i>
+                                                    </div>
+                                                    <h6 class="card-title">{{ $certification->reservation->event->title }}</h6>
+                                                    <p class="card-text small text-muted">
+                                                        {{ $certification->date_awarded->format('d/m/Y') }}
+                                                    </p>
+                                                    <div class="d-flex gap-1 justify-content-center">
+                                                        <a href="{{ route('user.certificates.view', $certification->certificate_code) }}" 
+                                                           class="btn btn-sm btn-outline-eco" title="Voir">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a href="{{ route('user.certificates.download', $certification->certificate_code) }}" 
+                                                           class="btn btn-sm btn-eco" title="Télécharger">
+                                                            <i class="fas fa-download"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                @if($certifications->count() > 3)
+                                    <div class="text-center mt-3">
+                                        <a href="{{ route('user.certificates.index') }}" class="btn btn-outline-eco">
+                                            <i class="fas fa-plus me-1"></i>Voir {{ $certifications->count() - 3 }} certificats supplémentaires
+                                        </a>
+                                    </div>
+                                @endif
+                            @else
+                                <div class="text-center py-4">
+                                    <i class="fas fa-certificate fa-3x text-muted mb-3"></i>
+                                    <h6 class="text-muted">Aucun certificat obtenu</h6>
+                                    <p class="text-muted small">Participez à des événements pour obtenir vos premiers certificats !</p>
+                                    <a href="{{ route('events.index') }}" class="btn btn-eco">
+                                        <i class="fas fa-calendar me-1"></i>Voir les événements
+                                    </a>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -269,31 +341,46 @@
 
 @push('styles')
 <style>
-    .btn-eco {
-        background-color: #2d5a27;
-        border-color: #2d5a27;
-        color: white;
-    }
-
-    .btn-eco:hover {
-        background-color: #234420;
-        border-color: #234420;
-        color: white;
-    }
-
-    .text-eco {
-        color: #2d5a27;
-    }
-
-    .eco-card {
-        border: none;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-        transition: all 0.3s ease;
-    }
-
-    .eco-card:hover {
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-    }
+.btn-eco {
+    background-color: #2d5a27;
+    border-color: #2d5a27;
+    color: white;
+}
+.btn-eco:hover {
+    background-color: #234420;
+    border-color: #234420;
+    color: white;
+}
+.btn-outline-eco {
+    color: #2d5a27;
+    border-color: #2d5a27;
+}
+.btn-outline-eco:hover {
+    background-color: #2d5a27;
+    border-color: #2d5a27;
+    color: white;
+}
+.text-eco {
+    color: #2d5a27;
+}
+.eco-card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.3s ease;
+}
+.eco-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+.border-eco {
+    border-color: #2d5a27 !important;
+}
+.card.border-eco {
+    border: 1px solid #2d5a27;
+    transition: all 0.3s ease;
+}
+.card.border-eco:hover {
+    box-shadow: 0 0.25rem 0.5rem rgba(45, 90, 39, 0.2);
+}
 </style>
 @endpush
 @endsection

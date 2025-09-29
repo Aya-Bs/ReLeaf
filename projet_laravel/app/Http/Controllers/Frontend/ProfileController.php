@@ -23,7 +23,6 @@ class ProfileController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
         $user->createProfileIfNotExists();
-
         // Ensure sponsor placeholder exists if user has sponsor role but no relation yet
         if ($user->role === 'sponsor' && !$user->sponsor) {
             $placeholder = [
@@ -40,11 +39,29 @@ class ProfileController extends Controller
             } catch (\Throwable $e) {
                 Log::error('Failed creating sponsor placeholder', ['user_id' => $user->id, 'error' => $e->getMessage()]);
             }
-            // Lazy load new relation
+            // Refresh to load new relation
             $user->refresh();
         }
 
-        return view('frontend.profile.show', compact('user'));
+        // Load user certifications (if relation exists) with related reservation.event & issuer
+        $certifications = method_exists($user, 'certifications')
+            ? $user->certifications()
+            ->with(['reservation.event', 'issuedBy'])
+            ->orderBy('date_awarded', 'desc')
+            ->get()
+            : collect();
+
+        // Basic profile statistics
+        $stats = [
+            'events_created' => 0, // TODO: implement actual count if/when events ownership is added
+            'participations' => (method_exists($user, 'reservations') && method_exists($user->reservations(), 'confirmed'))
+                ? $user->reservations()->confirmed()->count()
+                : 0,
+            'certificates_earned' => $certifications->count(),
+            'days_on_platform' => $user->created_at?->diffInDays() ?? 0,
+        ];
+
+        return view('frontend.profile.show', compact('user', 'certifications', 'stats'));
     }
 
     /**

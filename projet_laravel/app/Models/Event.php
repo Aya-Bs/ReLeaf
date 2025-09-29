@@ -67,7 +67,27 @@ class Event extends Model
     }
 
     /**
+<<<<<<< HEAD
      * Scope for published events (approved by admin)
+=======
+     * Get the event reservations.
+     */
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
+    /**
+     * Get the event waiting list.
+     */
+    public function waitingList(): HasMany
+    {
+        return $this->hasMany(WaitingList::class);
+    }
+
+    /**
+     * Scope pour les événements publiés.
+>>>>>>> origin/firas
      */
     public function scopePublished($query)
     {
@@ -141,6 +161,33 @@ class Event extends Model
     public function isRejected(): bool
 {
     return $this->status === 'rejected';
+}
+    public function isFull(): bool
+    {
+        $confirmedReservations = $this->reservations()
+                                    ->where('status', 'confirmed')
+                                    ->count();
+        return $confirmedReservations >= $this->max_participants;
+    }
+
+    /**
+     * Get available spots count.
+     */
+    public function getAvailableSpots(): int
+    {
+        $confirmedReservations = $this->reservations()
+                                    ->where('status', 'confirmed')
+                                    ->count();
+        return max(0, $this->max_participants - $confirmedReservations);
+    }
+
+    /**
+     * Get waiting list count.
+     */
+    public function getWaitingListCount(): int
+    {
+        return $this->waitingList()->where('status', 'waiting')->count();
+    }
 }
 
     /**
