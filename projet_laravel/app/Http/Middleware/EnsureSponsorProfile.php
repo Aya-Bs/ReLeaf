@@ -17,7 +17,14 @@ class EnsureSponsorProfile
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
-        if ($user && $user->role === 'sponsor' && !$user->sponsor) {
+        if ($user && $user->role === 'sponsor') {
+            // Include trashed sponsor to avoid recreating after soft delete
+            $existing = Sponsor::withTrashed()->where('user_id', $user->id)->first();
+            if ($existing) {
+                // If sponsor exists (even soft-deleted), do not recreate placeholder
+                return $next($request);
+            }
+            // No sponsor record at all -> create placeholder
             try {
                 $s = Sponsor::create([
                     'user_id' => $user->id,

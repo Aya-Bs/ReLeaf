@@ -282,4 +282,5 @@ require __DIR__ . '/2fa.php';
 // Routes auteur (blogs)
 require __DIR__ . '/auteur.php';
 require __DIR__ . '/review.php';
-
+// Reservations & seating routes
+require __DIR__ . '/reservations.php';

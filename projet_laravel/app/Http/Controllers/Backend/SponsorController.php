@@ -239,8 +239,9 @@ class SponsorController extends Controller
             ]);
             $sponsor->delete();
             Log::info('Sponsor soft deleted via selfDeleteNow', ['sponsor_id' => $sponsor->id]);
+        } else {
+            Log::warning('selfDeleteNow called without sponsor relation', ['user_id' => $user->id]);
         }
-        Log::warning('selfDeleteNow called without sponsor relation', ['user_id' => $user->id]);
 
         // Optionally change user role (keep account so donations history is intact)
         // Downgrade role (avoid static analysis complaining about dynamic model methods)
