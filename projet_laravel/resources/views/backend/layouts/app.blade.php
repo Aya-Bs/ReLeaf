@@ -197,6 +197,27 @@
                             </a>
                         </li>
 
+                        
+                                                <li class="nav-item">
+    <a href="{{ route('backend.events.index') }}" class="nav-link {{ request()->routeIs('backend.events.*') ? 'active' : '' }}">
+        <i class="nav-icon fas fa-calendar-alt"></i>
+        <p>Événements</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('backend.campaigns.index') }}" class="nav-link {{ request()->routeIs('backend.campaigns.*') ? 'active' : '' }}">
+        <i class="nav-icon fas fa-seedling"></i>
+        <p>Campaigns</p>
+    </a>
+</li>
+<li class="nav-item">
+    <a href="{{ route('backend.resources.index') }}" class="nav-link {{ request()->routeIs('backend.resources.*') ? 'active' : '' }}">
+        <i class="nav-icon fas fa-boxes"></i>
+        <p>Resources</p>
+    </a>
+</li>
+                        
                         <li class="nav-header">STATISTIQUES</li>
 
                         <li class="nav-item">

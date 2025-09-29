@@ -27,7 +27,8 @@ class Event extends Model
         'status',
         'images',
         'user_id',
-        'duration'
+        'duration',
+        'campaign_id'
     ];
 
     /**
@@ -40,6 +41,15 @@ class Event extends Model
         'images' => 'array',
     ];
 
+
+        /**
+     * Get the campaign that owns the event.
+     */
+    public function campaign(): BelongsTo
+    {
+        return $this->belongsTo(Campaign::class);
+    }
+    
     /**
      * Get the user that owns the event.
      */
@@ -47,56 +57,6 @@ class Event extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    /**
-     * Get the sponsors that support this event.
-     */
-    public function sponsors(): BelongsToMany
-    {
-        return $this->belongsToMany(Sponsor::class, 'sponsor_events')
-            ->withPivot(['amount', 'status', 'notes'])
-            ->withTimestamps();
-    }
-
-    /**
-     * Get the donations for this event.
-     */
-    public function donations(): HasMany
-    {
-        return $this->hasMany(Donation::class);
-    }
-
-    /**
-     * Get the total amount donated for this event.
-     */
-    public function getTotalDonationsAttribute(): float
-    {
-        return $this->donations()->where('status', 'confirmed')->sum('amount');
-    }
-
-    /**
-     * Get the total amount sponsored for this event.
-     */
-    public function getTotalSponsorshipAttribute(): float
-    {
-        return $this->sponsors()->wherePivot('status', 'active')->sum('sponsor_events.amount');
-    }
-
-    /**
-     * Get the total funding for this event (donations + sponsorships).
-     */
-    public function getTotalFundingAttribute(): float
-    {
-        return $this->getTotalDonationsAttribute() + $this->getTotalSponsorshipAttribute();
-    }
-
-    // /**
-    //  * Get the event participations.
-    //  */
-    // public function participations(): HasMany
-    // {
-    //     return $this->hasMany(EventParticipation::class);
-    // }
 
     /**
      * Scope for pending events (waiting for admin approval)
@@ -178,6 +138,11 @@ class Event extends Model
         return $this->status === 'cancelled';
     }
 
+    public function isRejected(): bool
+{
+    return $this->status === 'rejected';
+}
+
     /**
      * Check if event can be edited (only draft or pending events)
      */
@@ -200,5 +165,17 @@ class Event extends Model
     public function submitForApproval(): bool
     {
         return $this->update(['status' => 'pending']);
+    }
+
+
+      public function getImageUrlsAttribute()
+    {
+        if (!$this->images) {
+            return [];
+        }
+        
+        return collect($this->images)->map(function ($image) {
+            return Storage::url($image);
+        })->toArray();
     }
 }

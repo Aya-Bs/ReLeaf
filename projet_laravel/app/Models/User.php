@@ -120,6 +120,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role === 'user';
     }
 
+    public function isCampaignOwner(Campaign $campaign)
+{
+    return $this->id === $campaign->organizer_id;
+}
+
     /**
      * Get user's full name from first_name and last_name.
      */

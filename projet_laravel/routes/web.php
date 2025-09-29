@@ -4,13 +4,15 @@ use App\Http\Controllers\Backend\AdminController;
 use App\Http\Controllers\Backend\SponsorController as BackendSponsorController;
 use App\Http\Controllers\Backend\UserController as BackendUserController;
 use App\Http\Controllers\DonationController;
-use App\Http\Controllers\event\EventController; // CHANGE THIS LINE
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
 use App\Http\Controllers\Frontend\SponsorController as FrontendSponsorController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Sponsor\DashboardController as SponsorDashboardController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Backend\CampaignController;
+use App\Http\Controllers\Backend\ResourceController;
+use App\Http\Controllers\Backend\EventController; 
 
 /*
 |--------------------------------------------------------------------------
@@ -93,11 +95,60 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
     Route::get('donations', [DonationController::class, 'adminIndex'])->name('donations.index');
     Route::post('donations/{donation}/confirm', [DonationController::class, 'confirm'])->name('donations.confirm');
     Route::post('donations/{donation}/cancel', [DonationController::class, 'cancel'])->name('donations.cancel');
+    Route::get('/events', function () {
+        $events = \App\Models\Event::with('user')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        
+        return view('backend.events.index', compact('events'));
+    })->name('events.index');
+
+    Route::get('/events/{event}', function (\App\Models\Event $event) {
+        $event->load('user'); // Charger la relation user
+        return view('backend.events.show', compact('event'));
+    })->name('events.show');
+
+
+    // ✅ AJOUTÉ : Gestion des campagnes (backend) - Même pattern que events
+    Route::get('/campaigns', function () {
+        $campaigns = \App\Models\Campaign::with('organizer')
+            ->withCount(['resources', 'events'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        
+        return view('backend.campaigns.index', compact('campaigns'));
+    })->name('campaigns.index');
+
+    Route::get('/campaigns/{campaign}', function (\App\Models\Campaign $campaign) {
+        $campaign->load('organizer');
+        $campaign->loadCount(['resources', 'events']);
+        return view('backend.campaigns.show', compact('campaign'));
+    })->name('campaigns.show');
+
+    // ✅ AJOUTÉ : Gestion des ressources (backend) - Même pattern
+    Route::get('/resources', function () {
+        $resources = \App\Models\Resource::with('campaign')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        
+        return view('backend.resources.index', compact('resources'));
+    })->name('resources.index');
+
+    Route::get('/resources/{resource}', function (\App\Models\Resource $resource) {
+        $resource->load('campaign.organizer');
+        return view('backend.resources.show', compact('resource'));
+    })->name('resources.show');
+    
 });
 
 
-// Events routes for organizers
-Route::middleware(['auth', 'verified'])->group(function () {
+
+
+/*
+|--------------------------------------------------------------------------
+| ROUTES EVENTS & LOCATIONS
+|--------------------------------------------------------------------------
+*/Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('events', EventController::class);
     Route::post('/events/{event}/submit', [EventController::class, 'submitForApproval'])->name('events.submit');
     Route::post('/events/{event}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
@@ -130,6 +181,47 @@ Route::middleware(['auth', 'role:sponsor'])->prefix('sponsor')->name('sponsor.')
     Route::post('/demande-suppression', [BackendSponsorController::class, 'requestDeletion'])->name('self.requestDeletion');
 });
 
+/*
+|--------------------------------------------------------------------------
+| ROUTES CAMPAIGNS & RESOURCES - ACCESSIBLES À TOUS LES UTILISATEURS CONNECTÉS
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    // ✅ ROUTES CAMPAIGNS - Accessibles à tous les utilisateurs connectés
+    Route::prefix('campaigns')->name('campaigns.')->group(function () {
+        Route::get('/', [CampaignController::class, 'index'])->name('index');
+        Route::get('/create', [CampaignController::class, 'create'])->name('create');
+        Route::post('/', [CampaignController::class, 'store'])->name('store');
+        Route::get('/{campaign}', [CampaignController::class, 'show'])->name('show');
+        Route::get('/{campaign}/edit', [CampaignController::class, 'edit'])->name('edit');
+        Route::put('/{campaign}', [CampaignController::class, 'update'])->name('update');
+        Route::delete('/{campaign}', [CampaignController::class, 'destroy'])->name('destroy');
+        
+        // Routes supplémentaires
+        Route::post('/{campaign}/toggle-visibility', [CampaignController::class, 'toggleVisibility'])
+             ->name('toggle-visibility');
+        Route::get('/statistics', [CampaignController::class, 'statistics'])->name('statistics');
+    });
+
+    // ✅ ROUTES RESOURCES - Chemin personnalisé : /resources  
+    Route::prefix('resources')->name('resources.')->group(function () {
+        Route::get('/', [ResourceController::class, 'index'])->name('index');
+        Route::get('/create', [ResourceController::class, 'create'])->name('create');
+        Route::post('/', [ResourceController::class, 'store'])->name('store');
+        Route::get('/{resource}', [ResourceController::class, 'show'])->name('show');
+        Route::get('/{resource}/edit', [ResourceController::class, 'edit'])->name('edit');
+        Route::put('/{resource}', [ResourceController::class, 'update'])->name('update');
+        Route::delete('/{resource}', [ResourceController::class, 'destroy'])->name('destroy');
+        
+        // Routes supplémentaires
+        Route::post('/{resource}/update-status', [ResourceController::class, 'updateStatus'])
+             ->name('update-status');
+        Route::post('/{resource}/pledge', [ResourceController::class, 'pledge'])
+             ->name('pledge');
+        Route::get('/high-priority', [ResourceController::class, 'highPriority'])
+             ->name('high-priority');
+    });
+});
 
 require __DIR__ . '/auth.php';
 require __DIR__ . '/2fa.php';

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\event;
+namespace App\Http\Controllers\Backend;
 
-use App\Http\Controllers\Controller; 
+use App\Http\Controllers\Controller;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,22 +13,30 @@ class EventController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+ public function index(Request $request)
     {
-        $user = Auth::user();
+        $query = Event::where('user_id', auth()->id());
         
-        if (!$user->isOrganizer()) {
-            return redirect()->route('dashboard')->with('error', 'Accès non autorisé.');
+        // Search by title
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where('title', 'LIKE', "%{$searchTerm}%");
         }
-
-        $events = Event::byOrganizer($user->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
-            
-        $pendingEvents = $events->where('status', 'pending');
-        $otherEvents = $events->where('status', '!=', 'pending');
-
-        return view('events.index', compact('pendingEvents', 'otherEvents'));
+        
+        // Filter by status
+        if ($request->has('status') && !empty($request->status)) {
+            $query->where('status', $request->status);
+        }
+        
+        // Get all events based on filters
+        $allEvents = $query->orderBy('created_at', 'desc')->get();
+        
+        // Separate pending events from others
+        $pendingEvents = $allEvents->where('status', 'pending');
+        $otherEvents = $allEvents->where('status', '!=', 'pending');
+        
+    
+        return view('frontend.events.index', compact('otherEvents', 'pendingEvents'));
     }
 
     /**
@@ -40,7 +48,7 @@ class EventController extends Controller
             return redirect()->route('dashboard')->with('error', 'Accès non autorisé.');
         }
 
-        return view('events.create');
+        return view('frontend.events.create');
     }
 
     /**
@@ -52,15 +60,19 @@ class EventController extends Controller
             return redirect()->route('dashboard')->with('error', 'Accès non autorisé.');
         }
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'date' => 'required|date|after:now',
-            'location' => 'required|string|max:255',
-            'max_participants' => 'nullable|integer|min:1',
-            'duration' => 'required|string|max:50',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
+$validated = $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'required|string',
+        'date' => 'required|date|after:now',
+        'duration' => 'required|string',
+        'location' => 'required|string|max:255',
+        'max_participants' => 'nullable|integer|min:1',
+        'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'campaign_id' => 'nullable|exists:campaigns,id' // Validation ajoutée
+    ]);
+
+   
+
 
         $event = Event::create([
             'title' => $request->title,
@@ -72,21 +84,29 @@ class EventController extends Controller
             'user_id' => Auth::id(),
             'status' => 'draft', 
             'images' => [], 
+            'campaign_id' => $request->campaign_id,
 
         ]);
 
-        // Handle image upload
-        if ($request->hasFile('images')) {
-            $imagePaths = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('events/' . $event->id, 'public');
-                $imagePaths[] = $path;
-            }
-            $event->update(['images' => $imagePaths]);
-        }
-
-        return redirect()->route('events.index')->with('success', 'Événement créé avec succès. Vous pouvez maintenant le soumettre pour approbation.');
+if ($request->hasFile('images')) {
+    $imagePaths = [];
+    
+    foreach ($request->file('images') as $image) {
+        // Stockez l'image correctement
+        $path = $image->store('events/' . $event->id, 'public');
+        
+        // Assurez-vous que le chemin utilise des slashs normaux
+        $cleanPath = str_replace('\\', '/', $path);
+        $imagePaths[] = $cleanPath;
     }
+    
+    $event->images = $imagePaths;
+    $event->save();
+
+    }
+    return redirect()->route('events.index')->with('success', 'Événement créé avec succès !');
+
+}
 
     /**
      * Display the specified resource.
@@ -98,7 +118,7 @@ class EventController extends Controller
         return redirect()->route('events.index')->with('error', 'Accès non autorisé.');
     }
 
-    return view('events.show', compact('event'));
+    return view('frontend.events.show', compact('event'));
 }
 
     /**
@@ -110,7 +130,7 @@ class EventController extends Controller
             return redirect()->route('events.index')->with('error', 'Cet événement ne peut pas être modifié.');
         }
 
-        return view('events.edit', compact('event'));
+        return view('frontend.events.edit', compact('event'));
     }
 
     /**
@@ -129,8 +149,12 @@ class EventController extends Controller
             'location' => 'required|string|max:255',
             'max_participants' => 'nullable|integer|min:1',
             'duration' => 'required|string|max:50',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'campaign_id' => 'nullable|exists:campaigns,id' // Validation ajoutée
+
         ]);
+
+   
 
         $event->update([
             'title' => $request->title,
@@ -139,6 +163,7 @@ class EventController extends Controller
             'location' => $request->location,
             'max_participants' => $request->max_participants,
             'duration' => $request->duration,
+            'campaign_id' => $request->campaign_id,
         ]);
 
         // Handle image upload
