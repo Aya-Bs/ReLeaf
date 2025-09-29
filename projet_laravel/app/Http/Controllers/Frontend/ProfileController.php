@@ -8,6 +8,7 @@ use App\Models\Profile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -17,7 +18,8 @@ class ProfileController extends Controller
      */
     public function show(): View
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         $user->createProfileIfNotExists();
 
         return view('frontend.profile.show', compact('user'));
@@ -28,7 +30,8 @@ class ProfileController extends Controller
      */
     public function edit(): View
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         $user->createProfileIfNotExists();
 
         return view('frontend.profile.edit', compact('user'));
@@ -39,7 +42,8 @@ class ProfileController extends Controller
      */
     public function update(UserProfileRequest $request): RedirectResponse
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         $user->createProfileIfNotExists();
 
         $data = $request->validated();
@@ -58,6 +62,17 @@ class ProfileController extends Controller
 
         $user->profile->update($data);
 
+        // If sponsor, allow inline sponsor company updates (limited subset)
+        if ($user->role === 'sponsor' && $user->sponsor) {
+            $sponsorData = $request->only(['company_name', 'contact_email', 'contact_phone', 'website', 'address', 'city', 'country', 'motivation', 'additional_info']);
+            $filtered = array_filter($sponsorData, function ($v) {
+                return !is_null($v);
+            });
+            if (!empty($filtered)) {
+                $user->sponsor->update($filtered);
+            }
+        }
+
         return redirect()->route('profile.show')
             ->with('success', 'Profil mis à jour avec succès !');
     }
@@ -67,7 +82,7 @@ class ProfileController extends Controller
      */
     public function deleteAvatar(): RedirectResponse
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         if ($user->profile && $user->profile->avatar) {
             Storage::disk('public')->delete('avatars/' . $user->profile->avatar);

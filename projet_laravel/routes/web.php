@@ -1,11 +1,15 @@
 <?php
 
 use App\Http\Controllers\Backend\AdminController;
+use App\Http\Controllers\Backend\SponsorController as BackendSponsorController;
 use App\Http\Controllers\Backend\UserController as BackendUserController;
+use App\Http\Controllers\DonationController;
 use App\Http\Controllers\event\EventController; // CHANGE THIS LINE
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
+use App\Http\Controllers\Frontend\SponsorController as FrontendSponsorController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Sponsor\DashboardController as SponsorDashboardController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,13 +32,20 @@ Route::get('/home', [HomeController::class, 'index'])
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 
+// Routes publiques pour les sponsors
+Route::get('/sponsors', [FrontendSponsorController::class, 'index'])->name('sponsors.index');
+Route::get('/sponsors/create', [FrontendSponsorController::class, 'create'])->name('sponsors.create');
+Route::get('/sponsors/success', [FrontendSponsorController::class, 'success'])->name('sponsors.success');
+Route::get('/sponsors/{sponsor}', [FrontendSponsorController::class, 'show'])->name('sponsors.show');
+Route::post('/sponsors', [FrontendSponsorController::class, 'store'])->name('sponsors.store');
+
 /*
 |--------------------------------------------------------------------------
 | Frontend Routes (Utilisateurs connectés)
 |--------------------------------------------------------------------------
 */
 // Routes 2FA
-require __DIR__.'/2fa.php';
+require __DIR__ . '/2fa.php';
 
 Route::middleware(['auth'])->group(function () {
     // Profil utilisateur (Breeze original)
@@ -67,6 +78,21 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
     Route::resource('users', BackendUserController::class);
     Route::post('users/{user}/toggle-eco-ambassador', [BackendUserController::class, 'toggleEcoAmbassador'])
         ->name('users.toggle-eco-ambassador');
+
+    // Gestion des sponsors
+    Route::get('sponsors/pending', [BackendSponsorController::class, 'pending'])->name('sponsors.pending');
+    Route::resource('sponsors', BackendSponsorController::class);
+    Route::post('sponsors/{sponsor}/validate', [BackendSponsorController::class, 'validate'])->name('sponsors.validate');
+    Route::post('sponsors/{sponsor}/reject', [BackendSponsorController::class, 'reject'])->name('sponsors.reject');
+    Route::post('sponsors/{sponsor}/restore', [BackendSponsorController::class, 'restore'])->name('sponsors.restore');
+    Route::get('sponsors/trashed', [BackendSponsorController::class, 'trashed'])->name('sponsors.trashed');
+    Route::post('sponsors/{sponsor}/process-deletion', [BackendSponsorController::class, 'processDeletion'])->name('sponsors.process-deletion');
+    Route::get('sponsors/deletion-requested', [BackendSponsorController::class, 'deletionRequested'])->name('sponsors.deletion-requested');
+
+    // Gestion des dons
+    Route::get('donations', [DonationController::class, 'adminIndex'])->name('donations.index');
+    Route::post('donations/{donation}/confirm', [DonationController::class, 'confirm'])->name('donations.confirm');
+    Route::post('donations/{donation}/cancel', [DonationController::class, 'cancel'])->name('donations.cancel');
 });
 
 
@@ -76,8 +102,34 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/events/{event}/submit', [EventController::class, 'submitForApproval'])->name('events.submit');
     Route::post('/events/{event}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
     Route::post('/events/{event}/remove-image', [EventController::class, 'removeImage'])->name('events.remove-image');
+
+    // Routes pour les dons d'événements
+    Route::get('/events/{event}/donations', [DonationController::class, 'eventDonations'])->name('events.donations');
+});
+
+// Routes pour les dons (accessibles à tous)
+Route::get('/events/{event}/donate', [DonationController::class, 'create'])->name('donations.create');
+Route::post('/events/{event}/donate', [DonationController::class, 'store'])->name('donations.store');
+Route::get('/donations/{donation}/success', [DonationController::class, 'success'])->name('donations.success');
+// Authenticated user/sponsor donation management
+Route::middleware(['auth'])->group(function () {
+    Route::get('/mes-dons', [DonationController::class, 'index'])->name('donations.list');
+    Route::get('/donations/{donation}/edit', [DonationController::class, 'edit'])->name('donations.edit');
+    Route::put('/donations/{donation}', [DonationController::class, 'update'])->name('donations.update');
+    Route::delete('/donations/{donation}', [DonationController::class, 'destroy'])->name('donations.destroy');
+});
+
+// Sponsor Dashboard
+Route::middleware(['auth', 'role:sponsor'])->prefix('sponsor')->name('sponsor.')->group(function () {
+    Route::get('/dashboard', [SponsorDashboardController::class, 'index'])->name('dashboard');
+    // Donation routes for sponsors will be added here
+    // Redirect sponsor profil to unified user profile to avoid duplication
+    Route::get('/profil', function () {
+        return redirect()->route('profile.show');
+    })->name('self.edit');
+    Route::post('/demande-suppression', [BackendSponsorController::class, 'requestDeletion'])->name('self.requestDeletion');
 });
 
 
-require __DIR__.'/auth.php';
-require __DIR__.'/2fa.php';
+require __DIR__ . '/auth.php';
+require __DIR__ . '/2fa.php';

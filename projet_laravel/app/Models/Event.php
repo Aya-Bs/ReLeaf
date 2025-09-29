@@ -5,7 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+
 
 class Event extends Model
 {
@@ -44,6 +46,48 @@ class Event extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the sponsors that support this event.
+     */
+    public function sponsors(): BelongsToMany
+    {
+        return $this->belongsToMany(Sponsor::class, 'sponsor_events')
+            ->withPivot(['amount', 'status', 'notes'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the donations for this event.
+     */
+    public function donations(): HasMany
+    {
+        return $this->hasMany(Donation::class);
+    }
+
+    /**
+     * Get the total amount donated for this event.
+     */
+    public function getTotalDonationsAttribute(): float
+    {
+        return $this->donations()->where('status', 'confirmed')->sum('amount');
+    }
+
+    /**
+     * Get the total amount sponsored for this event.
+     */
+    public function getTotalSponsorshipAttribute(): float
+    {
+        return $this->sponsors()->wherePivot('status', 'active')->sum('sponsor_events.amount');
+    }
+
+    /**
+     * Get the total funding for this event (donations + sponsorships).
+     */
+    public function getTotalFundingAttribute(): float
+    {
+        return $this->getTotalDonationsAttribute() + $this->getTotalSponsorshipAttribute();
     }
 
     // /**
