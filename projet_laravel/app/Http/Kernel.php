@@ -62,5 +62,6 @@ class Kernel extends HttpKernel
         '2fa' => \App\Http\Middleware\Require2FA::class,
         'role' => \App\Http\Middleware\RoleMiddleware::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'ensureSponsor' => \App\Http\Middleware\EnsureSponsorProfile::class,
     ];
 }

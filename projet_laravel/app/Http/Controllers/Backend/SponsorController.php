@@ -10,9 +10,11 @@ use App\Mail\SponsorValidatedMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Log;
 
 class SponsorController extends Controller
 {
@@ -180,21 +182,76 @@ class SponsorController extends Controller
     public function requestDeletion(Request $request)
     {
         $user = Auth::user();
-        if (!$user || $user->role !== 'sponsor' || !$user->sponsor) {
+        if (!$user || $user->role !== 'sponsor') {
             abort(403);
         }
+        Log::info('Sponsor requestDeletion initiated', [
+            'user_id' => $user?->id,
+            'has_sponsor' => (bool)$user?->sponsor,
+            'sponsor_status' => $user?->sponsor?->status,
+        ]);
         $data = $request->validate([
             'reason' => 'required|string|min:10|max:500'
         ]);
         $sponsor = $user->sponsor;
+        if (!$sponsor) {
+            // No sponsor record yet -> nothing to flag; suggest immediate downgrade instead
+            Log::warning('Sponsor deletion request without sponsor relation', ['user_id' => $user->id]);
+            return redirect()->back()->with('error', "Aucun profil sponsor associé. Utilisez la suppression immédiate pour abandonner le statut.");
+        }
         if ($sponsor->isDeletionRequested()) {
+            Log::notice('Duplicate deletion request attempt', ['sponsor_id' => $sponsor->id]);
             return redirect()->back()->with('error', 'Une demande de suppression est déjà en attente.');
         }
         $sponsor->update([
             'status' => 'deletion_requested',
             'deletion_reason' => $data['reason'],
         ]);
+        Log::info('Sponsor deletion request flagged', ['sponsor_id' => $sponsor->id]);
         return redirect()->route('sponsor.dashboard')->with('success', 'Demande de suppression envoyée à l\'administration.');
+    }
+
+    /**
+     * Sponsor performs immediate self soft-delete (bypass admin). Optional feature.
+     */
+    public function selfDeleteNow(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'sponsor') {
+            abort(403);
+        }
+        Log::info('Sponsor selfDeleteNow initiated', [
+            'user_id' => $user?->id,
+            'has_sponsor' => (bool)$user?->sponsor,
+            'sponsor_status' => $user?->sponsor?->status,
+        ]);
+        $request->validate([
+            'confirm' => 'required|in:DELETE'
+        ], [
+            'confirm.in' => 'Vous devez taper DELETE pour confirmer.'
+        ]);
+        $sponsor = $user->sponsor;
+        if ($sponsor) {
+            // Soft delete sponsor record and downgrade
+            $sponsor->update([
+                'deletion_reason' => $sponsor->deletion_reason ?: 'Suppression immédiate par le sponsor.',
+                'status' => $sponsor->status === 'deletion_requested' ? $sponsor->status : 'deletion_requested'
+            ]);
+            $sponsor->delete();
+            Log::info('Sponsor soft deleted via selfDeleteNow', ['sponsor_id' => $sponsor->id]);
+        }
+        Log::warning('selfDeleteNow called without sponsor relation', ['user_id' => $user->id]);
+
+        // Optionally change user role (keep account so donations history is intact)
+        // Downgrade role (avoid static analysis complaining about dynamic model methods)
+        DB::table('users')->where('id', $user->id)->update(['role' => 'user', 'updated_at' => now()]);
+        Log::info('User role downgraded after selfDeleteNow', ['user_id' => $user->id]);
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')->with('status', 'Votre profil sponsor a été supprimé.');
     }
 
     /**

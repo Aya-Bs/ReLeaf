@@ -17,7 +17,7 @@
                 <span>{{ Auth::user()->name }}</span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="{{ route('profile.show') }}"><i class="fas fa-user me-2"></i>Profil</a></li>
+                <li><a class="dropdown-item" href="{{ route('sponsor.profile') }}"><i class="fas fa-user me-2"></i>Profil sponsor</a></li>
                 <li><a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="fas fa-cog me-2"></i>Paramètres</a></li>
                 <li>
                     <hr class="dropdown-divider">
@@ -38,7 +38,7 @@
                 <i class="fas fa-hand-holding-heart me-1"></i> Mes dons
             </a>
             @if(Auth::user()->sponsor)
-            <a href="{{ route('sponsor.self.edit') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('sponsor.profile') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-building me-1"></i> Mon profil sponsor
             </a>
             @if(Auth::user()->sponsor->isDeletionRequested())

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserProfileRequest;
 use App\Models\Profile;
+use App\Models\Sponsor;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -21,6 +23,26 @@ class ProfileController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
         $user->createProfileIfNotExists();
+
+        // Ensure sponsor placeholder exists if user has sponsor role but no relation yet
+        if ($user->role === 'sponsor' && !$user->sponsor) {
+            $placeholder = [
+                'user_id' => $user->id,
+                'company_name' => $user->name ?: ('Sponsor ' . $user->id),
+                'contact_email' => $user->email,
+                'motivation' => 'Profil sponsor à compléter.',
+                'sponsorship_type' => 'argent',
+                'status' => 'pending'
+            ];
+            try {
+                $s = Sponsor::create($placeholder);
+                Log::info('Auto-created sponsor placeholder in ProfileController@show', ['user_id' => $user->id, 'sponsor_id' => $s->id]);
+            } catch (\Throwable $e) {
+                Log::error('Failed creating sponsor placeholder', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+            }
+            // Lazy load new relation
+            $user->refresh();
+        }
 
         return view('frontend.profile.show', compact('user'));
     }
@@ -46,6 +68,23 @@ class ProfileController extends Controller
         $user = Auth::user();
         $user->createProfileIfNotExists();
 
+        // Guarantee sponsor relation (consistent update path)
+        if ($user->role === 'sponsor' && !$user->sponsor) {
+            try {
+                $user->sponsor()->create([
+                    'company_name' => $user->name ?: ('Sponsor ' . $user->id),
+                    'contact_email' => $user->email,
+                    'motivation' => 'Profil sponsor à compléter.',
+                    'sponsorship_type' => 'argent',
+                    'status' => 'pending'
+                ]);
+                $user->refresh();
+                Log::info('Sponsor placeholder auto-created in update()', ['user_id' => $user->id]);
+            } catch (\Throwable $e) {
+                Log::error('Failed to auto-create sponsor in update()', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+            }
+        }
+
         $data = $request->validated();
 
         // Handle avatar upload
@@ -62,18 +101,35 @@ class ProfileController extends Controller
 
         $user->profile->update($data);
 
-        // If sponsor, allow inline sponsor company updates (limited subset)
+        // If sponsor, update sponsor fields (include empty strings -> convert to null for nullable fields)
         if ($user->role === 'sponsor' && $user->sponsor) {
-            $sponsorData = $request->only(['company_name', 'contact_email', 'contact_phone', 'website', 'address', 'city', 'country', 'motivation', 'additional_info']);
-            $filtered = array_filter($sponsorData, function ($v) {
-                return !is_null($v);
-            });
-            if (!empty($filtered)) {
-                $user->sponsor->update($filtered);
+            $sponsorFields = ['company_name', 'contact_email', 'contact_phone', 'website', 'address', 'city', 'country', 'motivation', 'additional_info'];
+            $payload = [];
+            foreach ($sponsorFields as $field) {
+                if ($request->has($field)) {
+                    $val = $request->input($field);
+                    // Normalize empty string to null for nullable columns
+                    $payload[$field] = ($val === '') ? null : $val;
+                }
+            }
+            if (!empty($payload)) {
+                $before = $user->sponsor->only(array_keys($payload));
+                $user->sponsor->fill($payload);
+                if ($user->sponsor->isDirty()) {
+                    $user->sponsor->save();
+                    Log::info('Sponsor fields updated from profile.update', [
+                        'user_id' => $user->id,
+                        'changes' => $user->sponsor->getChanges(),
+                        'before' => $before
+                    ]);
+                } else {
+                    Log::info('Sponsor update called but no changes detected', ['user_id' => $user->id]);
+                }
             }
         }
 
-        return redirect()->route('profile.show')
+        $redirectRoute = $user->role === 'sponsor' ? 'sponsor.profile' : 'profile.show';
+        return redirect()->route($redirectRoute)
             ->with('success', 'Profil mis à jour avec succès !');
     }
 

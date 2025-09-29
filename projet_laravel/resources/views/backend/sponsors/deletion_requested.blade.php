@@ -1,4 +1,5 @@
-@extends('layouts.app')
+@extends('backend.layouts.app')
+
 @section('content')
 <div class="container py-4">
     <h1 class="h4 mb-4"><i class="fas fa-user-slash me-2 text-danger"></i>Demandes de suppression sponsors</h1>

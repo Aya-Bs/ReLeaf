@@ -12,7 +12,7 @@ use App\Http\Controllers\Sponsor\DashboardController as SponsorDashboardControll
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Backend\CampaignController;
 use App\Http\Controllers\Backend\ResourceController;
-use App\Http\Controllers\Backend\EventController; 
+use App\Http\Controllers\Backend\EventController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,7 +38,9 @@ Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 Route::get('/sponsors', [FrontendSponsorController::class, 'index'])->name('sponsors.index');
 Route::get('/sponsors/create', [FrontendSponsorController::class, 'create'])->name('sponsors.create');
 Route::get('/sponsors/success', [FrontendSponsorController::class, 'success'])->name('sponsors.success');
-Route::get('/sponsors/{sponsor}', [FrontendSponsorController::class, 'show'])->name('sponsors.show');
+Route::get('/sponsors/{sponsor}', [FrontendSponsorController::class, 'show'])
+    ->whereNumber('sponsor')
+    ->name('sponsors.show');
 Route::post('/sponsors', [FrontendSponsorController::class, 'store'])->name('sponsors.store');
 
 /*
@@ -83,13 +85,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
 
     // Gestion des sponsors
     Route::get('sponsors/pending', [BackendSponsorController::class, 'pending'])->name('sponsors.pending');
+    // Place deletion-requested BEFORE resource to prevent capture by /sponsors/{sponsor} show route
+    Route::get('sponsors/deletion-requested', [BackendSponsorController::class, 'deletionRequested'])->name('sponsors.deletion-requested');
     Route::resource('sponsors', BackendSponsorController::class);
     Route::post('sponsors/{sponsor}/validate', [BackendSponsorController::class, 'validate'])->name('sponsors.validate');
     Route::post('sponsors/{sponsor}/reject', [BackendSponsorController::class, 'reject'])->name('sponsors.reject');
     Route::post('sponsors/{sponsor}/restore', [BackendSponsorController::class, 'restore'])->name('sponsors.restore');
     Route::get('sponsors/trashed', [BackendSponsorController::class, 'trashed'])->name('sponsors.trashed');
     Route::post('sponsors/{sponsor}/process-deletion', [BackendSponsorController::class, 'processDeletion'])->name('sponsors.process-deletion');
-    Route::get('sponsors/deletion-requested', [BackendSponsorController::class, 'deletionRequested'])->name('sponsors.deletion-requested');
 
     // Gestion des dons
     Route::get('donations', [DonationController::class, 'adminIndex'])->name('donations.index');
@@ -99,7 +102,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
         $events = \App\Models\Event::with('user')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-        
+
         return view('backend.events.index', compact('events'));
     })->name('events.index');
 
@@ -115,7 +118,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
             ->withCount(['resources', 'events'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-        
+
         return view('backend.campaigns.index', compact('campaigns'));
     })->name('campaigns.index');
 
@@ -130,7 +133,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
         $resources = \App\Models\Resource::with('campaign')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-        
+
         return view('backend.resources.index', compact('resources'));
     })->name('resources.index');
 
@@ -138,7 +141,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
         $resource->load('campaign.organizer');
         return view('backend.resources.show', compact('resource'));
     })->name('resources.show');
-    
 });
 
 
@@ -148,7 +150,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
 |--------------------------------------------------------------------------
 | ROUTES EVENTS & LOCATIONS
 |--------------------------------------------------------------------------
-*/Route::middleware(['auth', 'verified'])->group(function () {
+*/
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('events', EventController::class);
     Route::post('/events/{event}/submit', [EventController::class, 'submitForApproval'])->name('events.submit');
     Route::post('/events/{event}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
@@ -171,14 +174,14 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Sponsor Dashboard
-Route::middleware(['auth', 'role:sponsor'])->prefix('sponsor')->name('sponsor.')->group(function () {
+Route::middleware(['auth', 'role:sponsor', \App\Http\Middleware\EnsureSponsorProfile::class])->prefix('sponsors')->name('sponsor.')->group(function () {
     Route::get('/dashboard', [SponsorDashboardController::class, 'index'])->name('dashboard');
-    // Donation routes for sponsors will be added here
-    // Redirect sponsor profil to unified user profile to avoid duplication
+    Route::get('/profile', [\App\Http\Controllers\Sponsor\ProfileController::class, 'show'])->name('profile');
     Route::get('/profil', function () {
         return redirect()->route('profile.show');
     })->name('self.edit');
     Route::post('/demande-suppression', [BackendSponsorController::class, 'requestDeletion'])->name('self.requestDeletion');
+    Route::post('/delete-now', [BackendSponsorController::class, 'selfDeleteNow'])->name('self.deleteNow');
 });
 
 /*
@@ -196,10 +199,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{campaign}/edit', [CampaignController::class, 'edit'])->name('edit');
         Route::put('/{campaign}', [CampaignController::class, 'update'])->name('update');
         Route::delete('/{campaign}', [CampaignController::class, 'destroy'])->name('destroy');
-        
+
         // Routes supplémentaires
         Route::post('/{campaign}/toggle-visibility', [CampaignController::class, 'toggleVisibility'])
-             ->name('toggle-visibility');
+            ->name('toggle-visibility');
         Route::get('/statistics', [CampaignController::class, 'statistics'])->name('statistics');
     });
 
@@ -212,14 +215,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{resource}/edit', [ResourceController::class, 'edit'])->name('edit');
         Route::put('/{resource}', [ResourceController::class, 'update'])->name('update');
         Route::delete('/{resource}', [ResourceController::class, 'destroy'])->name('destroy');
-        
+
         // Routes supplémentaires
         Route::post('/{resource}/update-status', [ResourceController::class, 'updateStatus'])
-             ->name('update-status');
+            ->name('update-status');
         Route::post('/{resource}/pledge', [ResourceController::class, 'pledge'])
-             ->name('pledge');
+            ->name('pledge');
         Route::get('/high-priority', [ResourceController::class, 'highPriority'])
-             ->name('high-priority');
+            ->name('high-priority');
     });
 });
 
