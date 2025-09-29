@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -127,5 +128,29 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         return $this->name;
+    }
+
+    /**
+     * Get the user's waiting list entries.
+     */
+    public function waitingLists(): HasMany
+    {
+        return $this->hasMany(WaitingList::class);
+    }
+
+    /**
+     * Get the user's reservations.
+     */
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
+    /**
+     * Get the user's certifications through reservations.
+     */
+    public function certifications()
+    {
+        return $this->hasManyThrough(Certification::class, Reservation::class);
     }
 }

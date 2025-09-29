@@ -59,6 +59,102 @@
             border-left: 4px solid var(--eco-accent);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        
+        /* Bouton Chatbot Flottant */
+        .chatbot-float-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .chatbot-float-btn .btn {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .chatbot-float-btn .btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(13, 202, 240, 0.4) !important;
+        }
+
+        .chatbot-tooltip {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .chatbot-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            right: 20px;
+            border: 8px solid transparent;
+            border-top-color: white;
+        }
+
+        .chatbot-float-btn:hover .chatbot-tooltip {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .tooltip-content {
+            text-align: center;
+            color: var(--eco-green);
+        }
+
+        .tooltip-content strong {
+            font-size: 0.9rem;
+        }
+
+        .tooltip-content small {
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chatbot-float-btn {
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .chatbot-float-btn .btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            
+            .chatbot-tooltip {
+                bottom: 60px;
+                right: -10px;
+            }
+        }
     </style>
 
     <!-- Scripts -->
@@ -90,7 +186,7 @@
                                 <i class="fas fa-calendar-alt me-1"></i>Événements
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ route('home') }}#events">
+                                <li><a class="dropdown-item" href="{{ route('events.index') }}">
                                     <i class="fas fa-list me-2"></i>Événements à venir
                                 </a></li>
                                 <li><a class="dropdown-item" href="#">
@@ -98,6 +194,11 @@
                                 </a></li>
                             </ul>
                         </li>
+                        <!-- <li class="nav-item">
+                            <a class="nav-link" href="{{ route('chatbot.index') }}">
+                                <i class="fas fa-robot me-1"></i>Assistant IA
+                            </a>
+                        </li> -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-user me-1"></i>Mon Profil
@@ -151,6 +252,19 @@
             </div>
         </div>
     </nav>
+
+    <!-- Bouton Chatbot Flottant -->
+    <div class="chatbot-float-btn">
+        <a href="{{ route('chatbot.index') }}" class="btn btn-info btn-lg rounded-circle shadow-lg" title="Assistant IA EcoEvents">
+            <i class="fas fa-robot"></i>
+        </a>
+        <div class="chatbot-tooltip">
+            <div class="tooltip-content">
+                <strong>Assistant IA</strong><br>
+                <small>Disponible 24/7</small>
+            </div>
+        </div>
+    </div>
 
     <!-- Main Content -->
     <main class="py-4">

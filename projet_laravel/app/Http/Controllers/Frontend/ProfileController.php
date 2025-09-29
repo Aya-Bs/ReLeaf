@@ -20,7 +20,21 @@ class ProfileController extends Controller
         $user = auth()->user();
         $user->createProfileIfNotExists();
 
-        return view('frontend.profile.show', compact('user'));
+        // Charger les certificats de l'utilisateur
+        $certifications = $user->certifications()
+            ->with(['reservation.event', 'issuedBy'])
+            ->orderBy('date_awarded', 'desc')
+            ->get();
+
+        // Statistiques
+        $stats = [
+            'events_created' => 0, // À implémenter si nécessaire
+            'participations' => $user->reservations()->confirmed()->count(),
+            'certificates_earned' => $certifications->count(),
+            'days_on_platform' => $user->created_at->diffInDays()
+        ];
+
+        return view('frontend.profile.show', compact('user', 'certifications', 'stats'));
     }
 
     /**
