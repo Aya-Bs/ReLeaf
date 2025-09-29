@@ -188,12 +188,7 @@ class Event extends Model
     {
         return $this->waitingList()->where('status', 'waiting')->count();
     }
-}
-
-    /**
-     * Check if event can be edited (only draft or pending events)
-     */
-    public function canBeEdited(): bool
+        public function canBeEdited(): bool
     {
         return in_array($this->status, ['draft', 'pending']);
     }
@@ -226,3 +221,8 @@ class Event extends Model
         })->toArray();
     }
 }
+
+    /**
+     * Check if event can be edited (only draft or pending events)
+     */
+

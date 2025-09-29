@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Backend\CampaignController;
 use App\Http\Controllers\Backend\ResourceController;
 use App\Http\Controllers\Backend\EventController;
+use App\Http\Controllers\ReservationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -264,6 +265,16 @@ Route::get('/chatbot/suggestions', [App\Http\Controllers\ChatbotController::clas
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/certificates', [App\Http\Controllers\CertificateController::class, 'adminIndex'])->name('certificates.index');
     Route::post('/certificates/grant/{reservation}', [App\Http\Controllers\CertificateController::class, 'grantCertificate'])->name('certificates.grant');
+});
+
+// Admin routes for reservations & waiting reservations management (expected by views: admin.reservations.*)
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/reservations', [ReservationController::class, 'adminIndex'])->name('reservations.index');
+    Route::post('/reservations/{reservation}/confirm', [ReservationController::class, 'confirm'])->name('reservations.confirm');
+    Route::post('/reservations/{reservation}/reject', [ReservationController::class, 'reject'])->name('reservations.reject');
+    // Destroy: allow DELETE (preferred) while keeping POST fallback if Blade form doesn't spoof method
+    Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy'])->name('reservations.destroy');
+    Route::post('/reservations/{reservation}/delete', [ReservationController::class, 'destroy'])->name('reservations.destroy.fallback');
 });
 
 require __DIR__ . '/auth.php';
