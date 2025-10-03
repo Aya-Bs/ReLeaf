@@ -15,7 +15,7 @@
             </nav>
         </div>
         
-        <!-- <CHANGE> Two-column layout: form on left, map on right -->
+        <!-- Two-column layout: form on left, map on right -->
         <div class="row justify-content-center" style="max-width:1400px;margin:0 auto;">
             <div class="col-12">
                 <div class="d-flex flex-column flex-lg-row gap-4">
@@ -25,8 +25,7 @@
                         <form action="{{ route('locations.store') }}" method="POST" enctype="multipart/form-data" class="bg-white p-4 shadow rounded-5 border-0 h-100">
                             @csrf
                             <div class="row">
-                                                                <div class="col-md-6 mb-3">
-
+                                <div class="col-md-6 mb-3">
                                     <label for="name" class="form-label fw-semibold" style="color:#2d5a27;"><i class="fas fa-leaf me-2" style="color:#2d5a27;"></i>Nom du lieu <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control form-control-lg" id="name" name="name" value="{{ old('name') }}" required>
                                 </div>
