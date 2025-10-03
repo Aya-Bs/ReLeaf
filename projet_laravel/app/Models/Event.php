@@ -5,7 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+
 
 class Event extends Model
 {
@@ -20,7 +22,7 @@ class Event extends Model
         'title',
         'description',
         'date',
-        'location',
+        'location_id',
         'max_participants',
         'status',
         'images',
@@ -28,6 +30,11 @@ class Event extends Model
         'duration',
         'campaign_id'
     ];
+
+    public function location()
+    {
+        return $this->belongsTo(Location::class);
+    }
 
     /**
      * The attributes that should be cast.
@@ -66,6 +73,23 @@ class Event extends Model
 
     /**
      * Scope for published events (approved by admin)
+     * Get the event reservations.
+     */
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
+    /**
+     * Get the event waiting list.
+     */
+    public function waitingList(): HasMany
+    {
+        return $this->hasMany(WaitingList::class);
+    }
+
+    /**
+     * Scope pour les événements publiés.
      */
     public function scopePublished($query)
     {
@@ -140,11 +164,33 @@ class Event extends Model
 {
     return $this->status === 'rejected';
 }
+    public function isFull(): bool
+    {
+        $confirmedReservations = $this->reservations()
+                                    ->where('status', 'confirmed')
+                                    ->count();
+        return $confirmedReservations >= $this->max_participants;
+    }
 
     /**
-     * Check if event can be edited (only draft or pending events)
+     * Get available spots count.
      */
-    public function canBeEdited(): bool
+    public function getAvailableSpots(): int
+    {
+        $confirmedReservations = $this->reservations()
+                                    ->where('status', 'confirmed')
+                                    ->count();
+        return max(0, $this->max_participants - $confirmedReservations);
+    }
+
+    /**
+     * Get waiting list count.
+     */
+    public function getWaitingListCount(): int
+    {
+        return $this->waitingList()->where('status', 'waiting')->count();
+    }
+        public function canBeEdited(): bool
     {
         return in_array($this->status, ['draft', 'pending']);
     }
@@ -177,3 +223,8 @@ class Event extends Model
         })->toArray();
     }
 }
+
+    /**
+     * Check if event can be edited (only draft or pending events)
+     */
+

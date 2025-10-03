@@ -25,18 +25,18 @@
                         <i class="fas fa-user me-2"></i>Prénom <span class="text-danger">*</span>
                     </label>
                     <input type="text"
-                           class="form-control @error('first_name') is-invalid @enderror"
-                           id="first_name"
-                           name="first_name"
-                           value="{{ old('first_name') }}"
-                           required
-                           autofocus
-                           autocomplete="given-name"
-                           placeholder="Votre prénom">
+                        class="form-control @error('first_name') is-invalid @enderror"
+                        id="first_name"
+                        name="first_name"
+                        value="{{ old('first_name') }}"
+                        required
+                        autofocus
+                        autocomplete="given-name"
+                        placeholder="Votre prénom">
                     @error('first_name')
-                        <div class="invalid-feedback">
-                            <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
-                        </div>
+                    <div class="invalid-feedback">
+                        <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
+                    </div>
                     @enderror
                 </div>
             </div>
@@ -46,17 +46,17 @@
                         <i class="fas fa-user me-2"></i>Nom <span class="text-danger">*</span>
                     </label>
                     <input type="text"
-                           class="form-control @error('last_name') is-invalid @enderror"
-                           id="last_name"
-                           name="last_name"
-                           value="{{ old('last_name') }}"
-                           required
-                           autocomplete="family-name"
-                           placeholder="Votre nom">
+                        class="form-control @error('last_name') is-invalid @enderror"
+                        id="last_name"
+                        name="last_name"
+                        value="{{ old('last_name') }}"
+                        required
+                        autocomplete="family-name"
+                        placeholder="Votre nom">
                     @error('last_name')
-                        <div class="invalid-feedback">
-                            <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
-                        </div>
+                    <div class="invalid-feedback">
+                        <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
+                    </div>
                     @enderror
                 </div>
             </div>
@@ -71,43 +71,49 @@
                 <i class="fas fa-envelope me-2"></i>Adresse email <span class="text-danger">*</span>
             </label>
             <input type="email"
-                   class="form-control @error('email') is-invalid @enderror"
-                   id="email"
-                   name="email"
-                   value="{{ old('email') }}"
-                   required
-                   autocomplete="username"
-                   placeholder="votre@email.com">
+                class="form-control @error('email') is-invalid @enderror"
+                id="email"
+                name="email"
+                value="{{ old('email') }}"
+                required
+                autocomplete="username"
+                placeholder="votre@email.com">
             @error('email')
-                <div class="invalid-feedback">
-                    <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
-                </div>
+            <div class="invalid-feedback">
+                <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
+            </div>
             @enderror
         </div>
 
-<!-- Role Selection -->
-<div class="mb-3">
-    <label for="role" class="form-label">
-        <i class="fas fa-user-tag me-2"></i>Type de compte
-    </label>
-    <select class="form-select @error('role') is-invalid @enderror"
-            id="role"
-            name="role"
-            required>
-        <option value="user" {{ old('role', 'user') == 'user' ? 'selected' : '' }}>
-            Utilisateur 
-        </option>
-        <option value="organizer" {{ old('role') == 'organizer' ? 'selected' : '' }}>
-            Organisateur 
-        </option>
-    </select>
-    @error('role')
-        <div class="invalid-feedback">
-            <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
+        <!-- Role Selection -->
+        <div class="mb-3">
+            <label for="role" class="form-label">
+                <i class="fas fa-user-tag me-2"></i>Type de compte
+            </label>
+            <select class="form-select @error('role') is-invalid @enderror"
+                id="role"
+                name="role"
+                required>
+                <option value="user" {{ old('role', 'user') == 'user' ? 'selected' : '' }}>
+                    Utilisateur
+                </option>
+                <option value="organizer" {{ old('role') == 'organizer' ? 'selected' : '' }}>
+                    Organisateur
+                </option>
+            </select>
+            @error('role')
+            <div class="invalid-feedback">
+                <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
+            </div>
+            @enderror
+            <div class="mt-2 small text-muted">
+                Vous représentez une entreprise ou organisation ?
+                <a href="{{ route('sponsors.create') }}" class="fw-semibold text-success">
+                    Devenir sponsor
+                </a>
+                (dossier à valider par l'administration).
+            </div>
         </div>
-    @enderror
-  
-</div>
 
 
         <!-- Phone -->
@@ -116,16 +122,16 @@
                 <i class="fas fa-phone me-2"></i>Téléphone
             </label>
             <input type="tel"
-                   class="form-control @error('phone') is-invalid @enderror"
-                   id="phone"
-                   name="phone"
-                   value="{{ old('phone') }}"
-                   autocomplete="tel"
-                   placeholder="+33 1 23 45 67 89">
+                class="form-control @error('phone') is-invalid @enderror"
+                id="phone"
+                name="phone"
+                value="{{ old('phone') }}"
+                autocomplete="tel"
+                placeholder="+33 1 23 45 67 89">
             @error('phone')
-                <div class="invalid-feedback">
-                    <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
-                </div>
+            <div class="invalid-feedback">
+                <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
+            </div>
             @enderror
             <small class="form-text text-muted">Optionnel - Format: +33 1 23 45 67 89</small>
         </div>
@@ -136,15 +142,15 @@
                 <i class="fas fa-calendar me-2"></i>Date de naissance
             </label>
             <input type="date"
-                   class="form-control @error('birth_date') is-invalid @enderror"
-                   id="birth_date"
-                   name="birth_date"
-                   value="{{ old('birth_date') }}"
-                   autocomplete="bday">
+                class="form-control @error('birth_date') is-invalid @enderror"
+                id="birth_date"
+                name="birth_date"
+                value="{{ old('birth_date') }}"
+                autocomplete="bday">
             @error('birth_date')
-                <div class="invalid-feedback">
-                    <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
-                </div>
+            <div class="invalid-feedback">
+                <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
+            </div>
             @enderror
         </div>
 
@@ -156,16 +162,16 @@
                         <i class="fas fa-city me-2"></i>Ville
                     </label>
                     <input type="text"
-                           class="form-control @error('city') is-invalid @enderror"
-                           id="city"
-                           name="city"
-                           value="{{ old('city') }}"
-                           autocomplete="address-level2"
-                           placeholder="Votre ville">
+                        class="form-control @error('city') is-invalid @enderror"
+                        id="city"
+                        name="city"
+                        value="{{ old('city') }}"
+                        autocomplete="address-level2"
+                        placeholder="Votre ville">
                     @error('city')
-                        <div class="invalid-feedback">
-                            <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
-                        </div>
+                    <div class="invalid-feedback">
+                        <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
+                    </div>
                     @enderror
                 </div>
             </div>
@@ -175,9 +181,9 @@
                         <i class="fas fa-globe me-2"></i>Pays
                     </label>
                     <select class="form-select @error('country') is-invalid @enderror"
-                            id="country"
-                            name="country"
-                            autocomplete="country">
+                        id="country"
+                        name="country"
+                        autocomplete="country">
                         <option value="">Sélectionnez un pays</option>
                         <option value="TN" {{ old('country') == 'TN' ? 'selected' : '' }}>Tunisie</option>
                         <option value="FR" {{ old('country') == 'FR' ? 'selected' : '' }}>France</option>
@@ -192,9 +198,9 @@
                         <option value="CI" {{ old('country') == 'CI' ? 'selected' : '' }}>Côte d'Ivoire</option>
                     </select>
                     @error('country')
-                        <div class="invalid-feedback">
-                            <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
-                        </div>
+                    <div class="invalid-feedback">
+                        <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
+                    </div>
                     @enderror
                 </div>
             </div>
@@ -207,19 +213,19 @@
             </label>
             <div class="input-group">
                 <input type="password"
-                       class="form-control @error('password') is-invalid @enderror"
-                       id="password"
-                       name="password"
-                       required
-                       autocomplete="new-password"
-                       placeholder="Minimum 8 caractères">
+                    class="form-control @error('password') is-invalid @enderror"
+                    id="password"
+                    name="password"
+                    required
+                    autocomplete="new-password"
+                    placeholder="Minimum 8 caractères">
                 <span class="input-group-text password-toggle" onclick="togglePassword('password')">
                     <i class="fas fa-eye" id="password-icon"></i>
                 </span>
                 @error('password')
-                    <div class="invalid-feedback">
-                        <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
-                    </div>
+                <div class="invalid-feedback">
+                    <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
+                </div>
                 @enderror
             </div>
             <small class="form-text text-muted">
@@ -235,19 +241,19 @@
             </label>
             <div class="input-group">
                 <input type="password"
-                       class="form-control @error('password_confirmation') is-invalid @enderror"
-                       id="password_confirmation"
-                       name="password_confirmation"
-                       required
-                       autocomplete="new-password"
-                       placeholder="Répétez votre mot de passe">
+                    class="form-control @error('password_confirmation') is-invalid @enderror"
+                    id="password_confirmation"
+                    name="password_confirmation"
+                    required
+                    autocomplete="new-password"
+                    placeholder="Répétez votre mot de passe">
                 <span class="input-group-text password-toggle" onclick="togglePassword('password_confirmation')">
                     <i class="fas fa-eye" id="password_confirmation-icon"></i>
                 </span>
                 @error('password_confirmation')
-                    <div class="invalid-feedback">
-                        <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
-                    </div>
+                <div class="invalid-feedback">
+                    <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
+                </div>
                 @enderror
             </div>
         </div>
@@ -288,86 +294,84 @@
 
 @push('scripts')
 <script>
-function togglePassword(fieldId) {
-    const field = document.getElementById(fieldId);
-    const icon = document.getElementById(fieldId + '-icon');
+    function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        const icon = document.getElementById(fieldId + '-icon');
 
-    if (field.type === 'password') {
-        field.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-    } else {
-        field.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-    }
-}
-
-// Auto-generate name field from first_name and last_name
-function updateNameField() {
-    const firstName = document.getElementById('first_name').value;
-    const lastName = document.getElementById('last_name').value;
-    const nameField = document.getElementById('name');
-
-    if (firstName && lastName) {
-        nameField.value = firstName + ' ' + lastName;
-    } else if (firstName) {
-        nameField.value = firstName;
-    } else if (lastName) {
-        nameField.value = lastName;
-    }
-}
-
-// Show/hide organizer information
-function toggleOrganizerInfo() {
-    const organizerInfo = document.getElementById('organizerInfo');
-    const organizerRadio = document.getElementById('role_organizer');
-    
-    if (organizerRadio.checked) {
-        organizerInfo.style.display = 'block';
-    } else {
-        organizerInfo.style.display = 'none';
-    }
-}
-
-
-// Form validation 
-document.getElementById('registerForm').addEventListener('submit', function(e) {
-    const firstName = document.getElementById('first_name').value;
-    const lastName = document.getElementById('last_name').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const passwordConfirmation = document.getElementById('password_confirmation').value;
-    const terms = document.getElementById('terms').checked;
-
-    if (!firstName || !lastName || !email || !password || !passwordConfirmation) {
-        e.preventDefault();
-        alert('Veuillez remplir tous les champs obligatoires.');
-        return;
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
     }
 
-    if (password !== passwordConfirmation) {
-        e.preventDefault();
-        alert('Les mots de passe ne correspondent pas.');
-        return;
+    // Auto-generate name field from first_name and last_name
+    function updateNameField() {
+        const firstName = document.getElementById('first_name').value;
+        const lastName = document.getElementById('last_name').value;
+        const nameField = document.getElementById('name');
+
+        if (firstName && lastName) {
+            nameField.value = firstName + ' ' + lastName;
+        } else if (firstName) {
+            nameField.value = firstName;
+        } else if (lastName) {
+            nameField.value = lastName;
+        }
     }
 
-    if (!terms) {
-        e.preventDefault();
-        alert('Vous devez accepter les conditions d\'utilisation.');
-        return;
+    // Show/hide organizer information
+    function toggleOrganizerInfo() {
+        const organizerInfo = document.getElementById('organizerInfo');
+        const organizerRadio = document.getElementById('role_organizer');
+
+        if (organizerRadio.checked) {
+            organizerInfo.style.display = 'block';
+        } else {
+            organizerInfo.style.display = 'none';
+        }
     }
 
-    // Update name field before submission
-    updateNameField();
-});
-// Initialize name field and organizer info on page load
-document.addEventListener('DOMContentLoaded', function() {
-    updateNameField();
-    toggleOrganizerInfo();
-});
 
+    // Form validation 
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        const firstName = document.getElementById('first_name').value;
+        const lastName = document.getElementById('last_name').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const passwordConfirmation = document.getElementById('password_confirmation').value;
+        const terms = document.getElementById('terms').checked;
 
+        if (!firstName || !lastName || !email || !password || !passwordConfirmation) {
+            e.preventDefault();
+            alert('Veuillez remplir tous les champs obligatoires.');
+            return;
+        }
+
+        if (password !== passwordConfirmation) {
+            e.preventDefault();
+            alert('Les mots de passe ne correspondent pas.');
+            return;
+        }
+
+        if (!terms) {
+            e.preventDefault();
+            alert('Vous devez accepter les conditions d\'utilisation.');
+            return;
+        }
+
+        // Update name field before submission
+        updateNameField();
+    });
+    // Initialize name field and organizer info on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateNameField();
+        toggleOrganizerInfo();
+    });
 </script>
 @endpush
 @endsection

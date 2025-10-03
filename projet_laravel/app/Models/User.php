@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -62,9 +63,9 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     public function events(): HasMany
-{
-    return $this->hasMany(Event::class);
-}
+    {
+        return $this->hasMany(Event::class);
+    }
 
     /**
      * Get the user's profile.
@@ -101,9 +102,7 @@ class User extends Authenticatable implements MustVerifyEmail
             return Storage::url($this->profile->avatar);
         }
 
-        // Utiliser le nom complet si disponible, sinon le nom d'utilisateur
-        $name = $this->getFullNameFromFieldsAttribute();
-        return 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&color=ffffff&background=2d5a27&size=200';
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
     }
 
     /**
@@ -122,6 +121,19 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role === 'user';
     }
 
+       /**
+     * Check if user is auteur.
+     */
+    public function isAuteur(): bool
+    {
+        return $this->role === 'auteur';
+    }
+
+    public function isCampaignOwner(Campaign $campaign)
+{
+    return $this->id === $campaign->organizer_id;
+}
+
     /**
      * Get user's full name from first_name and last_name.
      */
@@ -135,8 +147,8 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-    * Check if user is organizer.
-    */
+     * Check if user is organizer.
+     */
     public function isOrganizer(): bool
     {
         return $this->role === 'organizer';
@@ -150,7 +162,49 @@ class User extends Authenticatable implements MustVerifyEmail
         if (is_array($roles)) {
             return in_array($this->role, $roles);
         }
-        
+
         return $this->role === $roles;
     }
+
+    /**
+     * Get the sponsor record associated with the user.
+     */
+    public function sponsor(): HasOne
+    {
+        return $this->hasOne(Sponsor::class);
+    }
+    public function waitingLists(): HasMany
+    {
+        return $this->hasMany(WaitingList::class);
+    }
+
+    /**
+     * Get the user's reservations.
+     */
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
+    /**
+     * Get the user's certifications through reservations.
+     */
+    public function certifications()
+    {
+        return $this->hasManyThrough(Certification::class, Reservation::class);
+    }
+
+      /**
+     * Relation avec les blogs créés par l'utilisateur
+     */
+    public function blogs()
+    {
+        return $this->hasMany(Blog::class, 'author_id');
+    }
+    
+        // Relation avec les reviews postés par l'utilisateur
+        public function reviews()
+        {
+            return $this->hasMany(Review::class);
+        }
 }

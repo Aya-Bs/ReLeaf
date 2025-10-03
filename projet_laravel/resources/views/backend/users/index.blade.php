@@ -48,7 +48,7 @@
                         </div>
                     </div>
                     <div class="col-md-6 text-right">
-                        <span class="badge badge-info">{{ $users->total() }} utilisateur(s) trouvé(s)</span>
+                        <span class="badge badge-info">{{ $users->total() }} utilisateur(s) régulier(s)</span>
                     </div>
                 </div>
             </div>
