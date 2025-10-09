@@ -75,39 +75,92 @@ class ResourceController extends Controller
         return view('frontend.resources.show', compact('resource'));
     }
 
+/**
+     * Show the form for editing the specified resource.
+     */
     public function edit(Resource $resource)
     {
+        // ✅ CORRIGÉ : Même pattern que EventController et CampaignController
+        if (!$resource->canBeEdited()) {
+            return redirect()->route('resources.index')->with('error', 'Cette ressource ne peut pas être modifiée.');
+        }
+
         $campaigns = Campaign::where('status', 'active')->get();
         return view('frontend.resources.edit', compact('resource', 'campaigns'));
     }
 
-    public function update(UpdateResourceRequest $request, Resource $resource)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Resource $resource)
     {
-        $validated = $request->validated();
-
-        // Gestion de la suppression d'image
-        if ($request->has('remove_image') && $resource->image_url) {
-            Storage::disk('public')->delete($resource->image_url);
-            $validated['image_url'] = null;
+        // ✅ CORRIGÉ : Même pattern que EventController et CampaignController
+        if (!$resource->canBeEdited()) {
+            return redirect()->route('resources.index')->with('error', 'Cette ressource ne peut pas être modifiée.');
         }
 
-        // Gestion du nouvel upload d'image
-        if ($request->hasFile('image')) {
-            // Supprimer l'ancienne image
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'campaign_id' => 'required|exists:campaigns,id',
+            'provider' => 'nullable|string|max:255',
+            'quantity_needed' => 'required|integer|min:1',
+            'quantity_pledged' => 'nullable|integer|min:0',
+            'unit' => 'required|string|max:50',
+            'resource_type' => 'required|in:money,food,clothing,medical,equipment,human,other',
+            'category' => 'required|in:materiel,financier,humain,technique',
+            'priority' => 'required|in:low,medium,high,urgent',
+            'status' => 'required|in:needed,pledged,received,in_use',
+            'notes' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        // Préparer les données pour la mise à jour
+        $updateData = [
+            'name' => $request->name,
+            'description' => $request->description,
+            'campaign_id' => $request->campaign_id,
+            'provider' => $request->provider,
+            'quantity_needed' => $request->quantity_needed,
+            'quantity_pledged' => $request->quantity_pledged ?? 0,
+            'unit' => $request->unit,
+            'resource_type' => $request->resource_type,
+            'category' => $request->category,
+            'priority' => $request->priority,
+            'status' => $request->status,
+            'notes' => $request->notes,
+        ];
+
+        // Gestion de la suppression d'image
+        if ($request->has('remove_image') && $request->remove_image == '1') {
             if ($resource->image_url) {
                 Storage::disk('public')->delete($resource->image_url);
             }
-            $validated['image_url'] = $request->file('image')->store('resources', 'public');
+            $updateData['image_url'] = null;
         }
 
-        $resource->update($validated);
+        // Gestion de l'upload d'image
+        if ($request->hasFile('image')) {
+            // Supprimer l'ancienne image si elle existe
+            if ($resource->image_url) {
+                Storage::disk('public')->delete($resource->image_url);
+            }
+            $updateData['image_url'] = $request->file('image')->store('resources', 'public');
+        }
 
-        return redirect()->route('resources.index')
+        $resource->update($updateData);
+
+        return redirect()->route('resources.show', $resource)
             ->with('success', 'Ressource mise à jour avec succès.');
     }
 
     public function destroy(Resource $resource)
     {
+        // ✅ CORRIGÉ : Même pattern
+        if (!$resource->canBeEdited()) {
+            return redirect()->route('resources.index')->with('error', 'Cette ressource ne peut pas être supprimée.');
+        }
+
         // Supprimer l'image associée
         if ($resource->image_url) {
             Storage::disk('public')->delete($resource->image_url);

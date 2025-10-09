@@ -14,6 +14,15 @@
                 <a href="{{ route('profile.edit.extended') }}" class="btn btn-eco">
                     <i class="fas fa-edit me-2"></i>Modifier
                 </a>
+                @if($user->role === 'sponsor' && $user->sponsor)
+                @if($user->sponsor->isDeletionRequested())
+                <span class="badge bg-warning text-dark ms-2"><i class="fas fa-clock me-1"></i>Suppression demandée</span>
+                @else
+                <button type="button" class="btn btn-outline-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteSponsorRequestModal">
+                    <i class="fas fa-user-slash me-1"></i>Demander suppression
+                </button>
+                @endif
+                @endif
             </div>
 
             <div class="row">
@@ -22,17 +31,17 @@
                     <div class="card eco-card">
                         <div class="card-body text-center">
                             <div class="mb-3">
-                                <img src="{{ $user->avatar_url }}" alt="Avatar" 
-                                     class="rounded-circle img-thumbnail" 
-                                     width="120" height="120">
+                                <img src="{{ $user->avatar_url }}" alt="Avatar"
+                                    class="rounded-circle img-thumbnail"
+                                    width="120" height="120">
                             </div>
                             <h4 class="card-title">{{ $user->full_name }}</h4>
                             <p class="text-muted">{{ $user->email }}</p>
-                            
+
                             @if($user->profile && $user->profile->is_eco_ambassador)
-                                <span class="badge bg-success">
-                                    <i class="fas fa-leaf me-1"></i>Ambassadeur Écologique
-                                </span>
+                            <span class="badge bg-success">
+                                <i class="fas fa-leaf me-1"></i>Ambassadeur Écologique
+                            </span>
                             @endif
                             
                             @if($user->isVolunteer())
@@ -81,20 +90,20 @@
                                         <br>
                                         <small class="text-muted">
                                             @if($user->two_factor_enabled)
-                                                Activé
+                                            Activé
                                             @else
-                                                Non activé
+                                            Non activé
                                             @endif
                                         </small>
                                     </div>
                                     @if($user->two_factor_enabled)
-                                        <span class="badge bg-success rounded-pill">
-                                            <i class="fas fa-check"></i>
-                                        </span>
+                                    <span class="badge bg-success rounded-pill">
+                                        <i class="fas fa-check"></i>
+                                    </span>
                                     @else
-                                        <a href="{{ route('2fa.setup') }}" class="btn btn-sm btn-eco">
-                                            Activer
-                                        </a>
+                                    <a href="{{ route('2fa.setup') }}" class="btn btn-sm btn-eco">
+                                        Activer
+                                    </a>
                                     @endif
                                 </li>
                             </ul>
@@ -102,18 +111,18 @@
                     </div>
 
                     @if($user->profile && $user->profile->interests)
-                        <div class="card eco-card mt-3">
-                            <div class="card-header">
-                                <h6 class="mb-0">
-                                    <i class="fas fa-heart me-2"></i>Centres d'intérêt
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                @foreach($user->profile->interests as $interest)
-                                    <span class="badge bg-light text-dark me-1 mb-1">{{ $interest }}</span>
-                                @endforeach
-                            </div>
+                    <div class="card eco-card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-heart me-2"></i>Centres d'intérêt
+                            </h6>
                         </div>
+                        <div class="card-body">
+                            @foreach($user->profile->interests as $interest)
+                            <span class="badge bg-light text-dark me-1 mb-1">{{ $interest }}</span>
+                            @endforeach
+                        </div>
+                    </div>
                     @endif
                 </div>
 
@@ -184,28 +193,28 @@
                             </div>
 
                             @if($user->profile && $user->profile->bio)
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Biographie</label>
-                                    <p class="form-control-plaintext">{{ $user->profile->bio }}</p>
-                                </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Biographie</label>
+                                <p class="form-control-plaintext">{{ $user->profile->bio }}</p>
+                            </div>
                             @endif
 
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Préférences de notification</label>
                                 <p class="form-control-plaintext">
                                     @switch($user->profile->notification_preferences ?? 'email')
-                                        @case('email')
-                                            <i class="fas fa-envelope me-1"></i>Email uniquement
-                                            @break
-                                        @case('sms')
-                                            <i class="fas fa-sms me-1"></i>SMS uniquement
-                                            @break
-                                        @case('both')
-                                            <i class="fas fa-envelope me-1"></i><i class="fas fa-sms me-1"></i>Email et SMS
-                                            @break
-                                        @case('none')
-                                            <i class="fas fa-bell-slash me-1"></i>Aucune notification
-                                            @break
+                                    @case('email')
+                                    <i class="fas fa-envelope me-1"></i>Email uniquement
+                                    @break
+                                    @case('sms')
+                                    <i class="fas fa-sms me-1"></i>SMS uniquement
+                                    @break
+                                    @case('both')
+                                    <i class="fas fa-envelope me-1"></i><i class="fas fa-sms me-1"></i>Email et SMS
+                                    @break
+                                    @case('none')
+                                    <i class="fas fa-bell-slash me-1"></i>Aucune notification
+                                    @break
                                     @endswitch
                                 </p>
                             </div>
@@ -221,23 +230,95 @@
                         </div>
                         <div class="card-body">
                             <div class="row text-center">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="border-end">
-                                        <h4 class="text-eco">0</h4>
+                                        <h4 class="text-eco">{{ $stats['events_created'] }}</h4>
                                         <small class="text-muted">Événements créés</small>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="border-end">
-                                        <h4 class="text-eco">0</h4>
+                                        <h4 class="text-eco">{{ $stats['participations'] }}</h4>
                                         <small class="text-muted">Participations</small>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <h4 class="text-eco">{{ $user->created_at->diffInDays() }}</h4>
+                                <div class="col-md-3">
+                                    <div class="border-end">
+                                        <h4 class="text-eco">{{ $stats['certificates_earned'] }}</h4>
+                                        <small class="text-muted">Certificats obtenus</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <h4 class="text-eco">{{ $stats['days_on_platform'] }}</h4>
                                     <small class="text-muted">Jours sur la plateforme</small>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Certificats -->
+                    <div class="card eco-card mt-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-certificate me-2"></i>Mes Certificats
+                            </h5>
+                            <div class="btn-group">
+                                <a href="{{ route('certificates.verify') }}" class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-search me-1"></i>Vérifier Certificat
+                                </a>
+                                @if($certifications->count() > 0)
+                                    <a href="{{ route('user.certificates.index') }}" class="btn btn-sm btn-outline-eco">
+                                        <i class="fas fa-eye me-1"></i>Voir tous
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            @if($certifications->count() > 0)
+                                <div class="row">
+                                    @foreach($certifications->take(3) as $certification)
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card border-eco h-100">
+                                                <div class="card-body text-center">
+                                                    <div class="mb-2">
+                                                        <i class="fas fa-certificate fa-2x text-eco"></i>
+                                                    </div>
+                                                    <h6 class="card-title">{{ $certification->reservation->event->title }}</h6>
+                                                    <p class="card-text small text-muted">
+                                                        {{ $certification->date_awarded->format('d/m/Y') }}
+                                                    </p>
+                                                    <div class="d-flex gap-1 justify-content-center">
+                                                        <a href="{{ route('user.certificates.view', $certification->certificate_code) }}" 
+                                                           class="btn btn-sm btn-outline-eco" title="Voir">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a href="{{ route('user.certificates.download', $certification->certificate_code) }}" 
+                                                           class="btn btn-sm btn-eco" title="Télécharger">
+                                                            <i class="fas fa-download"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                @if($certifications->count() > 3)
+                                    <div class="text-center mt-3">
+                                        <a href="{{ route('user.certificates.index') }}" class="btn btn-outline-eco">
+                                            <i class="fas fa-plus me-1"></i>Voir {{ $certifications->count() - 3 }} certificats supplémentaires
+                                        </a>
+                                    </div>
+                                @endif
+                            @else
+                                <div class="text-center py-4">
+                                    <i class="fas fa-certificate fa-3x text-muted mb-3"></i>
+                                    <h6 class="text-muted">Aucun certificat obtenu</h6>
+                                    <p class="text-muted small">Participez à des événements pour obtenir vos premiers certificats !</p>
+                                    <a href="{{ route('events.index') }}" class="btn btn-eco">
+                                        <i class="fas fa-calendar me-1"></i>Voir les événements
+                                    </a>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -245,6 +326,37 @@
         </div>
     </div>
 </div>
+
+@if($user->role === 'sponsor' && $user->sponsor && !$user->sponsor->isDeletionRequested())
+<!-- Modal demande suppression sponsor -->
+<div class="modal fade" id="deleteSponsorRequestModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('sponsor.self.requestDeletion') }}">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user-slash text-danger me-2"></i>Demande de suppression sponsor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted">Expliquez la raison de votre demande. Cette action devra être validée par un administrateur.</p>
+                    <div class="mb-3">
+                        <label class="form-label">Raison (min 10 caractères)</label>
+                        <textarea name="reason" rows="4" class="form-control" required minlength="10" placeholder="Raison de la suppression..."></textarea>
+                    </div>
+                    <div class="alert alert-warning small mb-0">
+                        <i class="fas fa-info-circle me-1"></i>Votre compte sponsor restera actif tant que l'admin n'aura pas confirmé.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button class="btn btn-danger"><i class="fas fa-paper-plane me-1"></i>Envoyer la demande</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 
 @push('styles')
 <style>
@@ -258,6 +370,15 @@
     border-color: #234420;
     color: white;
 }
+.btn-outline-eco {
+    color: #2d5a27;
+    border-color: #2d5a27;
+}
+.btn-outline-eco:hover {
+    background-color: #2d5a27;
+    border-color: #2d5a27;
+    color: white;
+}
 .text-eco {
     color: #2d5a27;
 }
@@ -268,6 +389,16 @@
 }
 .eco-card:hover {
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+.border-eco {
+    border-color: #2d5a27 !important;
+}
+.card.border-eco {
+    border: 1px solid #2d5a27;
+    transition: all 0.3s ease;
+}
+.card.border-eco:hover {
+    box-shadow: 0 0.25rem 0.5rem rgba(45, 90, 39, 0.2);
 }
 </style>
 @endpush
