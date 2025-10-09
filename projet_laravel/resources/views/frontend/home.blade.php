@@ -15,13 +15,27 @@
                     Rejoignez la communauté pour organiser et promouvoir des événements
                     autour de l'écologie et du développement durable.
                 </p>
-                <div class="d-flex gap-3">
+                <div class="d-flex gap-3 flex-wrap">
                     <a href="{{ route('profile.show') }}" class="btn btn-success btn-lg">
                         <i class="fas fa-user-circle me-2"></i>Mon Profil
                     </a>
-                    <a href="{{ route('backend.dashboard') }}" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-cog me-2"></i>Administration
-                    </a>
+                    @if(auth()->user()->isVolunteer())
+                        <a href="{{ route('volunteers.show', auth()->user()->volunteer) }}" class="btn btn-warning btn-lg">
+                            <i class="fas fa-hands-helping me-2"></i>Mon Profil Volontaire
+                        </a>
+                        <a href="{{ route('assignments.index') }}" class="btn btn-info btn-lg">
+                            <i class="fas fa-tasks me-2"></i>Mes Missions
+                        </a>
+                    @else
+                        <a href="{{ route('volunteers.create') }}" class="btn btn-warning btn-lg">
+                            <i class="fas fa-hands-helping me-2"></i>Devenir Volontaire
+                        </a>
+                    @endif
+                    @if(auth()->user()->isAdmin())
+                        <a href="{{ route('backend.dashboard') }}" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-cog me-2"></i>Administration
+                        </a>
+                    @endif
                 </div>
             </div>
             <div class="col-lg-6">

@@ -34,6 +34,25 @@
                                     <i class="fas fa-leaf me-1"></i>Ambassadeur Écologique
                                 </span>
                             @endif
+                            
+                            @if($user->isVolunteer())
+                                <div class="mt-2">
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-hands-helping me-1"></i>Volontaire
+                                    </span>
+                                    <div class="mt-2">
+                                        <a href="{{ route('volunteers.show', $user->volunteer) }}" class="btn btn-sm btn-outline-warning">
+                                            <i class="fas fa-eye me-1"></i>Voir mon profil volontaire
+                                        </a>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="mt-2">
+                                    <a href="{{ route('volunteers.create') }}" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-hands-helping me-1"></i>Devenir Volontaire
+                                    </a>
+                                </div>
+                            @endif
                         </div>
                     </div>
 

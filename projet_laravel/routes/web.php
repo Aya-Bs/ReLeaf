@@ -8,7 +8,9 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Backend\CampaignController;
 use App\Http\Controllers\Backend\ResourceController;
-use App\Http\Controllers\Backend\EventController; 
+use App\Http\Controllers\Backend\EventController;
+use App\Http\Controllers\VolunteerController;
+use App\Http\Controllers\AssignmentController; 
 
 /*
 |--------------------------------------------------------------------------
@@ -123,6 +125,47 @@ Route::middleware(['auth'])->group(function () {
              ->name('pledge');
         Route::get('/high-priority', [ResourceController::class, 'highPriority'])
              ->name('high-priority');
+    });
+
+    // Redirections conviviales pour anciens liens
+    Route::get('/home/volunteers', fn() => redirect()->route('volunteers.index'))->name('home.volunteers');
+    Route::get('/volunteer', fn() => redirect()->route('volunteers.index'));
+    Route::get('/assignement', fn() => redirect()->route('assignments.index'));
+
+    // ROUTES VOLUNTEERS
+    Route::prefix('volunteers')->name('volunteers.')->group(function () {
+        Route::get('/', [VolunteerController::class, 'index'])->name('index');
+        Route::get('/create', [VolunteerController::class, 'create'])->name('create');
+        Route::post('/', [VolunteerController::class, 'store'])->name('store');
+        Route::get('/{volunteer}', [VolunteerController::class, 'show'])->name('show');
+        Route::get('/{volunteer}/edit', [VolunteerController::class, 'edit'])->name('edit');
+        Route::put('/{volunteer}', [VolunteerController::class, 'update'])->name('update');
+        Route::delete('/{volunteer}', [VolunteerController::class, 'destroy'])->name('destroy');
+
+        // Actions spécifiques
+        Route::get('/assignments/available', [VolunteerController::class, 'availableAssignments'])->name('assignments.available');
+        Route::post('/apply', [VolunteerController::class, 'apply'])->name('apply');
+    });
+
+    // ROUTES ASSIGNMENTS
+    Route::prefix('assignments')->name('assignments.')->group(function () {
+        Route::get('/', [AssignmentController::class, 'index'])->name('index');
+        Route::get('/create', [AssignmentController::class, 'create'])->name('create');
+        Route::post('/', [AssignmentController::class, 'store'])->name('store');
+        Route::get('/{assignment}', [AssignmentController::class, 'show'])->name('show');
+        Route::get('/{assignment}/edit', [AssignmentController::class, 'edit'])->name('edit');
+        Route::put('/{assignment}', [AssignmentController::class, 'update'])->name('update');
+        Route::delete('/{assignment}', [AssignmentController::class, 'destroy'])->name('destroy');
+
+        // Actions
+        Route::post('/{assignment}/approve', [AssignmentController::class, 'approve'])->name('approve');
+        Route::post('/{assignment}/reject', [AssignmentController::class, 'reject'])->name('reject');
+        Route::post('/{assignment}/complete', [AssignmentController::class, 'complete'])->name('complete');
+        Route::post('/{assignment}/cancel', [AssignmentController::class, 'cancel'])->name('cancel');
+        Route::post('/{assignment}/update-hours', [AssignmentController::class, 'updateHours'])->name('update-hours');
+
+        // Lister par entité assignable (Event/Campaign)
+        Route::get('/{type}/{id}', [AssignmentController::class, 'forAssignable'])->name('for-assignable');
     });
 });
 

@@ -100,6 +100,28 @@
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-hands-helping me-1"></i>Volontaires
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ route('volunteers.index') }}">
+                                    <i class="fas fa-users me-2"></i>Tous les volontaires
+                                </a></li>
+                                @if(auth()->user()->isVolunteer())
+                                    <li><a class="dropdown-item" href="{{ route('volunteers.show', auth()->user()->volunteer) }}">
+                                        <i class="fas fa-user me-2"></i>Mon profil volontaire
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="{{ route('assignments.index') }}">
+                                        <i class="fas fa-tasks me-2"></i>Mes missions
+                                    </a></li>
+                                @else
+                                    <li><a class="dropdown-item" href="{{ route('volunteers.create') }}">
+                                        <i class="fas fa-plus me-2"></i>Devenir volontaire
+                                    </a></li>
+                                @endif
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-user me-1"></i>Mon Profil
                             </a>
                             <ul class="dropdown-menu">

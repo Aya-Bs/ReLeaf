@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Campaign extends Model
 {
@@ -94,5 +95,33 @@ class Campaign extends Model
     {
         $this->participants_count = $this->events->sum('max_participants');
         $this->save();
+    }
+
+    /**
+     * Get all assignments for this campaign.
+     */
+    public function assignments(): MorphMany
+    {
+        return $this->morphMany(Assignment::class, 'assignable');
+    }
+
+    /**
+     * Get approved volunteers for this campaign.
+     */
+    public function volunteers()
+    {
+        return $this->assignments()
+            ->where('status', 'approved')
+            ->with('volunteer.user');
+    }
+
+    /**
+     * Get pending volunteer applications for this campaign.
+     */
+    public function pendingVolunteers()
+    {
+        return $this->assignments()
+            ->where('status', 'pending')
+            ->with('volunteer.user');
     }
 }
