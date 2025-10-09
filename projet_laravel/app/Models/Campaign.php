@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Campaign extends Model
 {
@@ -94,5 +95,27 @@ class Campaign extends Model
     {
         $this->participants_count = $this->events->sum('max_participants');
         $this->save();
+    }
+
+     /**
+     * Vérifier si la campagne peut être modifiée
+     * ✅ AJOUTÉ : Même pattern que Event
+     */
+    public function canBeEdited()
+    {
+        // Exemple de logique : les campagnes "completed" ou "cancelled" ne peuvent pas être modifiées
+        // Ajustez cette logique selon vos besoins
+        return !in_array($this->status, ['completed', 'cancelled']);
+    }
+
+    /**
+     * Vérifier si la campagne peut être supprimée
+     * ✅ AJOUTÉ : Logique supplémentaire pour la suppression
+     */
+    public function canBeDeleted()
+    {
+        // Exemple : les campagnes avec des ressources ou événements ne peuvent pas être supprimées
+        // Ajustez cette logique selon vos besoins
+        return $this->resources->isEmpty() && $this->events->isEmpty();
     }
 }

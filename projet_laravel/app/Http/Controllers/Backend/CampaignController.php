@@ -23,6 +23,9 @@ class CampaignController extends Controller
 
     public function create()
     {
+        if (!Auth::user()->isOrganizer()) {
+            return redirect()->route('dashboard')->with('error', 'Accès non autorisé.');
+        }
         return view('frontend.campaigns.create');
     }
 
@@ -55,26 +58,64 @@ class CampaignController extends Controller
 
     public function edit(Campaign $campaign)
     {
-        // Vérifier que l'utilisateur peut éditer cette campagne
-        if (Auth::id() !== $campaign->organizer_id) {
-            abort(403, "Vous n'êtes pas autorisé à modifier cette campagne.");
+        // ✅ CORRIGÉ : Même pattern que EventController
+        if ($campaign->organizer_id !== Auth::id()) {
+            return redirect()->route('campaigns.index')->with('error', 'Cette campagne ne peut pas être modifiée.');
         }
 
         return view('frontend.campaigns.edit', compact('campaign'));
     }
 
-    public function update(UpdateCampaignRequest $request, Campaign $campaign)
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Campaign $campaign)
     {
-        // Vérifier que l'utilisateur est le créateur de la campagne OU un admin
-        if (Auth::id() !== $campaign->organizer_id) {
-            abort(403, "Vous n'êtes pas autorisé à modifier cette campagne.");
+        // ✅ CORRIGÉ : Même pattern que EventController
+        if ($campaign->organizer_id !== Auth::id()) {
+            return redirect()->route('campaigns.index')->with('error', 'Cette campagne ne peut pas être modifiée.');
         }
 
-        $validated = $request->validated();
-        
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'category' => 'required|string',
+            'status' => 'required|string',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'goal' => 'nullable|numeric|min:0',
+            'funds_raised' => 'nullable|numeric|min:0',
+            'environmental_impact' => 'nullable|string|max:255',
+            'tags' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'visibility' => 'nullable|boolean',
+        ]);
+
+        // Préparer les données pour la mise à jour
+        $updateData = [
+            'name' => $request->name,
+            'description' => $request->description,
+            'category' => $request->category,
+            'status' => $request->status,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'goal' => $request->goal,
+            'funds_raised' => $request->funds_raised,
+            'environmental_impact' => $request->environmental_impact,
+            'visibility' => $request->has('visibility') ? true : false,
+        ];
+
         // Convertir les tags de string en array
-        if (isset($validated['tags']) && is_string($validated['tags'])) {
-            $validated['tags'] = $this->parseTags($validated['tags']);
+        if ($request->has('tags') && is_string($request->tags)) {
+            $updateData['tags'] = $this->parseTags($request->tags);
+        }
+
+        // Gestion de la suppression d'image
+        if ($request->has('remove_image') && $request->remove_image == '1') {
+            if ($campaign->image_url) {
+                Storage::disk('public')->delete($campaign->image_url);
+            }
+            $updateData['image_url'] = null;
         }
 
         // Gestion de l'upload d'image
@@ -83,12 +124,12 @@ class CampaignController extends Controller
             if ($campaign->image_url) {
                 Storage::disk('public')->delete($campaign->image_url);
             }
-            $validated['image_url'] = $request->file('image')->store('campaigns', 'public');
+            $updateData['image_url'] = $request->file('image')->store('campaigns', 'public');
         }
 
-        $campaign->update($validated);
+        $campaign->update($updateData);
 
-        return redirect()->route('campaigns.index')
+        return redirect()->route('campaigns.show', $campaign)
             ->with('success', 'Campagne mise à jour avec succès.');
     }
 
@@ -110,9 +151,9 @@ class CampaignController extends Controller
 
     public function destroy(Campaign $campaign)
     {
-        // Vérifier les autorisations
-        if (Auth::id() !== $campaign->organizer_id) {
-            abort(403, "Vous n'êtes pas autorisé à supprimer cette campagne.");
+        // ✅ CORRIGÉ : Même pattern
+        if ($campaign->organizer_id !== Auth::id() || !$campaign->canBeEdited()) {
+            return redirect()->route('campaigns.index')->with('error', 'Cette campagne ne peut pas être supprimée.');
         }
 
         // Supprimer l'image associée
@@ -122,7 +163,7 @@ class CampaignController extends Controller
 
         $campaign->delete();
 
-        return redirect()->route('campaigns.index')  // ✅ Corrigé : 'campaigns.index' au lieu de 'frontend.campaigns.index'
+        return redirect()->route('campaigns.index')
             ->with('success', 'Campagne supprimée avec succès.');
     }
 

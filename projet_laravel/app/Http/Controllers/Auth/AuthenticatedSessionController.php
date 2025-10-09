@@ -36,6 +36,11 @@ class AuthenticatedSessionController extends Controller
                 ->with('success', 'Bienvenue sur votre tableau de bord administrateur.');
         }
 
+        if ($user->role === 'sponsor') {
+            return redirect()->route('sponsor.dashboard')
+                ->with('success', 'Bienvenue sur votre tableau de bord sponsor.');
+        }
+
         return redirect()->route('home')
             ->with('success', 'Connexion réussie ! Bienvenue sur EcoEvents.');
     }

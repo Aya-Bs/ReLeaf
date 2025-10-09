@@ -98,7 +98,7 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <h6><i class="fas fa-map-marker-alt me-2 text-primary"></i>Lieu</h6>
-                                        <p class="text-muted">{{ $event->location }}</p>
+                                        <p class="text-muted">{{ $event->location ? $event->location->name : 'Inconnu' }}</p>
                                     </div>
 
                                     <div class="mb-3">

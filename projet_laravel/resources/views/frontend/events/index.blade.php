@@ -4,6 +4,7 @@
 
 @section('content')
 <div class="container">
+
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -68,7 +69,7 @@
                                         <h6 class="card-title">{{ $event->title }}</h6>
                                         <p class="card-text small text-muted">
                                             <i class="fas fa-calendar me-1"></i>{{ $event->date->format('d/m/Y H:i') }}<br>
-                                            <i class="fas fa-map-marker-alt me-1"></i>{{ $event->location }}
+                                            <i class="fas fa-map-marker-alt me-1"></i>{{ $event->location ? $event->location->name : '' }}
                                         </p>
                                         <span class="badge bg-warning">En attente</span>
                                     </div>
@@ -117,7 +118,7 @@
                                     <tr>
                                         <td>{{ $event->title }}</td>
                                         <td>{{ $event->date->format('d/m/Y H:i') }}</td>
-                                        <td>{{ $event->location }}</td>
+                                        <td>{{ $event->location ? $event->location->name : '' }}</td>
                                         <td>
                                             @if($event->isDraft())
                                                 <span class="badge bg-secondary">Brouillon</span>
@@ -137,6 +138,30 @@
                                                 <a href="{{ route('events.show', $event) }}" class="btn btn-outline-info">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
+
+                                                <!-- Reserve Button - Only show for published events -->
+                                                @if($event->isPublished())
+                                                    @php
+                                                        // Vérifier si l'utilisateur a une réservation pour cet événement
+                                                        $userReservation = $event->reservations->first();
+                                                    @endphp
+                                                    
+                                                    @if($userReservation)
+                                                        <!-- Bouton "Voir réservation" si l'utilisateur a déjà réservé -->
+                                                        <a href="{{ route('reservations.confirmation', $userReservation) }}" 
+                                                           class="btn btn-outline-primary" 
+                                                           title="Voir ma réservation">
+                                                            <i class="fas fa-ticket-alt"></i>
+                                                        </a>
+                                                    @else
+                                                        <!-- Bouton "Réserver" si l'utilisateur n'a pas encore réservé -->
+                                                        <a href="/events/{{ $event->id }}/seats" 
+                                                           class="btn btn-outline-success" 
+                                                           title="Réserver">
+                                                            <i class="fas fa-calendar-check"></i>
+                                                        </a>
+                                                    @endif
+                                                @endif
 
                                                 <!-- Edit Button - Only show for draft and pending status -->
                                                 @if($event->isDraft() || $event->isPending())

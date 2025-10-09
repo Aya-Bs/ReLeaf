@@ -1,188 +1,274 @@
 @extends('backend.layouts.app')
 
 @section('title', $campaign->name)
+@section('page-title', 'Détails de la campagne')
+
+@section('breadcrumb')
+    <li class="breadcrumb-item"><a href="{{ route('backend.dashboard') }}">Tableau de bord</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('backend.campaigns.index') }}">Campagnes</a></li>
+    <li class="breadcrumb-item active">{{ Str::limit($campaign->name, 30) }}</li>
+@endsection
 
 @section('content')
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Détails de la Campagne: {{ $campaign->name }}</h5>
-                    <div>
-                        <a href="{{ route('campaigns.edit', $campaign) }}" class="btn btn-warning">
-                            <i class="fas fa-edit"></i> Modifier
-                        </a>
-                        <a href="{{ route('campaigns.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Retour
-                        </a>
+            <!-- Back Button -->
+            <div class="mb-4">
+                <a href="{{ route('backend.campaigns.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                </a>
+            </div>
+
+            <!-- Campaign Card -->
+            <div class="card card-eco">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-leaf me-2"></i>{{ $campaign->name }}
+                        </h4>
+                        <div>
+                            @if($campaign->status === 'active')
+                                <span class="badge badge-success">Active</span>
+                            @elseif($campaign->status === 'inactive')
+                                <span class="badge badge-secondary">Inactive</span>
+                            @elseif($campaign->status === 'completed')
+                                <span class="badge badge-primary">Terminée</span>
+                            @elseif($campaign->status === 'cancelled')
+                                <span class="badge badge-danger">Annulée</span>
+                            @else
+                                <span class="badge badge-light">{{ $campaign->status }}</span>
+                            @endif
+                            @if(!$campaign->visibility)
+                                <span class="badge badge-warning ms-1">
+                                    <i class="fas fa-eye-slash me-1"></i>Non visible
+                                </span>
+                            @endif
+                        </div>
                     </div>
                 </div>
+
                 <div class="card-body">
+                    <!-- Campaign Image -->
+                    @if($campaign->image_url)
+                    <div class="mb-4">
+                        <img src="{{ Storage::url($campaign->image_url) }}" 
+                             alt="{{ $campaign->name }}" 
+                             class="img-fluid rounded"
+                             style="max-height: 300px; width: 100%; object-fit: cover;">
+                    </div>
+                    @endif
+
                     <div class="row">
+                        <!-- Left Column - Campaign Details -->
                         <div class="col-md-8">
+                            <!-- Description -->
+                            <div class="mb-4">
+                                <h5><i class="fas fa-align-left me-2 text-primary"></i>Description</h5>
+                                <p class="text-muted">{{ $campaign->description ?? 'Aucune description' }}</p>
+                            </div>
+
+                            <!-- Campaign Details -->
                             <div class="row">
                                 <div class="col-md-6">
-                                    <h6>Informations générales</h6>
-                                    <table class="table table-sm">
-                                        <tr>
-                                            <td><strong>Nom:</strong></td>
-                                            <td>{{ $campaign->name }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Catégorie:</strong></td>
-                                            <td><span class="badge bg-info">{{ $campaign->category }}</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Statut:</strong></td>
-                                            <td><span class="badge bg-{{ $campaign->status == 'active' ? 'success' : 'secondary' }}">{{ $campaign->status }}</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Visibilité:</strong></td>
-                                            <td><span class="badge bg-{{ $campaign->visibility ? 'success' : 'warning' }}">{{ $campaign->visibility ? 'Publique' : 'Privée' }}</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Organisateur:</strong></td>
-                                            <td>{{ $campaign->organizer->name }}</td>
-                                        </tr>
-                                    </table>
+                                    <div class="mb-3">
+                                        <h6><i class="fas fa-folder me-2 text-primary"></i>Catégorie</h6>
+                                        <p class="text-muted">
+                                            @switch($campaign->category)
+                                                @case('reforestation')
+                                                    🌲 Reforestation
+                                                    @break
+                                                @case('nettoyage')
+                                                    🧹 Nettoyage
+                                                    @break
+                                                @case('sensibilisation')
+                                                    📢 Sensibilisation
+                                                    @break
+                                                @case('recyclage')
+                                                    ♻️ Recyclage
+                                                    @break
+                                                @case('biodiversite')
+                                                    🦋 Biodiversité
+                                                    @break
+                                                @case('energie_renouvelable')
+                                                    ⚡ Énergie Renouvelable
+                                                    @break
+                                                @default
+                                                    🔧 {{ $campaign->category }}
+                                            @endswitch
+                                        </p>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <h6><i class="fas fa-calendar-plus me-2 text-primary"></i>Date de début</h6>
+                                        <p class="text-muted">{{ $campaign->start_date->format('d/m/Y') }}</p>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <h6><i class="fas fa-bullseye me-2 text-primary"></i>Objectif financier</h6>
+                                        <p class="text-muted">
+                                            {{ $campaign->goal ? number_format($campaign->goal, 2, ',', ' ') . ' €' : 'Non défini' }}
+                                        </p>
+                                    </div>
                                 </div>
+
                                 <div class="col-md-6">
-                                    <h6>Dates et financement</h6>
-                                    <table class="table table-sm">
-                                        <tr>
-                                            <td><strong>Début:</strong></td>
-                                            <td>{{ $campaign->start_date->format('d/m/Y') }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Fin:</strong></td>
-                                            <td>{{ $campaign->end_date->format('d/m/Y') }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Jours restants:</strong></td>
-                                            <td><span class="badge bg-{{ $campaign->days_remaining > 7 ? 'success' : 'warning' }}">{{ $campaign->days_remaining }} jours</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Objectif:</strong></td>
-                                            <td>{{ $campaign->goal ? number_format($campaign->goal, 0, ',', ' ') . ' €' : 'N/A' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Collecté:</strong></td>
-                                            <td class="text-success"><strong>{{ number_format($campaign->funds_raised, 0, ',', ' ') }} €</strong></td>
-                                        </tr>
-                                    </table>
+                                    <div class="mb-3">
+                                        <h6><i class="fas fa-tags me-2 text-primary"></i>Tags</h6>
+                                        <p class="text-muted">
+                                            @if($campaign->tags && count($campaign->tags) > 0)
+                                                @foreach($campaign->tags as $tag)
+                                                    <span class="badge badge-light me-1">{{ $tag }}</span>
+                                                @endforeach
+                                            @else
+                                                Aucun tag
+                                            @endif
+                                        </p>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <h6><i class="fas fa-calendar-check me-2 text-primary"></i>Date de fin</h6>
+                                        <p class="text-muted">{{ $campaign->end_date->format('d/m/Y') }}</p>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <h6><i class="fas fa-chart-line me-2 text-primary"></i>Montant collecté</h6>
+                                        <p class="text-muted">
+                                            {{ number_format($campaign->funds_raised, 2, ',', ' ') }} €
+                                            @if($campaign->goal && $campaign->goal > 0)
+                                                <small class="text-success">
+                                                    ({{ $campaign->funds_progress_percentage }}%)
+                                                </small>
+                                            @endif
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
-                            @if($campaign->description)
-                            <div class="mb-4">
-                                <h6>Description</h6>
-                                <p class="text-muted">{{ $campaign->description }}</p>
-                            </div>
-                            @endif
-
+                            <!-- Environmental Impact -->
                             @if($campaign->environmental_impact)
                             <div class="mb-4">
-                                <h6>Impact environnemental</h6>
-                                <p class="text-success">{{ $campaign->environmental_impact }}</p>
+                                <h5><i class="fas fa-seedling me-2 text-success"></i>Impact environnemental</h5>
+                                <p class="text-muted">{{ $campaign->environmental_impact }}</p>
                             </div>
                             @endif
 
-                            @if($campaign->tags)
-                            <div class="mb-4">
-                                <h6>Tags</h6>
-                                <div>
-                                    @foreach($campaign->tags as $tag)
-                                        <span class="badge bg-light text-dark border me-1">{{ $tag }}</span>
-                                    @endforeach
-                                </div>
-                            </div>
-                            @endif
-                        </div>
-
-                        <div class="col-md-4">
-                            @if($campaign->image_url)
-                                <img src="{{ Storage::url($campaign->image_url) }}" alt="{{ $campaign->name }}" 
-                                     class="img-fluid rounded mb-3" style="max-height: 300px; width: 100%; object-fit: cover;">
-                            @endif
-                            
-                            <div class="card">
-                                <div class="card-header bg-primary text-white">
-                                    <h6 class="mb-0">Progression financière</h6>
-                                </div>
-                                <div class="card-body text-center">
-                                    <div class="progress mb-2" style="height: 20px;">
-                                        <div class="progress-bar bg-success" style="width: {{ $campaign->funds_progress_percentage }}%">
-                                            {{ $campaign->funds_progress_percentage }}%
+                            <!-- Statistics -->
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-primary mb-0">{{ $campaign->resources_count ?? 0 }}</h3>
+                                            <small class="text-muted">Ressources</small>
                                         </div>
                                     </div>
-                                    <small class="text-muted">
-                                        {{ number_format($campaign->funds_raised, 0, ',', ' ') }} € sur 
-                                        {{ $campaign->goal ? number_format($campaign->goal, 0, ',', ' ') . ' €' : 'N/A' }}
-                                    </small>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-success mb-0">{{ $campaign->events_count ?? 0 }}</h3>
+                                            <small class="text-muted">Événements</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h3 class="text-info mb-0">{{ $campaign->participants_count ?? 0 }}</h3>
+                                            <small class="text-muted">Participants</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column - Statistics and Actions -->
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title mb-3">Informations</h6>
+                                    
+                                    <div class="mb-3">
+                                        <small class="text-muted">Organisateur</small>
+                                        <div>{{ $campaign->organizer->name }}</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <small class="text-muted">Créée le</small>
+                                        <div>{{ $campaign->created_at->format('d/m/Y à H:i') }}</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <small class="text-muted">Dernière modification</small>
+                                        <div>{{ $campaign->updated_at->format('d/m/Y à H:i') }}</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <small class="text-muted">Jours restants</small>
+                                        <div>
+                                            @if($campaign->end_date->isFuture())
+                                                <span class="badge badge-info">J-{{ $campaign->days_remaining }}</span>
+                                            @else
+                                                <span class="badge badge-secondary">Terminée</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <small class="text-muted">Visibilité</small>
+                                        <div>
+                                            @if($campaign->visibility)
+                                                <span class="badge badge-success">Publique</span>
+                                            @else
+                                                <span class="badge badge-warning">Privée</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <!-- Progress Bar -->
+                                    @if($campaign->goal && $campaign->goal > 0)
+                                    <div class="mb-3">
+                                        <small class="text-muted">Progression financière</small>
+                                        <div class="progress mt-1" style="height: 10px;">
+                                            <div class="progress-bar bg-success" 
+                                                 role="progressbar" 
+                                                 style="width: {{ $campaign->funds_progress_percentage }}%"
+                                                 aria-valuenow="{{ $campaign->funds_progress_percentage }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">
+                                            {{ number_format($campaign->funds_raised, 2, ',', ' ') }} € / 
+                                            {{ number_format($campaign->goal, 2, ',', ' ') }} €
+                                        </small>
+                                    </div>
+                                    @endif
+
+                                    <!-- Admin Actions -->
+                                    <div class="mt-4">
+                                        <div class="d-grid gap-2">
+                                            @if($campaign->visibility)
+                                            <form action="{{ route('campaigns.toggle-visibility', $campaign) }}" method="POST" class="d-grid">
+                                                @csrf
+                                                <button type="submit" class="btn btn-warning btn-sm w-100">
+                                                    <i class="fas fa-eye-slash me-2"></i>Rendre privée
+                                                </button>
+                                            </form>
+                                            @else
+                                            <form action="{{ route('campaigns.toggle-visibility', $campaign) }}" method="POST" class="d-grid">
+                                                @csrf
+                                                <button type="submit" class="btn btn-success btn-sm w-100">
+                                                    <i class="fas fa-eye me-2"></i>Rendre publique
+                                                </button>
+                                            </form>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <hr>
-
-                    <h5>Ressources associées ({{ $campaign->resources->count() }})</h5>
-                    @if($campaign->resources->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Nom</th>
-                                        <th>Type</th>
-                                        <th>Quantité</th>
-                                        <th>Progression</th>
-                                        <th>Statut</th>
-                                        <th>Priorité</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($campaign->resources as $resource)
-                                    <tr>
-                                        <td>{{ $resource->name }}</td>
-                                        <td><span class="badge bg-secondary">{{ $resource->resource_type }}</span></td>
-                                        <td>
-                                            {{ $resource->quantity_pledged }} / {{ $resource->quantity_needed }} {{ $resource->unit }}
-                                        </td>
-                                        <td>
-                                            <div class="progress" style="height: 10px;">
-                                                <div class="progress-bar bg-{{ $resource->progress_percentage == 100 ? 'success' : 'warning' }}" 
-                                                     style="width: {{ $resource->progress_percentage }}%">
-                                                </div>
-                                            </div>
-                                            <small>{{ $resource->progress_percentage }}%</small>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-{{ $resource->status == 'received' ? 'success' : ($resource->status == 'pledged' ? 'info' : 'secondary') }}">
-                                                {{ $resource->status }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-{{ $resource->priority == 'urgent' ? 'danger' : ($resource->priority == 'high' ? 'warning' : 'info') }}">
-                                                {{ $resource->priority }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <a href="{{ route('resources.show', $resource) }}" class="btn btn-sm btn-info">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @else
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> Aucune ressource associée à cette campagne.
-                        </div>
-                    @endif
                 </div>
             </div>
         </div>
