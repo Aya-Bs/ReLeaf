@@ -171,6 +171,21 @@
                         </li>
                         
                         <li class="nav-item">
+                            <a href="{{ route('admin.reservations.index') }}" class="nav-link {{ request()->routeIs('admin.reservations.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-ticket-alt"></i>
+                                <p>Réservations</p>
+                            </a>
+                        </li>
+                        
+                        
+                        <li class="nav-item">
+                            <a href="{{ route('admin.certificates.index') }}" class="nav-link {{ request()->routeIs('admin.certificates.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-certificate"></i>
+                                <p>Certifications</p>
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon fas fa-calendar-alt"></i>
                                 <p>

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 
 class Event extends Model
@@ -72,7 +73,6 @@ class Event extends Model
     }
 
     /**
-     * Scope for published events (approved by admin)
      * Get the event reservations.
      */
     public function reservations(): HasMany
@@ -161,9 +161,10 @@ class Event extends Model
     }
 
     public function isRejected(): bool
-{
-    return $this->status === 'rejected';
-}
+    {
+        return $this->status === 'rejected';
+    }
+
     public function isFull(): bool
     {
         $confirmedReservations = $this->reservations()
@@ -190,7 +191,8 @@ class Event extends Model
     {
         return $this->waitingList()->where('status', 'waiting')->count();
     }
-        public function canBeEdited(): bool
+
+    public function canBeEdited(): bool
     {
         return in_array($this->status, ['draft', 'pending']);
     }
@@ -212,7 +214,7 @@ class Event extends Model
     }
 
 
-      public function getImageUrlsAttribute()
+    public function getImageUrlsAttribute()
     {
         if (!$this->images) {
             return [];
@@ -223,8 +225,4 @@ class Event extends Model
         })->toArray();
     }
 }
-
-    /**
-     * Check if event can be edited (only draft or pending events)
-     */
 

@@ -337,6 +337,19 @@ body {
         </div>
     </div>
 
+    <!-- Bouton Chatbot Flottant -->
+    <div class="chatbot-float-btn">
+        <a href="{{ route('chatbot.index') }}" class="btn btn-info btn-lg rounded-circle shadow-lg" title="Assistant IA EcoEvents">
+            <i class="fas fa-robot"></i>
+        </a>
+        <div class="chatbot-tooltip">
+            <div class="tooltip-content">
+                <strong>Assistant IA</strong><br>
+                <small>Disponible 24/7</small>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="py-4">
         @if(session('success'))
