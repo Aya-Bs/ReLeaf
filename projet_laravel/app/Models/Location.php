@@ -18,10 +18,15 @@ class Location extends Model
         'latitude',
         'longitude',
         'images',
+        'reserved',
+        'in_repair',
+        'price', // Added price attribute
     ];
 
     protected $casts = [
         'images' => 'array',
+        'reserved' => 'boolean',
+        'in_repair' => 'boolean',
     ];
 
     public function events()

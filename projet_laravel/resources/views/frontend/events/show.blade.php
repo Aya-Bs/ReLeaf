@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </svg>
                     </div>
                     <p class="text-sm font-semibold text-gray-700">Participants</p>
-                    <p class="text-xs text-gray-500 mt-1">Max {{ $event->max_participants }}</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ $event->max_participants  ?? 'Illimité'}}</p>
                 </div>
 
                 <!-- Location Card -->

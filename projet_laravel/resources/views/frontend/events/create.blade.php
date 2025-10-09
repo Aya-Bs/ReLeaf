@@ -123,7 +123,7 @@
                                         <i class="fas fa-map-marker-alt me-2" style="color: #2d5a27;"></i>Lieu <span class="text-danger">*</span>
                                     </label>
                                     @php
-                                        $locations = \App\Models\Location::all();
+                                        $locations = \App\Models\Location::where('in_repair', false)->get();
                                     @endphp
                                     <select class="form-select @error('location_id') is-invalid @enderror" id="location_id" name="location_id" required>
                                         <option value="">Sélectionnez un lieu</option>

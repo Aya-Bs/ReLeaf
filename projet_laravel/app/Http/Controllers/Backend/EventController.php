@@ -39,6 +39,42 @@ class EventController extends Controller
         return view('frontend.events.index', compact('otherEvents', 'pendingEvents'));
     }
 
+      /**
+     * Show all events to any user .
+     */
+public function all(Request $request)
+{
+    $query = Event::query()
+        ->with('location')
+        ->where('status', 'published'); // ✅ show only published events
+
+    // 🔎 Search by title
+    if ($request->filled('search')) {
+        $query->where('title', 'like', '%' . $request->search . '%');
+    }
+
+    // 📍 Filter by location
+    if ($request->filled('location') && $request->location !== 'all') {
+        $query->where('location_id', $request->location);
+    }
+
+    // 💰 Filter by max price
+    if ($request->filled('max_price')) {
+        $query->where('price', '<=', $request->max_price);
+    }
+
+    // 📅 Filter by date
+    if ($request->filled('date')) {
+        $query->whereDate('date', '=', $request->date);
+    }
+
+    // Pagination + sorting
+    $events = $query->orderBy('date', 'asc')->paginate(8);
+
+    return view('frontend.events.all', compact('events'));
+}
+
+
     /**
      * Show the form for creating a new resource.
      */
@@ -93,8 +129,16 @@ $validated = $request->validate([
             'images' => [], 
             'campaign_id' => $request->campaign_id,
             'location_id' => $request->location_id,
-
         ]);
+
+        // Set location as reserved
+        if ($request->location_id) {
+            $location = \App\Models\Location::find($request->location_id);
+            if ($location) {
+                $location->reserved = true;
+                $location->save();
+            }
+        }
 
 if ($request->hasFile('images')) {
     $imagePaths = [];
@@ -274,4 +318,6 @@ public function removeImage(Request $request, Event $event)
 
         return redirect()->route('events.index')->with('success', 'Événement annulé avec succès.');
     }
+
+
 }
