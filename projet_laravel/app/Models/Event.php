@@ -178,10 +178,10 @@ class Event extends Model
      */
     public function getAvailableSpots(): int
     {
-        $confirmedReservations = $this->reservations()
-                                    ->where('status', 'confirmed')
+        $activeReservations = $this->reservations()
+                                    ->whereIn('status', ['pending', 'confirmed'])
                                     ->count();
-        return max(0, $this->max_participants - $confirmedReservations);
+        return max(0, $this->max_participants - $activeReservations);
     }
 
     /**

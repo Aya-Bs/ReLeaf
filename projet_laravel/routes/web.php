@@ -185,10 +185,22 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::resource('events', EventController::class);
-    Route::post('/events/{event}/submit', [EventController::class, 'submitForApproval'])->name('events.submit');
-    Route::post('/events/{event}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
-    Route::post('/events/{event}/remove-image', [EventController::class, 'removeImage'])->name('events.remove-image');
+    // Routes pour les utilisateurs normaux (voient tous les événements)
+    Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events.index');
+    Route::get('/events/{event}', [\App\Http\Controllers\EventController::class, 'show'])->name('events.show');
+    
+    // Routes pour les organisateurs (gestion de leurs événements)
+    Route::middleware(['role:organizer'])->group(function () {
+        Route::get('/my-events', [\App\Http\Controllers\Backend\EventController::class, 'index'])->name('events.my-events');
+        Route::get('/my-events/create', [\App\Http\Controllers\Backend\EventController::class, 'create'])->name('events.create');
+        Route::post('/my-events', [\App\Http\Controllers\Backend\EventController::class, 'store'])->name('events.store');
+        Route::get('/my-events/{event}/edit', [\App\Http\Controllers\Backend\EventController::class, 'edit'])->name('events.edit');
+        Route::put('/my-events/{event}', [\App\Http\Controllers\Backend\EventController::class, 'update'])->name('events.update');
+        Route::delete('/my-events/{event}', [\App\Http\Controllers\Backend\EventController::class, 'destroy'])->name('events.destroy');
+        Route::post('/my-events/{event}/submit', [\App\Http\Controllers\Backend\EventController::class, 'submitForApproval'])->name('events.submit');
+        Route::post('/my-events/{event}/cancel', [\App\Http\Controllers\Backend\EventController::class, 'cancel'])->name('events.cancel');
+        Route::post('/my-events/{event}/remove-image', [\App\Http\Controllers\Backend\EventController::class, 'removeImage'])->name('events.remove-image');
+    });
 
      // Gestion des lieux (locations)
     Route::resource('locations', App\Http\Controllers\LocationController::class);

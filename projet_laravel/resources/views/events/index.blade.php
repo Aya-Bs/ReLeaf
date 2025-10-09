@@ -77,29 +77,23 @@
                                 </p>
                                 
                                 <!-- Places disponibles -->
-                                @php
-                                    $availableSeats = $event->getAvailableSpots();
-                                    $isFull = $event->isFull();
-                                    $userReservation = auth()->check() ? $event->reservations()->where('user_id', auth()->id())->whereIn('status', ['pending', 'confirmed'])->first() : null;
-                                    $userInWaitingList = auth()->check() ? \App\Models\WaitingList::where('user_id', auth()->id())->where('event_id', $event->id)->where('status', 'waiting')->exists() : false;
-                                @endphp
                                 
                                 <div class="availability-info mb-3">
                                     <div class="row">
                                         <div class="col-8">
                                             <small class="text-muted">
-                                                Places : {{ $availableSeats }}/{{ $event->max_participants }} disponibles
+                                                Places : {{ $event->availableSeats }}/{{ $event->max_participants }} disponibles
                                             </small>
                                             <div class="progress" style="height: 6px;">
                                                 <div class="progress-bar bg-eco" 
-                                                     style="width: {{ ($availableSeats / $event->max_participants) * 100 }}%">
+                                                     style="width: {{ ($event->availableSeats / $event->max_participants) * 100 }}%">
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-4 text-end">
-                                            @if($availableSeats <= 5 && $availableSeats > 0)
+                                            @if($event->availableSeats <= 5 && $event->availableSeats > 0)
                                                 <span class="badge bg-warning">Dernières places</span>
-                                            @elseif($availableSeats == 0)
+                                            @elseif($event->availableSeats == 0)
                                                 <span class="badge bg-danger">Complet</span>
                                             @else
                                                 <span class="badge bg-success">Disponible</span>
@@ -110,19 +104,19 @@
                                 
                                 <!-- Actions -->
                                 <div class="card-actions mt-auto">
-                                    @if($userReservation)
+                                    @if($event->userReservation)
                                         <div class="alert alert-info py-2 mb-2">
                                             <small>
                                                 <i class="fas fa-info-circle me-1"></i>
-                                                Réservation {{ $userReservation->status === 'confirmed' ? 'confirmée' : 'en attente' }} 
-                                                - Place {{ $userReservation->seat_number }}
+                                                Réservation {{ $event->userReservation->status === 'confirmed' ? 'confirmée' : 'en attente' }} 
+                                                - Place {{ $event->userReservation->seat_number }}
                                             </small>
                                         </div>
-                                        <a href="{{ route('reservations.confirmation', $userReservation) }}" 
+                                        <a href="{{ route('reservations.confirmation', $event->userReservation) }}" 
                                            class="btn btn-outline-eco btn-sm w-100">
                                             <i class="fas fa-eye me-2"></i>Voir ma réservation
                                         </a>
-                                    @elseif($userInWaitingList)
+                                    @elseif($event->userInWaitingList)
                                         <div class="alert alert-warning py-2 mb-2">
                                             <small>
                                                 <i class="fas fa-clock me-1"></i>
@@ -138,19 +132,19 @@
                                         <button class="btn btn-outline-warning w-100" disabled>
                                             <i class="fas fa-hourglass-half me-2"></i>En liste d'attente
                                         </button>
-                                    @elseif($availableSeats > 0 && auth()->check())
+                                    @elseif($event->availableSeats > 0 && auth()->check())
                                         <a href="{{ route('events.seats', $event) }}" 
                                            class="btn btn-eco w-100">
                                             <i class="fas fa-ticket-alt me-2"></i>Réserver une place
                                         </a>
-                                    @elseif($isFull && auth()->check())
+                                    @elseif($event->isFull && auth()->check())
                                         <form action="{{ route('waiting-list.join', $event) }}" method="POST" class="w-100">
                                             @csrf
                                             <button type="submit" class="btn btn-warning w-100">
                                                 <i class="fas fa-user-plus me-2"></i>Rejoindre la liste d'attente
                                             </button>
                                         </form>
-                                    @elseif($isFull)
+                                    @elseif($event->isFull)
                                         <button class="btn btn-secondary w-100" disabled>
                                             <i class="fas fa-times me-2"></i>Événement complet
                                         </button>

@@ -19,14 +19,29 @@ class ReservationController extends Controller
      */
     public function showSeats(Event $event)
     {
-        // Charger la relation user pour l'organisateur
-        $event->load('user');
+        // Charger les relations user et location
+        $event->load(['user', 'location']);
+        
+        // Vérifier si l'événement est complet
+        $reservedCount = $event->reservations()->where('status', 'confirmed')->count();
+        $availableSeats = $event->max_participants - $reservedCount;
+        
+        if ($availableSeats <= 0) {
+            return redirect()->route('events.index')
+                           ->with('error', 'Cet événement est complet. Vous pouvez rejoindre la liste d\'attente.');
+        }
         
         // Vérifier si l'utilisateur a déjà une réservation pour cet événement
         $userReservation = Reservation::where('user_id', auth()->id())
                                     ->where('event_id', $event->id)
                                     ->whereIn('status', ['pending', 'confirmed'])
                                     ->first();
+        
+        // Si l'utilisateur a déjà une réservation, le rediriger vers la page de confirmation
+        if ($userReservation) {
+            return redirect()->route('reservations.confirmation', $userReservation)
+                           ->with('info', 'Vous avez déjà une réservation pour cet événement.');
+        }
 
         // Récupérer toutes les réservations actives
         $reservedSeats = Reservation::where('event_id', $event->id)
