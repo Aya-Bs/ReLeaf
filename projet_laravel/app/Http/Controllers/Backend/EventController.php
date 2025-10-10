@@ -39,40 +39,6 @@ class EventController extends Controller
         return view('frontend.events.index', compact('otherEvents', 'pendingEvents'));
     }
 
-      /**
-     * Show all events to any user .
-     */
-public function all(Request $request)
-{
-    $query = Event::query()
-        ->with('location')
-        ->where('status', 'published'); // ✅ show only published events
-
-    // 🔎 Search by title
-    if ($request->filled('search')) {
-        $query->where('title', 'like', '%' . $request->search . '%');
-    }
-
-    // 📍 Filter by location
-    if ($request->filled('location') && $request->location !== 'all') {
-        $query->where('location_id', $request->location);
-    }
-
-    // 💰 Filter by max price
-    if ($request->filled('max_price')) {
-        $query->where('price', '<=', $request->max_price);
-    }
-
-    // 📅 Filter by date
-    if ($request->filled('date')) {
-        $query->whereDate('date', '=', $request->date);
-    }
-
-    // Pagination + sorting
-    $events = $query->orderBy('date', 'asc')->paginate(8);
-
-    return view('frontend.events.all', compact('events'));
-}
 
 
     /**
@@ -156,7 +122,7 @@ if ($request->hasFile('images')) {
     $event->save();
 
     }
-    return redirect()->route('events.index')->with('success', 'Événement créé avec succès !');
+    return redirect()->route('events.my-events')->with('success', 'Événement créé avec succès !');
 
 }
 
@@ -179,7 +145,7 @@ if ($request->hasFile('images')) {
     public function edit(Event $event)
     {
         if ($event->user_id !== Auth::id() || !$event->canBeEdited()) {
-            return redirect()->route('events.index')->with('error', 'Cet événement ne peut pas être modifié.');
+            return redirect()->route('events.my-events')->with('error', 'Cet événement ne peut pas être modifié.');
         }
 
         // Get campaigns for dropdown
@@ -198,7 +164,7 @@ if ($request->hasFile('images')) {
     public function update(Request $request, Event $event)
     {
         if ($event->user_id !== Auth::id() || !$event->canBeEdited()) {
-            return redirect()->route('events.index')->with('error', 'Cet événement ne peut pas être modifié.');
+            return redirect()->route('events.my-events')->with('error', 'Cet événement ne peut pas être modifié.');
         }
 
 
@@ -233,7 +199,7 @@ if ($request->hasFile('images')) {
             $event->update(['images' => $imagePaths]);
         }
 
-        return redirect()->route('events.index')->with('success', 'Événement mis à jour avec succès.');
+        return redirect()->route('events.my-events')->with('success', 'Événement mis à jour avec succès.');
     }
 
     /**
@@ -242,7 +208,7 @@ if ($request->hasFile('images')) {
     public function destroy(Event $event)
     {
         if ($event->user_id !== Auth::id() || !$event->canBeDeleted()) {
-            return redirect()->route('events.index')->with('error', 'Cet événement ne peut pas être supprimé.');
+            return redirect()->route('events.my-events')->with('error', 'Cet événement ne peut pas être supprimé.');
         }
 
         // Delete associated images
@@ -254,7 +220,7 @@ if ($request->hasFile('images')) {
 
         $event->delete();
 
-        return redirect()->route('events.index')->with('success', 'Événement supprimé avec succès.');
+        return redirect()->route('events.my-events')->with('success', 'Événement supprimé avec succès.');
     }
 
 /**
@@ -297,12 +263,12 @@ public function removeImage(Request $request, Event $event)
     public function submitForApproval(Event $event)
     {
         if ($event->user_id !== Auth::id() || !$event->isDraft()) {
-            return redirect()->route('events.index')->with('error', 'Cet événement ne peut pas être soumis pour approbation.');
+            return redirect()->route('events.my-events')->with('error', 'Cet événement ne peut pas être soumis pour approbation.');
         }
 
         $event->submitForApproval();
 
-        return redirect()->route('events.index')->with('success', 'Événement soumis pour approbation. Vous serez notifié lorsque l\'admin aura pris une décision.');
+        return redirect()->route('events.my-events')->with('success', 'Événement soumis pour approbation. Vous serez notifié lorsque l\'admin aura pris une décision.');
     }
 
     /**
@@ -311,12 +277,12 @@ public function removeImage(Request $request, Event $event)
     public function cancel(Event $event)
     {
         if ($event->user_id !== Auth::id() || !$event->isPublished()) {
-            return redirect()->route('events.index')->with('error', 'Cet événement ne peut pas être annulé.');
+            return redirect()->route('events.my-events')->with('error', 'Cet événement ne peut pas être annulé.');
         }
 
         $event->update(['status' => 'cancelled']);
 
-        return redirect()->route('events.index')->with('success', 'Événement annulé avec succès.');
+        return redirect()->route('events.my-events')->with('success', 'Événement annulé avec succès.');
     }
 
 

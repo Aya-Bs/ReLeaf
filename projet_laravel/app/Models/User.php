@@ -173,6 +173,10 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasOne(Sponsor::class);
     }
+
+    /**
+     * Get the user's waiting list entries.
+     */
     public function waitingLists(): HasMany
     {
         return $this->hasMany(WaitingList::class);
@@ -194,7 +198,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasManyThrough(Certification::class, Reservation::class);
     }
 
-      /**
+    /**
      * Relation avec les blogs créés par l'utilisateur
      */
     public function blogs()
@@ -202,9 +206,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Blog::class, 'author_id');
     }
     
-        // Relation avec les reviews postés par l'utilisateur
-        public function reviews()
-        {
-            return $this->hasMany(Review::class);
-        }
+    /**
+     * Relation avec les reviews postés par l'utilisateur
+     */
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }

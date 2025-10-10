@@ -47,7 +47,7 @@
                                             </div>
                                             <div class="col-12 mt-1">
                                                 <i class="fas fa-map-marker-alt me-1"></i>
-                                                {{ $certification->reservation->event->location }}
+                                                {{ $certification->reservation->event->location->name ?? 'Lieu non défini' }}
                                             </div>
                                         </div>
                                     </div>

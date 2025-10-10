@@ -451,7 +451,7 @@
             </div>
             <div>
                 <a href="{{ route('backend.locations.index') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>  
+                   {{ $location->city }} 
                 </a>
             </div>
         </div>
@@ -480,14 +480,15 @@
                             <span class="info-label">Nom</span>
                             <span class="info-value">{{ $location->name }}</span>
                         </div>
-                        <div class="info-item">
-                            <span class="info-label">Ville</span>
-                            <span class="info-value">{{ $location->city }}</span>
+                         <div class="info-item">
+                            <span class="info-label">Price</span>
+                            <span class="info-value">{{ $location->price ?? 'Gratuit' }}</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Capacité</span>
                             <span class="info-value">{{ $location->capacity ?? 'Non spécifiée' }}</span>
                         </div>
+                       
                         <div class="info-item">
                             <span class="info-label">Adresse</span>
                             <span class="info-value"> {{ $location->address  ?? 'Non spécifiée' }}</span>

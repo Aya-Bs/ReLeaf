@@ -183,7 +183,7 @@ body {
     </style>
 
     <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
 </head>
 <body class="font-sans antialiased">
     <!-- Navigation -->
@@ -207,19 +207,30 @@ body {
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('about') }}">À propos</a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-calendar-alt me-1"></i>Événements
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('events.index') }}">
-                                <i class="fas fa-list me-2"></i>Mes événements
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ route('events.create') }}">
-                                <i class="fas fa-plus me-2"></i>Créer un événement
-                            </a></li>
-                        </ul>
-                    </li>
+                    @if(auth()->user()->role === 'organizer')
+                        <!-- Menu pour les organisateurs -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-calendar-alt me-1"></i>Événements
+                            </a>
+                            <ul class="dropdown-menu">
+                                 <li><a class="dropdown-item" href="{{ route('locations.index') }}">
+                                    <i class="fas fa-home me-2"></i>Lieux
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ route('events.my-events') }}">
+                                    <i class="fas fa-list me-2"></i>Mes événements
+                                </a></li>
+                               
+                            </ul>
+                        </li>
+                    @else
+                        <!-- Menu pour les utilisateurs normaux -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('events.index') }}">
+                                <i class="fas fa-calendar-alt me-1"></i>Événements
+                            </a>
+                        </li>
+                    @endif
                     
                     <!-- Campaigns Menu -->
                     <li class="nav-item dropdown">
@@ -323,6 +334,19 @@ body {
         </div>
     </div>
 </nav>
+
+    <!-- Bouton Chatbot Flottant -->
+    <div class="chatbot-float-btn">
+        <a href="{{ route('chatbot.index') }}" class="btn btn-info btn-lg rounded-circle shadow-lg" title="Assistant IA EcoEvents">
+            <i class="fas fa-robot"></i>
+        </a>
+        <div class="chatbot-tooltip">
+            <div class="tooltip-content">
+                <strong>Assistant IA</strong><br>
+                <small>Disponible 24/7</small>
+            </div>
+        </div>
+    </div>
 
     <!-- Bouton Chatbot Flottant -->
     <div class="chatbot-float-btn">

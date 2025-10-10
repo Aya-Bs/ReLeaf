@@ -31,12 +31,6 @@ Route::get('/home', [HomeController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('home');
 
-
-    Route::get('/events/create', [EventController::class, 'create'])
-    ->middleware(['auth', 'verified'])
-    ->name('events.create');
-
-
 // Pages publiques (accessibles sans connexion)
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
@@ -145,6 +139,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
     })->name('events.show');
 
 
+    
+    
+
+
     // ✅ AJOUTÉ : Gestion des campagnes (backend) - Même pattern que events
     Route::get('/campaigns', function () {
         $campaigns = \App\Models\Campaign::with('organizer')
@@ -179,25 +177,32 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
 });
 
 
+
+
 /*
 |--------------------------------------------------------------------------
 | ROUTES EVENTS & LOCATIONS
 |--------------------------------------------------------------------------
 */
-
-// Route for all events view for all users 
-Route::get('/events/all', [EventController::class, 'all'])->name('events.all');
-Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
-
-
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Routes pour les utilisateurs normaux (voient tous les événements)
+    Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events.index');
+    Route::get('/events/{event}', [\App\Http\Controllers\EventController::class, 'show'])->name('events.show');
     
-    Route::resource('events', EventController::class);
-    Route::post('/events/{event}/submit', [EventController::class, 'submitForApproval'])->name('events.submit');
-    Route::post('/events/{event}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
-    Route::post('/events/{event}/remove-image', [EventController::class, 'removeImage'])->name('events.remove-image');
+    // Routes pour les organisateurs (gestion de leurs événements)
+    Route::middleware(['role:organizer'])->group(function () {
+        Route::get('/my-events', [\App\Http\Controllers\Backend\EventController::class, 'index'])->name('events.my-events');
+        Route::get('/my-events/create', [\App\Http\Controllers\Backend\EventController::class, 'create'])->name('events.create');
+        Route::post('/my-events', [\App\Http\Controllers\Backend\EventController::class, 'store'])->name('events.store');
+        Route::get('/my-events/{event}/edit', [\App\Http\Controllers\Backend\EventController::class, 'edit'])->name('events.edit');
+        Route::put('/my-events/{event}', [\App\Http\Controllers\Backend\EventController::class, 'update'])->name('events.update');
+        Route::delete('/my-events/{event}', [\App\Http\Controllers\Backend\EventController::class, 'destroy'])->name('events.destroy');
+        Route::post('/my-events/{event}/submit', [\App\Http\Controllers\Backend\EventController::class, 'submitForApproval'])->name('events.submit');
+        Route::post('/my-events/{event}/cancel', [\App\Http\Controllers\Backend\EventController::class, 'cancel'])->name('events.cancel');
+        Route::post('/my-events/{event}/remove-image', [\App\Http\Controllers\Backend\EventController::class, 'removeImage'])->name('events.remove-image');
+    });
 
-    // Gestion des lieux (locations)
+     // Gestion des lieux (locations)
     Route::resource('locations', App\Http\Controllers\LocationController::class);
     
     // Routes pour les dons d'événements
@@ -318,7 +323,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy'])->name('reservations.destroy');
     Route::post('/reservations/{reservation}/delete', [ReservationController::class, 'destroy'])->name('reservations.destroy.fallback');
 });
-
 
 require __DIR__ . '/auth.php';
 require __DIR__ . '/2fa.php';

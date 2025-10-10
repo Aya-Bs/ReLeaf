@@ -26,5 +26,4 @@ class LocationController extends Controller
         return view('backend.locations.show', compact('location', 'events'));
     }
 
-    // You can add create, store, edit, update, destroy as needed
 }

@@ -279,7 +279,7 @@
                         </div>
                         <div class="event-info-item">
                             <div class="event-info-label">Lieu</div>
-                            <div class="event-info-value">{{ $certification->reservation->event->location }}</div>
+                            <div class="event-info-value">{{ $certification->reservation->event->location->name ?? 'Lieu non défini' }}</div>
                         </div>
                     </div>
                 </div>

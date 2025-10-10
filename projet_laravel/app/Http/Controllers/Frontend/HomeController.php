@@ -24,11 +24,21 @@ class HomeController extends Controller
             })->count(),
         ];
 
-       $recentEvents = Event::where('status', 'published')
-        ->where('date', '>=', now())
-        ->orderBy('created_at', 'desc')
-        ->take(12) // Get 12 events for 3 slides of 4
-        ->get();
+       // Logique selon le rôle de l'utilisateur
+        $query = Event::where('status', 'published')
+            ->where('date', '>=', now())
+            ->orderBy('created_at', 'desc')
+            ->take(12); // Get 12 events for 3 slides of 4
+
+        if (auth()->check()) {
+            if (auth()->user()->role === 'organizer') {
+                // Les organisateurs voient seulement leurs propres événements
+                $query->where('user_id', auth()->id());
+            }
+            // Les utilisateurs avec rôle 'user' voient tous les événements
+        }
+
+        $recentEvents = $query->get();
 
 
         // Récupérer les ambassadeurs écologiques

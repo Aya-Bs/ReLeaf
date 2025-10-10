@@ -74,7 +74,7 @@ class LocationController extends Controller
             'capacity' => 'nullable|integer|min:1',
             'description' => 'nullable|string',
             'images.*' => 'nullable|image|max:2048',
-            'price' => 'required|numeric|min:0', // Added validation for price
+            'price' => 'required|numeric|min:0',
         ]);
 
     $data['in_repair'] = $request->has('in_repair');
@@ -147,6 +147,7 @@ public function update(Request $request, Location $location)
             'longitude' => 'required|numeric',
             'in_repair' => 'boolean',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'price' => 'required|numeric|min:0',
         ]);
 
         // Handle image deletion

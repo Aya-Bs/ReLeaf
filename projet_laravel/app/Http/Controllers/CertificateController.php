@@ -16,7 +16,7 @@ class CertificateController extends Controller
      */
     public function index()
     {
-        $certifications = Certification::with(['reservation.event', 'issuedBy'])
+        $certifications = Certification::with(['reservation.event.location', 'issuedBy'])
             ->whereHas('reservation', function($query) {
                 $query->where('user_id', auth()->id());
             })
@@ -31,7 +31,7 @@ class CertificateController extends Controller
      */
     public function show(string $code)
     {
-        $certification = Certification::with(['reservation.event', 'reservation.user', 'issuedBy'])
+        $certification = Certification::with(['reservation.event.location', 'reservation.user', 'issuedBy'])
             ->where('certificate_code', $code)
             ->whereHas('reservation', function($query) {
                 $query->where('user_id', auth()->id());
@@ -46,7 +46,7 @@ class CertificateController extends Controller
      */
     public function download(string $code)
     {
-        $certification = Certification::with(['reservation.event', 'reservation.user', 'issuedBy'])
+        $certification = Certification::with(['reservation.event.location', 'reservation.user', 'issuedBy'])
             ->where('certificate_code', $code)
             ->whereHas('reservation', function($query) {
                 $query->where('user_id', auth()->id());
@@ -105,7 +105,7 @@ class CertificateController extends Controller
      */
     public function view(string $code)
     {
-        $certification = Certification::with(['reservation.event', 'reservation.user', 'issuedBy'])
+        $certification = Certification::with(['reservation.event.location', 'reservation.user', 'issuedBy'])
             ->where('certificate_code', $code)
             ->whereHas('reservation', function($query) {
                 $query->where('user_id', auth()->id());
@@ -172,7 +172,7 @@ class CertificateController extends Controller
             ]);
         }
 
-        $certification = Certification::with(['reservation.event', 'reservation.user', 'issuedBy'])
+        $certification = Certification::with(['reservation.event.location', 'reservation.user', 'issuedBy'])
             ->where('certificate_code', $searchCode)
             ->first();
 

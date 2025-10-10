@@ -176,7 +176,15 @@
 
 
 
-                                            
+                                            <!-- Event Status Badge -->
+                                            <div class="event-badge">
+                                                @if($event->isPublished())
+                                                    <span class="badge bg-success">Publié</span>
+                                                @elseif($event->isPending())
+                                                    <span class="badge bg-warning">En attente</span>
+                                                @endif
+                                            </div>
+
                                             <div class="card-body d-flex flex-column">
                                                 <!-- Event Date -->
                                                 <div class="event-date mb-2">
@@ -206,19 +214,24 @@
                                                         <div class="col-4">
                                                             <small class="text-info">
                                                                 <i class="fas fa-users me-1"></i>
-                                                                {{ $event->max_participants ?? 'Illimité' }}
+                                                                {{ $event->max_participants ?? 0 }}
                                                             </small>
                                                         </div>
                                                         <div class="col-4">
                                                             <small class="text-muted">
                                                                 <i class="fas fa-map-marker-alt me-1"></i>
-                                                               {{ $event->location->name ?? 'Location TBD' }}
+                                                                {{ Str::limit($event->location, 10) }}
                                                             </small>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                
+                                                <!-- View Event Button -->
+                                                <div class="mt-3">
+                                                    <a href="{{ route('events.show', $event) }}" class="btn btn-outline-success btn-sm w-100">
+                                                        <i class="fas fa-eye me-1"></i>Voir l'événement
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

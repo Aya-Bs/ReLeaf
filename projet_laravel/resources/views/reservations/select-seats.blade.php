@@ -310,7 +310,7 @@
                     <h2 class="text-white mb-1">{{ $event->title }}</h2>
                     <div class="event-details">
                         <span><i class="fas fa-calendar me-1"></i>{{ $event->date->format('d/m/Y à H:i') }}</span>
-                        <span><i class="fas fa-map-marker-alt me-1"></i>{{ $event->location }}</span>
+                        <span><i class="fas fa-map-marker-alt me-1"></i>{{ $event->location->name ?? 'Lieu non défini' }}</span>
                         <span><i class="fas fa-users me-1"></i>{{ 3 - count($reservedSeats) }}/3 places disponibles</span>
                     </div>
                 </div>

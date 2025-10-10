@@ -151,17 +151,12 @@
                             </a>
                         </li>
 
-                        <li class="nav-item has-treeview {{ request()->routeIs('backend.sponsors.*') ? 'menu-open' : '' }}">
-                            <a href="#" class="nav-link {{ request()->routeIs('backend.sponsors.*') ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-handshake"></i>
-                        
                         <li class="nav-item">
                             <a href="{{ route('admin.reservations.index') }}" class="nav-link {{ request()->routeIs('admin.reservations.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-ticket-alt"></i>
                                 <p>Réservations</p>
                             </a>
                         </li>
-                        
                         
                         <li class="nav-item">
                             <a href="{{ route('admin.certificates.index') }}" class="nav-link {{ request()->routeIs('admin.certificates.*') ? 'active' : '' }}">
@@ -206,45 +201,50 @@
                             </ul>
                         </li>
 
-                         <li class="nav-item">
-                            <a href="{{ route('backend.locations.index') }}" class="nav-link {{ request()->routeIs('backend.locations.*') ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-map-marker-alt"></i>
-                                <p>Locations</p>
-                            </a>
-                         </li>
+                        
+
                         
                         <li class="nav-item">
-                            <li class="nav-item has-treeview {{ request()->routeIs('backend.events.*') || request()->routeIs('backend.events.requests.*') ? 'menu-open' : '' }}">
-                                <a href="#" class="nav-link {{ request()->routeIs('backend.events.*') || request()->routeIs('backend.events.requests.*') ? 'active' : '' }}">
-                                    <i class="nav-icon fas fa-calendar-alt"></i>
-                                    <p>
-                                        Événements
-                                        <i class="right fas fa-angle-left"></i>
-                                    </p>
-                                </a>
-                                <ul class="nav nav-treeview">
-                                    <li class="nav-item">
-                                        <a href="{{ route('backend.events.index') }}" class="nav-link {{ request()->routeIs('backend.events.index') ? 'active' : '' }}">
-                                            <i class="far fa-circle nav-icon"></i>
-                                            <p>Tous les événements</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{{ route('backend.events.requests.pending') }}" class="nav-link {{ request()->routeIs('backend.events.requests.pending') ? 'active' : '' }}">
-                                            <i class="far fa-clock nav-icon text-warning"></i>
-                                            <p>Demandes en attente</p>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a href="{{ route('backend.events.requests.rejected') }}" class="nav-link {{ request()->routeIs('backend.events.requests.rejected') ? 'active' : '' }}">
-                                            <i class="far fa-times-circle nav-icon text-danger"></i>
-                                            <p>Événements rejetés</p>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
+        <a href="{{ route('backend.locations.index') }}" class="nav-link {{ request()->routeIs('backend.locations.*') ? 'active' : '' }}">
+                <i class="nav-icon fas fa-calendar-alt"></i>
+                <p>Locations</p>
+        </a>
+</li>
 
-                       
+
+                                                <li class="nav-item">
+
+                <li class="nav-item has-treeview {{ request()->routeIs('backend.events.*') || request()->routeIs('backend.events.requests.*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('backend.events.*') || request()->routeIs('backend.events.requests.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-calendar-alt"></i>
+                        <p>
+                            Événements
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('backend.events.index') }}" class="nav-link {{ request()->routeIs('backend.events.index') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Tous les événements</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('backend.events.requests.pending') }}" class="nav-link {{ request()->routeIs('backend.events.requests.pending') ? 'active' : '' }}">
+                                <i class="far fa-clock nav-icon text-warning"></i>
+                                <p>Demandes en attente</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('backend.events.requests.rejected') }}" class="nav-link {{ request()->routeIs('backend.events.requests.rejected') ? 'active' : '' }}">
+                                <i class="far fa-times-circle nav-icon text-danger"></i>
+                                <p>Événements rejetés</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+    
 
 <li class="nav-item">
     <a href="{{ route('backend.campaigns.index') }}" class="nav-link {{ request()->routeIs('backend.campaigns.*') ? 'active' : '' }}">

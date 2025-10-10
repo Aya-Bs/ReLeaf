@@ -538,10 +538,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </td>
                                 <td>
                                     <span class="badge-modern badge-info">
-                                        <i class="fas fa-users"></i>
-                                        {{ $event->participants_count ?? 0 }} / 
-                                        {{ $event->max_participants ?? '∞' }}
-                                    </span>
+    <i class="fas fa-users"></i>
+    @php
+        $reservedSeats = $event->reservations()->where('status', 'confirmed')->count();
+        $availableSeats = $event->max_participants - $reservedSeats;
+    @endphp
+    {{ $reservedSeats }} / {{ $event->max_participants ?? '∞' }}
+</span>
                                 </td>
                             </tr>
                             @endforeach

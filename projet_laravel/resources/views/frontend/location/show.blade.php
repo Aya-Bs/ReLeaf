@@ -213,20 +213,9 @@
         font-size: 14px;
     }
 </style>
-<div class="absolute top-0 right-0 mt-6 mr-8 z-10">
-            <nav class="flex items-center text-base font-normal text-[#2d5a27] space-x-2" aria-label="Breadcrumb">
-                <a href="/" class="hover:underline">Home</a>
-                <span class="mx-1">/</span>
-                <a href="/locations" class="hover:underline">Lieux</a>
-                <span class="mx-1">/</span>
-                <span class="font-bold">{{ Str::limit($location->name, 24) }}</span>
-            </nav>
-        </div>
-        <br>
-        <br>
- 
 
-<div class="location-map-section">
+       
+ <div class="location-map-section">
     <div id="map"></div>
     <div class="floating-stats">
         <div class="stat-card">
@@ -276,7 +265,7 @@
                 
                 <div class="location-stats-row">
                      <div class="location-stat-box" >
-            {{ $location->price ?? '-' }}
+{{ is_numeric($location->price) ? $location->price . ' TND' : '-' }}
             <div class="location-stat-label">Prix</div>
         </div>
                     <div class="location-stat-box">
@@ -298,8 +287,30 @@
         </div>
         <div class="col-lg-5">
             <div class="location-image-card">
-                @if($location->images && count($location->images))
-                    <img id="location-image-carousel" src="{{ asset('storage/' . $location->images[0]) }}" class="location-image-main" alt="Location image">
+                @php
+                    // Safely extract first image path when items can be strings or arrays
+                    $firstImage = null;
+                    if(!empty($location->images) && is_array($location->images)){
+                        $candidate = $location->images[0] ?? null;
+                        if(is_string($candidate)){
+                            $firstImage = $candidate;
+                        } elseif(is_array($candidate)){
+                            // Try common keys and then first string value
+                            $firstImage = $candidate['path'] ?? $candidate['file'] ?? null;
+                            if(!$firstImage){
+                                // take first scalar value inside the array
+                                foreach($candidate as $v){
+                                    if(is_string($v)){
+                                        $firstImage = $v;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                @endphp
+                @if($firstImage)
+                    <img id="location-image-carousel" src="{{ asset('storage/' . $firstImage) }}" class="location-image-main" alt="Location image">
                 @else
                     <div class="location-image-main" style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f4f7f4; color: #666; padding: 20px;">
                         <i class="fas fa-image" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
@@ -468,13 +479,37 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        @if($location->images && count($location->images) > 1)
-            let images = @json(array_map(fn($img) => asset('storage/' . $img), $location->images));
+        @php
+            // Build a clean array of image URLs for JS: only string paths, normalized
+            $jsImageUrls = [];
+            if(!empty($location->images) && is_array($location->images)){
+                foreach($location->images as $item){
+                    $path = null;
+                    if(is_string($item)){
+                        $path = $item;
+                    } elseif(is_array($item)){
+                        $path = $item['path'] ?? $item['file'] ?? null;
+                        if(!$path){
+                            foreach($item as $v){
+                                if(is_string($v)){
+                                    $path = $v; break;
+                                }
+                            }
+                        }
+                    }
+                    if($path){
+                        $jsImageUrls[] = asset('storage/' . $path);
+                    }
+                }
+            }
+        @endphp
+        @if(count($jsImageUrls) > 1)
+            let images = @json($jsImageUrls);
             let imgElem = document.getElementById('location-image-carousel');
             let idx = 0;
             setInterval(function() {
                 idx = (idx + 1) % images.length;
-                imgElem.src = images[idx];
+                if(imgElem) imgElem.src = images[idx];
             }, 2000);
         @endif
     });
