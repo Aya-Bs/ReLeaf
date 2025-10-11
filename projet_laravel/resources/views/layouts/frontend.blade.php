@@ -218,7 +218,7 @@ body {
                                     <i class="fas fa-home me-2"></i>Lieux
                                 </a></li>
                                 <li><a class="dropdown-item" href="{{ route('events.my-events') }}">
-                                    <i class="fas fa-list me-2"></i>Mes événements
+                                    <i class="fas fa-calendar-alt me-2"></i>Mes événements
                                 </a></li>
                                
                             </ul>
@@ -261,26 +261,6 @@ body {
                         </a>
                     </li>
 
-                    <!-- Profile Dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user me-1"></i>Mon Profil
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('profile.show') }}">
-                                <i class="fas fa-eye me-2"></i>Voir le profil
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ route('profile.edit.extended') }}">
-                                <i class="fas fa-edit me-2"></i>Modifier le profil
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ route('user.certificates.index') }}">
-                                <i class="fas fa-certificate me-2"></i>Mes certificats
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ route('donations.list') }}">
-                                <i class="fas fa-donate me-2"></i>Mes dons
-                            </a></li>
-                        </ul>
-                    </li>
                 @endauth
             </ul>
             
@@ -304,10 +284,16 @@ body {
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="{{ route('profile.show') }}">
-                                <i class="fas fa-user me-2"></i>Mon Profil
+                                <i class="fas fa-eye me-2"></i>Voir le profil
                             </a></li>
                             <li><a class="dropdown-item" href="{{ route('profile.edit.extended') }}">
                                 <i class="fas fa-edit me-2"></i>Modifier le profil
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ route('user.certificates.index') }}">
+                                <i class="fas fa-certificate me-2"></i>Mes certificats
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ route('donations.list') }}">
+                                <i class="fas fa-donate me-2"></i>Mes dons
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             

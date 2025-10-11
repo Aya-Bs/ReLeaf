@@ -167,7 +167,7 @@
         cursor: pointer;
         transition: all 0.3s ease;
         font-weight: 600;
-        font-size: 14px;
+        font-size: 10px;
         min-width: 44px;
         text-align: center;
     }
@@ -329,119 +329,115 @@
                 </div>
             </div>
 
-            {{-- Events Container with Pagination --}}
-            <div id="events-container" style="font-size: 90%;">
-                 @php
-                    $eventsPerPage = 4;
-                    $totalPages = ceil($events->count() / $eventsPerPage);
-                    $currentEvents = $events;
-                @endphp
-                 <div id="events-container" style="font-size: 70%;">
-                
-                @for($page = 0; $page < $totalPages; $page++)
-                <div class="event-page {{ $page === 0 ? 'active' : '' }}" data-page="{{ $page }}">
-                    <div class="row g-4">
-                        @foreach($currentEvents->slice($page * $eventsPerPage, $eventsPerPage) as $event)
-                        <div class="col-md-3 d-flex">
-                            <div class="event-card flex-fill" style="
-                                background: linear-gradient(135deg, #ffffff 0%, #f9fdf9 100%);
-                                border-radius: 20px;
-                                box-shadow: 0 4px 20px rgba(45,90,39,0.08);
-                                padding: 0;
-                                overflow: hidden;
-                                border: 1px solid rgba(45,90,39,0.08);
-                                display: flex;
-                                flex-direction: column;
-                                justify-content: space-between;
-                                transition: all 0.3s ease;
-                                cursor: pointer;
-                                height: 100%;
-                            " onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 12px 32px rgba(45,90,39,0.16)';" 
-                              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(45,90,39,0.08)';">
+           <div id="events-container" style="font-size: 50%;">
+    @php
+        $eventsPerPage = 4;
+        $totalPages = ceil($events->count() / $eventsPerPage);
+        $currentEvents = $events;
+    @endphp
+    
+    @for($page = 0; $page < $totalPages; $page++)
+    <div class="event-page {{ $page === 0 ? 'active' : '' }}" data-page="{{ $page }}">
+        <div class="row g-3">
+            @foreach($currentEvents->slice($page * $eventsPerPage, $eventsPerPage) as $event)
+            <div class="col-md-3 d-flex">
+                <div class="event-card flex-fill"  data-event-id="{{ $event->id }}" style="
+                    background: linear-gradient(135deg, #ffffff 0%, #f9fdf9 100%);
+                    border-radius: 16px;
+                    box-shadow: 0 3px 15px rgba(45,90,39,0.06);
+                    padding: 0;
+                    overflow: hidden;
+                    border: 1px solid rgba(45,90,39,0.06);
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    transition: all 0.2s ease;
+                    cursor: pointer;
+                    height: 100%;
+                " onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 25px rgba(45,90,39,0.12)';" 
+                  onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 15px rgba(45,90,39,0.06)';">
 
-                                {{-- Event Header --}}
-                                <div style="
-                                    background: linear-gradient(135deg, #2d5a27 0%, #3d7a37 100%);
-                                    padding: 20px 20px 16px 20px;
-                                    position: relative;
-                                    overflow: hidden;
-                                ">
-                                    {{-- Decorative circles --}}
-                                    <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
-                                    <div style="position: absolute; bottom: -10px; left: -10px; width: 50px; height: 50px; background: rgba(255,255,255,0.08); border-radius: 50%;"></div>
-                                    
-                                    <div style="position: relative; z-index: 1;">
-                                        <div style="font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 8px; line-height: 1.3;">
-                                            {{ $event->title ?? 'Untitled Event' }}
-                                        </div>
-                                        <div style="display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.9); font-size: 14px;">
-                                            <i class="fas fa-calendar-alt" style="font-size: 13px;"></i>
-                                            <span>{{ $event->date ?? $event->created_at->format('M d, Y') }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{-- Event Body --}}
-                                <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                                    {{-- Status Badge --}}
-                                    @if(isset($event->status))
-                                        @php
-                                            $statusColors = [
-                                                'published' => ['#e8f5e9', '#2d5a27'],
-                                                'approved' => ['#e8f5e9', '#2d5a27'],
-                                                'pending' => ['#fff3e0', '#f57c00'],
-                                                'draft' => ['#fff3e0', '#f57c00'],
-                                                'rejected' => ['#ffebee', '#c62828'],
-                                                'cancelled' => ['#ffebee', '#c62828'],
-                                            ];
-                                            $bg = $statusColors[$event->status][0] ?? '#f4f4f4';
-                                            $color = $statusColors[$event->status][1] ?? '#888';
-                                        @endphp
-                                        <span style="display:inline-block; background:{{ $bg }}; color:{{ $color }}; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
-                                            {{ strtoupper($event->status) }}
-                                        </span>
-                                    @endif
-
-                                    {{-- Description --}}
-                                    <div style="
-                                        font-size: 15px;
-                                        color: #555;
-                                        line-height: 1.6;
-                                        margin-bottom: 16px;
-                                        min-height: 48px;
-                                        display: -webkit-box;
-                                        -webkit-line-clamp: 2;
-                                        -webkit-box-orient: vertical;
-                                        overflow: hidden;
-                                    ">
-                                        {{ $event->description ? Str::limit($event->description, 80) : 'No description available.' }}
-                                    </div>
-
-                                    {{-- Event Meta Info --}}
-                                    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; padding: 12px; background: #f8faf8; border-radius: 12px;">
-                                        @if(isset($event->duration))
-                                        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666;">
-                                            <i class="fas fa-clock" style="color: #2d5a27; width: 16px;"></i>
-                                            <span>{{ $event->duration }}</span>
-                                        </div>
-                                        @endif
-                                        @if(isset($event->max_participants))
-                                        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666;">
-                                            <i class="fas fa-users" style="color: #2d5a27; width: 16px;"></i>
-                                            <span>Max {{ $event->max_participants }} participants</span>
-                                        </div>
-                                        @endif
-                                    </div>
-
-                                    
-                                </div>
+                    {{-- Event Header --}}
+                    <div style="
+                        background: linear-gradient(135deg, #2d5a27 0%, #3d7a37 100%);
+                        padding: 15px 15px 12px 15px;
+                        position: relative;
+                        overflow: hidden;
+                    ">
+                        {{-- Decorative circles --}}
+                        <div style="position: absolute; top: -15px; right: -15px; width: 60px; height: 60px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+                        <div style="position: absolute; bottom: -8px; left: -8px; width: 40px; height: 40px; background: rgba(255,255,255,0.08); border-radius: 50%;"></div>
+                        
+                        <div style="position: relative; z-index: 1;">
+                            <div style="font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 6px; line-height: 1.3;">
+                                {{ $event->title ?? 'Untitled Event' }}
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px; color: rgba(255,255,255,0.9); font-size: 12px;">
+                                <i class="fas fa-calendar-alt" style="font-size: 11px;"></i>
+                                <span>{{ $event->date ?? $event->created_at->format('M d, Y') }}</span>
                             </div>
                         </div>
-                        @endforeach
+                    </div>
+
+                    {{-- Event Body --}}
+                    <div style="padding: 15px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                        {{-- Status Badge --}}
+                        @if(isset($event->status))
+                            @php
+                                $statusColors = [
+                                    'published' => ['#e8f5e9', '#2d5a27'],
+                                    'approved' => ['#e8f5e9', '#2d5a27'],
+                                    'pending' => ['#fff3e0', '#f57c00'],
+                                    'draft' => ['#fff3e0', '#f57c00'],
+                                    'rejected' => ['#ffebee', '#c62828'],
+                                    'cancelled' => ['#ffebee', '#c62828'],
+                                ];
+                                $bg = $statusColors[$event->status][0] ?? '#f4f4f4';
+                                $color = $statusColors[$event->status][1] ?? '#888';
+                            @endphp
+                            <span style="display:inline-block; background:{{ $bg }}; color:{{ $color }}; padding:3px 10px; border-radius:10px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
+                                {{ strtoupper($event->status) }}
+                            </span>
+                        @endif
+
+                        {{-- Description --}}
+                        <div style="
+                            font-size: 13px;
+                            color: #555;
+                            line-height: 1.5;
+                            margin-bottom: 12px;
+                            min-height: 40px;
+                            display: -webkit-box;
+                            -webkit-line-clamp: 2;
+                            -webkit-box-orient: vertical;
+                            overflow: hidden;
+                        ">
+                            {{ $event->description ? Str::limit($event->description, 70) : 'No description available.' }}
+                        </div>
+
+                        {{-- Event Meta Info --}}
+                        <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; padding: 10px; background: #f8faf8; border-radius: 10px;">
+                            @if(isset($event->duration))
+                            <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #666;">
+                                <i class="fas fa-clock" style="color: #2d5a27; width: 14px;"></i>
+                                <span>{{ $event->duration }}</span>
+                            </div>
+                            @endif
+                            @if(isset($event->max_participants))
+                            <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #666;">
+                                <i class="fas fa-users" style="color: #2d5a27; width: 14px;"></i>
+                                <span>Max {{ $event->max_participants }} participants</span>
+                            </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
-                @endfor
             </div>
+            @endforeach
+        </div>
+    </div>
+    @endfor
+</div>
 
             {{-- JavaScript Pagination Controls --}}
             @if($totalPages > 1)
@@ -478,6 +474,29 @@
 
 @push('scripts')
 <script>
+
+    // Make event cards clickable
+document.addEventListener('DOMContentLoaded', function() {
+    const eventCards = document.querySelectorAll('.event-card');
+    
+    eventCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Don't redirect if clicking on buttons or links inside the card
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.closest('button') || e.target.closest('a')) {
+                return;
+            }
+            
+            // Find the event ID - you'll need to add data-event-id attribute to your cards
+            const eventId = this.getAttribute('data-event-id');
+            
+            if (eventId) {
+                window.location.href = `/events/${eventId}`;
+            }
+        });
+    });
+});
+
+
     document.addEventListener('DOMContentLoaded', function() {
         @php
             // Build a clean array of image URLs for JS: only string paths, normalized

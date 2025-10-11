@@ -10,12 +10,12 @@ class EventController extends Controller
     /**
      * Afficher la liste des événements selon le rôle de l'utilisateur
      */
-    public function index(Request $request)
+ public function index(Request $request)
     {
-    // Start from published events only
-    $query = Event::published()
-             ->with(['user', 'reservations', 'location'])
-             ->orderBy('date', 'asc');
+        // Start from published AND cancelled events
+        $query = Event::whereIn('status', ['published', 'cancelled'])
+                 ->with(['user', 'reservations', 'location'])
+                 ->orderBy('date', 'asc');
 
         // Filtres
         // Apply filters using model scopes when available
@@ -28,7 +28,7 @@ class EventController extends Controller
                 $query->withAvailableSeats();
                 break;
             default:
-                // no additional filter - published events only
+                // no additional filter - published and cancelled events only
                 break;
         }
 
@@ -82,13 +82,19 @@ class EventController extends Controller
             return $event;
         });
 
-        // Provide a list of published event dates for the calendar (YYYY-MM-DD)
-        $allEventDates = Event::published()->pluck('date')->map(function ($d) {
-            return $d->format('Y-m-d');
-        })->unique()->values()->toArray();
+        // Provide a list of published AND cancelled event dates for the calendar (YYYY-MM-DD)
+        $allEventDates = Event::whereIn('status', ['published', 'cancelled'])
+            ->pluck('date')
+            ->map(function ($d) {
+                return $d->format('Y-m-d');
+            })
+            ->unique()
+            ->values()
+            ->toArray();
 
         return view('events.index', compact('events', 'allEventDates'));
     }
+
 
     /**
      * Afficher un événement spécifique

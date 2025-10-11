@@ -107,8 +107,8 @@
                         </td>
                         <td>
                             <div class="d-flex align-items-center">
-                                <i class="fas fa-euro-sign text-muted me-1"></i>
-                                <span class="table-text">{{ $location->price ? $location->price . ' €' : 'N/A' }}</span>
+                                <i class="fas fa-money-bill-wave text-muted me-1"></i>
+                                <span class="table-text">{{ $location->price ? $location->price . ' TND' : 'N/A' }}</span>
                             </div>
                         </td>
                         <td>
@@ -188,7 +188,7 @@
         @if($locations->count() > 0)
         <div class="table-footer d-flex justify-content-between align-items-center p-3 border-top">
             <div>
-                {{ $locations->links() }}
+{{ $locations->links('frontend.location.custom') }}
             </div>
         </div>
         @endif
@@ -364,17 +364,7 @@
         padding: 2rem 0;
     }
 
-    /* Pagination */
-    .pagination {
-        font-size: 0.85rem;
-    }
-
-    .page-link {
-        border-radius: 8px;
-        margin: 0 2px;
-        border: 1px solid #e2e8f0;
-    }
-
+    
     /* Responsive */
     @media (max-width: 768px) {
         .search-filter-bar .row > div {
@@ -396,9 +386,281 @@
             height: 35px;
         }
     }
+
+
+
+    /* Pagination Styles - CONSISTENT HORIZONTAL */
+.pagination {
+    display: flex !important;
+    list-style: none !important;
+    padding: 0 !important;
+    margin-left: 400px !important;
+    margin-top: 20px !important;
+    gap: 6px !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    font-size: 0.85rem !important;
+}
+
+.pagination li {
+    display: inline-block !important;
+    margin: 400px !important;
+    margin-top: 20px !important;
+    padding: 0 !important;
+}
+
+/* TARGET ALL PAGINATION ELEMENTS - FORCE CONSISTENT STYLING */
+.pagination a,
+.pagination span,
+.pagination .page-link,
+.pagination [rel="prev"],
+.pagination [rel="next"],
+.pagination .disabled span,
+.pagination .active span {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px 12px !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    color: #2d5a27 !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    background: white !important;
+    transition: all 0.3s ease !important;
+    min-width: 40px !important;
+    height: 40px !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+}
+
+/* Hover states for clickable links */
+.pagination a:hover {
+    background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%) !important;
+    color: white !important;
+    border-color: #2d5a27 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(45, 90, 39, 0.2) !important;
+}
+
+/* Active page */
+.pagination .active a,
+.pagination .active span,
+.pagination [aria-current="page"] {
+    background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%) !important;
+    border-color: #2d5a27 !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(45, 90, 39, 0.3) !important;
+}
+
+/* Disabled states */
+.pagination .disabled a,
+.pagination .disabled span,
+.pagination [aria-disabled="true"] {
+    background: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Make sure all elements have the same dimensions */
+.pagination li:first-child a,
+.pagination li:first-child span,
+.pagination li:last-child a,
+.pagination li:last-child span,
+.pagination [rel="prev"],
+.pagination [rel="next"] {
+    min-width: 70px !important;
+    font-weight: 700 !important;
+}
+
+/* Page numbers - ensure consistent size */
+.pagination li:not(:first-child):not(:last-child) a,
+.pagination li:not(:first-child):not(:last-child) span {
+    min-width: 40px !important;
+}
+
+/* Hide any text elements that break the layout */
+.pagination > div:first-child {
+    display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pagination {
+        gap: 4px !important;
+    }
+    
+    .pagination a,
+    .pagination span,
+    .pagination .page-link {
+        padding: 6px 10px !important;
+        min-width: 35px !important;
+        height: 35px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .pagination li:first-child a,
+    .pagination li:first-child span,
+    .pagination li:last-child a,
+    .pagination li:last-child span {
+        min-width: 60px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .pagination a,
+    .pagination span,
+    .pagination .page-link {
+        padding: 5px 8px !important;
+        min-width: 32px !important;
+        height: 32px !important;
+        font-size: 0.75rem !important;
+    }
+    
+    .pagination li:first-child a,
+    .pagination li:first-child span,
+    .pagination li:last-child a,
+    .pagination li:last-child span {
+        min-width: 55px !important;
+    }
+}
+
 </style>
 
 <script>
+
+
+// Force consistent pagination styling for locations page
+document.addEventListener('DOMContentLoaded', function() {
+    function forceConsistentPagination() {
+        const paginations = document.querySelectorAll('.pagination');
+        
+        paginations.forEach(pagination => {
+            const items = pagination.querySelectorAll('li');
+            
+            items.forEach(item => {
+                // Force inline display
+                item.style.cssText = `
+                    display: inline-block !important;
+                    margin: 0 3px !important;
+                    padding: 0 !important;
+                    vertical-align: middle !important;
+                `;
+                
+                // Style all links and spans
+                const elements = item.querySelectorAll('a, span');
+                elements.forEach(el => {
+                    el.style.cssText = `
+                        display: inline-flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        padding: 8px 12px !important;
+                        border: 2px solid #e2e8f0 !important;
+                        border-radius: 8px !important;
+                        color: #2d5a27 !important;
+                        text-decoration: none !important;
+                        font-weight: 600 !important;
+                        font-size: 0.85rem !important;
+                        background: white !important;
+                        transition: all 0.3s ease !important;
+                        min-width: 40px !important;
+                        height: 40px !important;
+                        line-height: 1 !important;
+                        text-align: center !important;
+                        box-sizing: border-box !important;
+                    `;
+                    
+                    // Check if it's active
+                    if (item.classList.contains('active') || el.getAttribute('aria-current') === 'page') {
+                        el.style.cssText += `
+                            background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%) !important;
+                            border-color: #2d5a27 !important;
+                            color: white !important;
+                            transform: translateY(-1px) !important;
+                            box-shadow: 0 4px 12px rgba(45, 90, 39, 0.3) !important;
+                        `;
+                    }
+                    
+                    // Check if it's disabled
+                    if (item.classList.contains('disabled') || el.getAttribute('aria-disabled') === 'true') {
+                        el.style.cssText += `
+                            background: #f8f9fa !important;
+                            border-color: #dee2e6 !important;
+                            color: #6c757d !important;
+                            cursor: not-allowed !important;
+                            opacity: 0.6 !important;
+                            transform: none !important;
+                            box-shadow: none !important;
+                        `;
+                    }
+                    
+                    // Style previous/next buttons
+                    const text = el.textContent?.trim().toLowerCase() || '';
+                    if (text.includes('prev') || text.includes('next') || text.includes('‹') || text.includes('›')) {
+                        el.style.cssText += `
+                            min-width: 70px !important;
+                            font-weight: 700 !important;
+                        `;
+                    }
+                    
+                    // Add hover effect for clickable links
+                    if (el.tagName === 'A' && !item.classList.contains('disabled')) {
+                        el.addEventListener('mouseenter', function() {
+                            if (!item.classList.contains('active')) {
+                                this.style.cssText += `
+                                    background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%) !important;
+                                    color: white !important;
+                                    border-color: #2d5a27 !important;
+                                    transform: translateY(-2px) !important;
+                                    box-shadow: 0 4px 12px rgba(45, 90, 39, 0.2) !important;
+                                `;
+                            }
+                        });
+                        
+                        el.addEventListener('mouseleave', function() {
+                            if (!item.classList.contains('active')) {
+                                const isNav = text.includes('prev') || text.includes('next') || text.includes('‹') || text.includes('›');
+                                this.style.cssText = `
+                                    display: inline-flex !important;
+                                    align-items: center !important;
+                                    justify-content: center !important;
+                                    padding: 8px 12px !important;
+                                    border: 2px solid #e2e8f0 !important;
+                                    border-radius: 8px !important;
+                                    color: #2d5a27 !important;
+                                    text-decoration: none !important;
+                                    font-weight: ${isNav ? '700' : '600'} !important;
+                                    font-size: 0.85rem !important;
+                                    background: white !important;
+                                    transition: all 0.3s ease !important;
+                                    min-width: ${isNav ? '70' : '40'}px !important;
+                                    height: 40px !important;
+                                    line-height: 1 !important;
+                                    text-align: center !important;
+                                    box-sizing: border-box !important;
+                                `;
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    }
+    
+    // Run multiple times
+    forceConsistentPagination();
+    setTimeout(forceConsistentPagination, 100);
+    setTimeout(forceConsistentPagination, 500);
+});
+
+
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('location-search-input');
     const statusFilter = document.getElementById('location-status-filter');

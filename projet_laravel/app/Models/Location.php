@@ -20,7 +20,7 @@ class Location extends Model
         'images',
         'reserved',
         'in_repair',
-        'price', // Added price attribute
+        'price', 
     ];
 
     protected $casts = [

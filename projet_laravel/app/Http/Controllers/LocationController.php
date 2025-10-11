@@ -75,12 +75,13 @@ class LocationController extends Controller
             'description' => 'nullable|string',
             'images.*' => 'nullable|image|max:2048',
             'price' => 'required|numeric|min:0',
+
         ]);
 
     $data['in_repair'] = $request->has('in_repair');
     $data['latitude'] = $request->input('latitude');
     $data['longitude'] = $request->input('longitude');
-    $data['price'] = $request->input('price'); // Assign price to data array
+    $data['price'] = $request->input('price'); 
 
         // Handle images upload
         $images = [];
@@ -105,18 +106,21 @@ class LocationController extends Controller
         $temperature = null;
         $weather_icon = null;
         if ($location->latitude && $location->longitude) {
-            $apiKey = '566524ab9ba3b09a58018a14c8855340'; 
-            $response = \Illuminate\Support\Facades\Http::get('https://api.openweathermap.org/data/2.5/weather', [
-                'lat' => $location->latitude,
-                'lon' => $location->longitude,
-                'appid' => $apiKey,
-                'units' => 'metric'
-            ]);
-            if ($response->successful()) {
-                $temperature = $response->json('main.temp');
-                $weather = $response->json('weather');
-                if (is_array($weather) && count($weather) > 0 && isset($weather[0]['icon'])) {
-                    $weather_icon = $weather[0]['icon'];
+            $apiKey = env('OPENWEATHER_API_KEY');
+            if ($apiKey) {
+                $response = \Illuminate\Support\Facades\Http::get('https://api.openweathermap.org/data/2.5/weather', [
+                    'lat' => $location->latitude,
+                    'lon' => $location->longitude,
+                    'appid' => $apiKey,
+                    'units' => 'metric'
+                ]);
+
+                if ($response->successful()) {
+                    $temperature = $response->json('main.temp');
+                    $weather = $response->json('weather');
+                    if (is_array($weather) && count($weather) > 0 && isset($weather[0]['icon'])) {
+                        $weather_icon = $weather[0]['icon'];
+                    }
                 }
             }
         }

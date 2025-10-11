@@ -15,7 +15,9 @@
                         <div class="filter-option mb-1 {{ request('filter') === 'all' || !request('filter') ? 'active' : '' }}" data-filter="filter" data-value="all">
                             <label class="d-flex justify-content-between align-items-center cursor-pointer" style="font-size: 11px;">
                                 <span>Tous les événements</span>
-                                <span class="badge bg-light text-dark" style="font-size: 9px;">{{ \App\Models\Event::published()->count() }}</span>
+                                    <span class="badge bg-light text-dark" style="font-size: 9px;">
+                                        {{ \App\Models\Event::published()->count() + \App\Models\Event::where('status', 'cancelled')->count() }}
+                                    </span>                            
                             </label>
                         </div>
                         <div class="filter-option mb-1 {{ request('filter') === 'upcoming' ? 'active' : '' }}" data-filter="filter" data-value="upcoming">
@@ -100,7 +102,15 @@
                 <div class="row g-4" id="events-container">
                     @forelse($events as $event)
                     <div class="col-lg-6">
-                        <div class="event-card card border-0 shadow-sm h-100">
+                        <div class="event-card card border-0 shadow-sm h-100 {{ $event->status === 'cancelled' ? 'event-cancelled' : '' }}">
+                            {{-- Clickable overlay so clicking the card opens the event show page --}}
+                            <a href="{{ route('events.show', $event) }}" class="card-overlay-link" aria-label="Voir l'événement {{ $event->title }}"></a>
+                            @if($event->status === 'cancelled')
+                            <div class="cancelled-overlay">
+                                <img src="{{ asset('images/event-cancelled.png') }}" alt="Événement Annulé" class="cancelled-banner">
+                            </div>
+                            @endif
+                            
                             <div class="card-header-custom d-flex justify-content-between align-items-start p-3">
                                 <div class="event-info-main flex-grow-1">
                                     <h5 class="card-title text-eco mb-2">{{ $event->title }}</h5>
@@ -114,26 +124,22 @@
                                             <span>{{ Str::limit($event->location->name, 30) }}</span>
                                         </div>
 
-                                         <div class="meta-item">
-<i class="fas fa-chair me-1"></i>                                            <span>Places : {{ $event->availableSeats }}/{{ $event->max_participants }} disponibles
-</span>
+                                        <div class="meta-item">
+                                            <i class="fas fa-chair me-1"></i>
+                                            <span>Places : {{ $event->availableSeats }}/{{ $event->max_participants }} disponibles</span>
                                         </div>
-
                                     </div>
                                 </div>
                                 <div class="event-image-small">
-
-
-@if($event->images && count($event->images) > 0)
-                                @foreach($event->images as $idx => $image)
-                                    <img src="{{ asset('storage/' . $image) }}"
-                                         alt="{{ $event->title }}"
-class="event-thumbnail"                                         
-data-carousel-index="{{ $idx }}">
-                                @endforeach
-                            @else
-                            
-                            <div class="event-thumbnail-placeholder bg-eco d-flex align-items-center justify-content-center">
+                                    @if($event->images && count($event->images) > 0)
+                                        @foreach($event->images as $idx => $image)
+                                            <img src="{{ asset('storage/' . $image) }}"
+                                                alt="{{ $event->title }}"
+                                                class="event-thumbnail"                                         
+                                                data-carousel-index="{{ $idx }}">
+                                        @endforeach
+                                    @else
+                                        <div class="event-thumbnail-placeholder bg-eco d-flex align-items-center justify-content-center">
                                             <i class="fas fa-calendar text-white"></i>
                                         </div>
                                     @endif
@@ -145,14 +151,13 @@ data-carousel-index="{{ $idx }}">
                                     {{ Str::limit($event->description, 120) }}
                                 </p>
                                 
-                            
-                                
                                 <!-- Actions -->
                                 <div class="card-actions mt-auto">
-                                    @if($event->userReservation)
-                                      
+                                    @if($event->status === 'cancelled')
+                                   
+                                    @elseif($event->userReservation)
                                         <a href="{{ route('reservations.confirmation', $event->userReservation) }}" 
-                                           class="btn btn-outline-eco btn-sm w-100">
+                                        class="btn btn-outline-eco btn-sm w-100">
                                             <i class="fas fa-eye me-2"></i>Voir ma réservation
                                         </a>
                                     @elseif($event->userInWaitingList)
@@ -168,10 +173,9 @@ data-carousel-index="{{ $idx }}">
                                                 @endif
                                             </small>
                                         </div>
-                                      
                                     @elseif($event->availableSeats > 0 && auth()->check())
                                         <a href="{{ route('events.seats', $event) }}" 
-                                           class="btn btn-eco w-100">
+                                        class="btn btn-eco w-100">
                                             <i class="fas fa-ticket-alt me-2"></i>Réserver une place
                                         </a>
                                     @elseif($event->isFull && auth()->check())
@@ -222,11 +226,11 @@ data-carousel-index="{{ $idx }}">
                     </div>
                     @endforelse
                 </div>
-
+                
                 <!-- Pagination -->
                 @if($events->hasPages())
-                    <div class="d-flex justify-content-center mt-4">
-                        {{ $events->withQueryString()->links() }}
+                    <div class="pagination-container mt-4">
+                        {{ $events->withQueryString()->links('events.custom') }}
                     </div>
                 @endif
             </div>
@@ -505,6 +509,30 @@ data-carousel-index="{{ $idx }}">
     box-shadow: 0 12px 35px rgba(0,0,0,0.15) !important;
 }
 
+/* Make the whole card clickable while keeping internal controls clickable */
+.card-overlay-link {
+    position: absolute;
+    inset: 0; /* top:0; right:0; bottom:0; left:0; */
+    z-index: 5;
+    display: block;
+    text-indent: -9999px;
+}
+
+/* Ensure actionable elements sit above the overlay */
+.event-card .card-actions,
+.event-card .card-footer,
+.event-card .card-body a,
+.event-card .card-body button,
+.event-card form {
+    position: relative;
+    z-index: 10;
+}
+
+/* If event is cancelled, keep overlay but allow reservation view button to be clickable */
+.event-card.event-cancelled .card-actions {
+    z-index: 11;
+}
+
 .card-header-custom {
     background: white;
     border-bottom: 1px solid #f0f0f0;
@@ -581,6 +609,43 @@ data-carousel-index="{{ $idx }}">
     font-weight: 500;
 }
 
+/* Cancelled Event Styles */
+.event-cancelled {
+    opacity: 0.7;
+}
+
+.cancelled-banner-container {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.cancelled-banner {
+    max-width: 70%;
+    margin-bottom: -30px ;
+    margin-right: 19px ;
+
+}
+.cancelled-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    background: transparent;
+}
+
+.cancelled-text {
+    font-weight: bold;
+    color: #dc3545;
+    font-size: 16px;
+    text-transform: uppercase;
+}
+
 /* Progress Bar */
 .progress {
     background-color: #e9ecef;
@@ -590,6 +655,152 @@ data-carousel-index="{{ $idx }}">
 
 .progress-bar {
     border-radius: 10px;
+}
+/* Pagination Styles - CONSISTENT HORIZONTAL */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+    width: 100%;
+}
+
+.pagination {
+    display: flex !important;
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 6px !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+}
+
+.pagination li {
+    display: inline-block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* TARGET ALL PAGINATION ELEMENTS - FORCE CONSISTENT STYLING */
+.pagination a,
+.pagination span,
+.pagination .page-link,
+.pagination [rel="prev"],
+.pagination [rel="next"],
+.pagination .disabled span,
+.pagination .active span {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 10px 14px !important;
+    border: 2px solid var(--eco-light) !important;
+    border-radius: 8px !important;
+    color: var(--eco-primary) !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    background: white !important;
+    transition: all 0.3s ease !important;
+    min-width: 45px !important;
+    height: 45px !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+}
+
+/* Hover states for clickable links */
+.pagination a:hover {
+    background: linear-gradient(135deg, var(--eco-primary) 0%, var(--eco-secondary) 100%) !important;
+    color: white !important;
+    border-color: var(--eco-primary) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(45, 90, 39, 0.2) !important;
+}
+
+/* Active page */
+.pagination .active a,
+.pagination .active span,
+.pagination [aria-current="page"] {
+    background: linear-gradient(135deg, var(--eco-primary) 0%, var(--eco-secondary) 100%) !important;
+    border-color: var(--eco-primary) !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(45, 90, 39, 0.3) !important;
+}
+
+/* Disabled states */
+.pagination .disabled a,
+.pagination .disabled span,
+.pagination [aria-disabled="true"] {
+    background: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Make sure all elements have the same dimensions */
+.pagination li:first-child a,
+.pagination li:first-child span,
+.pagination li:last-child a,
+.pagination li:last-child span,
+.pagination [rel="prev"],
+.pagination [rel="next"] {
+    min-width: 80px !important;
+    font-weight: 700 !important;
+}
+
+/* Page numbers - ensure consistent size */
+.pagination li:not(:first-child):not(:last-child) a,
+.pagination li:not(:first-child):not(:last-child) span {
+    min-width: 45px !important;
+}
+
+/* Hide any text elements that break the layout */
+.pagination > div:first-child {
+    display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pagination {
+        gap: 4px !important;
+    }
+    
+    .pagination a,
+    .pagination span,
+    .pagination .page-link {
+        padding: 8px 12px !important;
+        min-width: 40px !important;
+        height: 40px !important;
+        font-size: 13px !important;
+    }
+    
+    .pagination li:first-child a,
+    .pagination li:first-child span,
+    .pagination li:last-child a,
+    .pagination li:last-child span {
+        min-width: 70px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .pagination a,
+    .pagination span,
+    .pagination .page-link {
+        padding: 6px 10px !important;
+        min-width: 35px !important;
+        height: 35px !important;
+        font-size: 12px !important;
+    }
+    
+    .pagination li:first-child a,
+    .pagination li:first-child span,
+    .pagination li:last-child a,
+    .pagination li:last-child span {
+        min-width: 60px !important;
+    }
 }
 
 /* Responsive */
@@ -627,34 +838,29 @@ data-carousel-index="{{ $idx }}">
         margin-top: 10px;
         align-self: flex-end;
     }
-}
 
-/* Pagination */
-.pagination {
-    justify-content: center;
-}
-
-.page-link {
-    border: 2px solid var(--eco-light);
-    color: var(--eco-primary);
-    padding: 10px 16px;
-    margin: 0 4px;
-    border-radius: 12px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.page-link:hover {
-    background: var(--eco-primary);
-    color: white;
-    border-color: var(--eco-primary);
-    transform: translateY(-2px);
-}
-
-.page-item.active .page-link {
-    background: linear-gradient(135deg, var(--eco-primary) 0%, var(--eco-secondary) 100%);
-    border-color: var(--eco-primary);
-    color: white;
+    /* Responsive pagination */
+    .pagination {
+        gap: 4px !important;
+    }
+    
+    .pagination .page-link,
+    .pagination span {
+        padding: 6px 8px !important;
+        min-width: 35px !important;
+        font-size: 12px !important;
+    }
+    
+    .pagination li:first-child .page-link,
+    .pagination li:last-child .page-link {
+        padding: 6px 12px !important;
+        min-width: 60px !important;
+    }
+    
+    .pagination li:not(:first-child):not(:last-child) .page-link {
+        min-width: 30px !important;
+        padding: 6px 8px !important;
+    }
 }
 
 /* Cursor pointer */
@@ -865,5 +1071,130 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize everything
     initializeFilters();
 });
+
+// Force consistent pagination styling
+document.addEventListener('DOMContentLoaded', function() {
+    function forceConsistentPagination() {
+        const paginations = document.querySelectorAll('.pagination');
+        
+        paginations.forEach(pagination => {
+            const items = pagination.querySelectorAll('li');
+            
+            items.forEach(item => {
+                // Force inline display
+                item.style.cssText = `
+                    display: inline-block !important;
+                    margin: 0 3px !important;
+                    padding: 0 !important;
+                    vertical-align: middle !important;
+                `;
+                
+                // Style all links and spans
+                const elements = item.querySelectorAll('a, span');
+                elements.forEach(el => {
+                    el.style.cssText = `
+                        display: inline-flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        padding: 10px 14px !important;
+                        border: 2px solid #e8f5e8 !important;
+                        border-radius: 8px !important;
+                        color: #2d5a27 !important;
+                        text-decoration: none !important;
+                        font-weight: 600 !important;
+                        font-size: 14px !important;
+                        background: white !important;
+                        transition: all 0.3s ease !important;
+                        min-width: 45px !important;
+                        height: 45px !important;
+                        line-height: 1 !important;
+                        text-align: center !important;
+                        box-sizing: border-box !important;
+                    `;
+                    
+                    // Check if it's active
+                    if (item.classList.contains('active') || el.getAttribute('aria-current') === 'page') {
+                        el.style.cssText += `
+                            background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%) !important;
+                            border-color: #2d5a27 !important;
+                            color: white !important;
+                            transform: translateY(-1px) !important;
+                            box-shadow: 0 4px 12px rgba(45, 90, 39, 0.3) !important;
+                        `;
+                    }
+                    
+                    // Check if it's disabled
+                    if (item.classList.contains('disabled') || el.getAttribute('aria-disabled') === 'true') {
+                        el.style.cssText += `
+                            background: #f8f9fa !important;
+                            border-color: #dee2e6 !important;
+                            color: #6c757d !important;
+                            cursor: not-allowed !important;
+                            opacity: 0.6 !important;
+                            transform: none !important;
+                            box-shadow: none !important;
+                        `;
+                    }
+                    
+                    // Style previous/next buttons
+                    const text = el.textContent?.trim().toLowerCase() || '';
+                    if (text.includes('prev') || text.includes('next') || text.includes('‹') || text.includes('›')) {
+                        el.style.cssText += `
+                            min-width: 80px !important;
+                            font-weight: 700 !important;
+                        `;
+                    }
+                    
+                    // Add hover effect for clickable links
+                    if (el.tagName === 'A' && !item.classList.contains('disabled')) {
+                        el.addEventListener('mouseenter', function() {
+                            if (!item.classList.contains('active')) {
+                                this.style.cssText += `
+                                    background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%) !important;
+                                    color: white !important;
+                                    border-color: #2d5a27 !important;
+                                    transform: translateY(-2px) !important;
+                                    box-shadow: 0 4px 12px rgba(45, 90, 39, 0.2) !important;
+                                `;
+                            }
+                        });
+                        
+                        el.addEventListener('mouseleave', function() {
+                            if (!item.classList.contains('active')) {
+                                const isNav = text.includes('prev') || text.includes('next') || text.includes('‹') || text.includes('›');
+                                this.style.cssText = `
+                                    display: inline-flex !important;
+                                    align-items: center !important;
+                                    justify-content: center !important;
+                                    padding: 10px 14px !important;
+                                    border: 2px solid #e8f5e8 !important;
+                                    border-radius: 8px !important;
+                                    color: #2d5a27 !important;
+                                    text-decoration: none !important;
+                                    font-weight: ${isNav ? '700' : '600'} !important;
+                                    font-size: 14px !important;
+                                    background: white !important;
+                                    transition: all 0.3s ease !important;
+                                    min-width: ${isNav ? '80' : '45'}px !important;
+                                    height: 45px !important;
+                                    line-height: 1 !important;
+                                    text-align: center !important;
+                                    box-sizing: border-box !important;
+                                `;
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    }
+    
+    // Run multiple times
+    forceConsistentPagination();
+    setTimeout(forceConsistentPagination, 100);
+    setTimeout(forceConsistentPagination, 500);
+});
+
+
 </script>
 @endsection

@@ -21,6 +21,9 @@ return new class extends Migration
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
             $table->json('images')->nullable();
+            $table->boolean('reserved')->default(false);
+            $table->boolean('in_repair')->default(false);
+            $table->decimal('price', 8, 2)->nullable();
             $table->timestamps();
         });
     }

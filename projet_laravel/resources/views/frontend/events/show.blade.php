@@ -16,102 +16,128 @@
 
 
                    <!-- Event Information Card -->
-<div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-    <!-- Event Title -->
-    <h1 class="text-3xl font-bold text-gray-900 mb-4">{{ $event->title }}</h1>
+<div class="bg-white rounded-lg p-6 shadow-sm">
+    <!-- Event Title with Badge -->
+    <div class="flex justify-between items-center mb-4">
+    <h1 class="text-3xl font-bold text-gray-900">{{ $event->title }}</h1>
+    
+    @php
+        $confirmedCount = $event->reservations()->where('status', 'confirmed')->count();
+        $isFull = $event->max_participants && $confirmedCount >= $event->max_participants;
+    @endphp
+    
+    @if($isFull)
+        <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+            Complet
+        </span>
+    @else
+        <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+            Disponible
+        </span>
+    @endif
+</div>
     
     <!-- Event Description -->
     <p class="text-gray-600 mb-6 leading-relaxed">{{ $event->description }}</p>
     
-    <!-- Event Details -->
-    <div class="space-y-4">
-        <!-- Date -->
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 flex items-center justify-center bg-[#2d5a27]/10 rounded-lg">
-                <svg class="w-5 h-5 text-[#2d5a27]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm font-semibold text-gray-700">Date</p>
-                <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($event->date)->format('d/m/Y') }}</p>
-            </div>
-        </div>
-
-        <!-- Location -->
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 flex items-center justify-center bg-[#2d5a27]/10 rounded-lg">
-                <svg class="w-5 h-5 text-[#2d5a27]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm font-semibold text-gray-700">Lieu</p>
-                <p class="text-xs text-gray-500">{{ $event->location->name ?? 'Location TBD' }}</p>
-            </div>
-        </div>
-
-        <!-- Participants -->
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 flex items-center justify-center bg-[#2d5a27]/10 rounded-lg">
-                <svg class="w-5 h-5 text-[#2d5a27]" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm font-semibold text-gray-700">Participants</p>
-                <p class="text-xs text-gray-500">{{$event->reservations()->count()}} / {{ $event->max_participants ?? 'Illimité' }}</p>
-
-            </div>
-        </div>
+    <!-- Event Details: compact info cards (Date, Lieu, Participants, Durée) -->
+    <div class="mt-2">
+            <div class="flex flex-wrap justify-center gap-16 max-w-4xl mx-auto">
 
         
+                
+                
+    <!-- Small Cards Section - compact horizontal info cards -->
+    <div class="small-cards-strip py-6 flex justify-center items-center">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-wrap justify-center gap-4 max-w-4xl mx-auto">
 
-       
+                <!-- Heure -->
+                <div class="small-info-card text-center">
+                    <div class="icon-wrap mx-auto mb-2">
+                        <svg class="w-5 h-5 text-[#2d5a27]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3" />
+                            <circle cx="12" cy="12" r="9" stroke-width="2" stroke="currentColor" fill="none" />
+                        </svg>
+                    </div>
+                    <p class="text-xs font-semibold text-gray-700">Heure</p>
+                    <p class="text-sm text-gray-600 mt-1">{{ \Carbon\Carbon::parse($event->date)->format('H:i') }}</p>
+                </div>
 
-        <!-- Price -->
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 flex items-center justify-center bg-[#2d5a27]/10 rounded-lg">
-                <svg class="w-5 h-5 text-[#2d5a27]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-                </svg>
-            </div>
-            <div>
-                <p class="text-sm font-semibold text-gray-700">Prix</p>
-                <p class="text-xs text-gray-500">{{ $event->price ? $event->price . ' €' : 'Gratuit' }}</p>
+                <!-- Durée -->
+                <div class="small-info-card text-center">
+                    <div class="icon-wrap mx-auto mb-2">
+                        <svg class="w-5 h-5 text-[#2d5a27]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <p class="text-xs font-semibold text-gray-700">Durée</p>
+                    <p class="text-sm text-gray-600 mt-1">{{ $event->duration ?? 'Non spécifiée' }}</p>
+                </div>
+
+                <!-- Lieu -->
+                <div class="small-info-card text-center">
+                    <div class="icon-wrap mx-auto mb-2">
+                        <svg class="w-5 h-5 text-[#2d5a27]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <p class="text-xs font-semibold text-gray-700">Lieu</p>
+                    <p class="text-sm text-gray-600 mt-1">{{ $event->location->name ?? 'Non spécifié' }}</p>
+                </div>
+
+                <!-- Statut -->
+                <div class="small-info-card text-center">
+                    <div class="icon-wrap mx-auto mb-2">
+                        <svg class="w-5 h-5 text-[#2d5a27]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/>
+                        </svg>
+                    </div>
+                    <p class="text-xs font-semibold text-gray-700">Statut</p>
+                    <p class="text-sm text-gray-600 mt-1 capitalize">
+                        @if($event->status === 'published') Publié
+                        @elseif($event->status === 'pending') En attente
+                        @elseif($event->status === 'draft') Brouillon
+                        @elseif($event->status === 'cancelled') Annulé
+                        @elseif($event->status === 'rejected') Rejeté
+                        @else Événement
+                        @endif
+                    </p>
+                </div>
+
+                <!-- Participants -->
+                <div class="small-info-card text-center">
+                    <div class="icon-wrap mx-auto mb-2">
+                        <svg class="w-5 h-5 text-[#2d5a27]" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1z"/>
+                        </svg>
+                    </div>
+                    <p class="text-xs font-semibold text-gray-700">Participants</p>
+                    <p class="text-sm text-gray-600 mt-1">{{ $event->reservations()->where('status','confirmed')->count() }} / {{ $event->max_participants ?? '∞' }}</p>
+                </div>
+
+                <!-- Campaign -->
+                <div class="small-info-card text-center">
+                    <div class="icon-wrap mx-auto mb-2">
+                        <svg class="w-5 h-5 text-[#2d5a27]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"/>
+                        </svg>
+                    </div>
+                    <p class="text-xs font-semibold text-gray-700">Campagne</p>
+                    <p class="text-sm text-gray-600 mt-1">{{$event->campaign->name ?? '-' }}</p>
+                </div>
+
             </div>
         </div>
     </div>
+                
+               
+            </div>
+    </div>
 </div>
 
-                    <!-- Action Buttons -->
-                    <div class="flex gap-4 mt-8">
-                        @if($event->status === 'published')
-                            @if($event->availableSeats > 0 && auth()->check())
-                                <a href="{{ route('events.seats', $event) }}" 
-                                   class="bg-[#2d5a27] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#234420] transition-colors">
-                                    Réserver une place
-                                </a>
-                            @elseif($event->isFull && auth()->check())
-                                <form action="{{ route('waiting-list.join', $event) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="bg-yellow-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-yellow-600 transition-colors">
-                                        Rejoindre la liste d'attente
-                                    </button>
-                                </form>
-                            @elseif($event->isFull)
-                                <button class="bg-gray-400 text-white px-8 py-3 rounded-lg font-semibold cursor-not-allowed" disabled>
-                                    Événement complet
-                                </button>
-                            @else
-                                <a href="{{ route('login') }}" class="bg-[#2d5a27] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#234420] transition-colors">
-                                    Connectez-vous pour réserver
-                                </a>
-                            @endif
-                        @endif
                     
-                    </div>
                 </div>
 
                 <!-- Right Column - Framed Photo Card -->
@@ -145,8 +171,8 @@
                             <!-- Date Badge (keeps left top) -->
                             <div class="absolute top-4 left-4 bg-[#2d5a27] text-white rounded-lg shadow-xl overflow-hidden">
                                 <div class="px-4 py-2 text-center bg-[#2d5a27]">
-                                    <div class="text-3xl font-bold leading-none">{{ \Carbon\Carbon::parse($event->event_date)->format('d') }}</div>
-                                    <div class="text-xs font-medium uppercase mt-1">{{ \Carbon\Carbon::parse($event->event_date)->format('M') }}</div>
+                                    <div class="text-3xl font-bold leading-none">{{ \Carbon\Carbon::parse($event->date)->format('d') }}</div>
+                                    <div class="text-xs font-medium uppercase mt-1">{{ \Carbon\Carbon::parse($event->date)->format('M') }}</div>
                                 </div>
                             </div>
                         </div>
@@ -167,87 +193,48 @@
         </div>
     </div>
 
-    <!-- Small Cards Section - Centered at Bottom -->
-    <div class="small-cards-strip py-8 flex justify-center items-center">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-wrap justify-center gap-6 max-w-4xl mx-auto">
-
-            <!-- Price Card -->
-                <div class="flex-shrink-0 bg-white rounded-xl border-2 border-gray-200 hover:border-[#2d5a27] transition-all duration-300 p-4 min-w-[140px] text-center group cursor-pointer shadow-sm">
-                    <div class="w-12 h-12 mx-auto mb-2 flex items-center justify-center bg-gray-100 rounded-lg group-hover:bg-[#2d5a27]/10 transition-colors">
-                        <svg class="w-5 h-5 text-[#2d5a27]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
+    <!-- Compact Map Section -->
+    <div class="container mx-auto px-4 my-8">
+        <div class="bg-white rounded-xl shadow-lg p-6 max-w-4xl mx-auto">            
+            <!-- Compact Map Container with Integrated Controls -->
+            <div class="compact-map-container rounded-lg overflow-hidden border border-gray-200">
+                <!-- Map Header with Controls -->
+                <div class="map-header bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <button id="start-navigation" class="px-4 py-2 bg-[#2d5a27] text-white rounded-md text-sm font-medium hover:bg-[#234420] transition-colors flex items-center gap-2">
+                         
+                            Démarrer la navigation
+                        </button>
+                        <button id="stop-navigation" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-300 transition-colors hidden flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/>
+                            </svg>
+                            Arrêter
+                        </button>
                     </div>
-                    <p class="text-xs font-semibold text-gray-700">Heure</p>
-                    <p class="text-xs text-gray-500 mt-1"> {{ \Carbon\Carbon::parse($event->date)->format('H:i') }}</p>
-
-                </div>
-                <!-- Status Card -->
-                <div class="flex-shrink-0 bg-white rounded-xl border-2 border-gray-200 hover:border-[#2d5a27] transition-all duration-300 p-4 min-w-[140px] text-center group cursor-pointer shadow-sm">
-                    <div class="w-12 h-12 mx-auto mb-2 flex items-center justify-center bg-gray-100 rounded-lg group-hover:bg-[#2d5a27]/10 transition-colors">
-                        <svg class="w-6 h-6 text-gray-600 group-hover:text-[#2d5a27] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
+                    <div class="flex items-center gap-2">
+                        <span id="map-status" class="text-xs text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-200">
+                            Autorisez la géolocalisation pour activer le guidage
+                        </span>
                     </div>
-                    <p class="text-xs font-semibold text-gray-700">Statut</p>
-                    <p class="text-xs text-gray-500 mt-1 capitalize">
-                        @if($event->status === 'published')
-                            Publié
-                        @elseif($event->status === 'pending')
-                            En attente 
-                        @elseif($event->status === 'draft')
-                            Brouillon
-                        @elseif($event->status === 'cancelled')
-                            Annulé
-                        @elseif($event->status === 'rejected')
-                            Rejeté
-                        @else
-                            Événement
-                        @endif
-                    </p>
                 </div>
-
-                <!-- Organizer Card -->
-                <div class="flex-shrink-0 bg-white rounded-xl border-2 border-gray-200 hover:border-[#2d5a27] transition-all duration-300 p-4 min-w-[140px] text-center group cursor-pointer shadow-sm">
-                    <div class="w-12 h-12 mx-auto mb-2 flex items-center justify-center bg-gray-100 rounded-lg group-hover:bg-[#2d5a27]/10 transition-colors">
-                        <svg class="w-5 h-5 text-[#2d5a27]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
-                    </div>
-                    <p class="text-xs font-semibold text-gray-700">Ville</p>
-                    <p class="text-xs text-gray-500 mt-1">{{$event->location->city, 12 }}</p>
-                </div>
-
-                <!-- Organizer Card -->
-                <div class="flex-shrink-0 bg-white rounded-xl border-2 border-gray-200 hover:border-[#2d5a27] transition-all duration-300 p-4 min-w-[140px] text-center group cursor-pointer shadow-sm">
-                    <div class="w-12 h-12 mx-auto mb-2 flex items-center justify-center bg-gray-100 rounded-lg group-hover:bg-[#2d5a27]/10 transition-colors">
-                        <svg class="w-5 h-5 text-[#2d5a27]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                    </div>
-                    <p class="text-xs font-semibold text-gray-700">Durée</p>
-                    <p class="text-xs text-gray-500 mt-1">{{$event->duration, 12 }}</p>
-                </div>
-
                 
-
+                <!-- Map Display -->
+                <div id="route-map" class="route-map" style="height: 300px;"></div>
                 
-
-                <!-- Available Seats Card -->
-                <div class="flex-shrink-0 bg-white rounded-xl border-2 border-gray-200 hover:border-[#2d5a27] transition-all duration-300 p-4 min-w-[140px] text-center group cursor-pointer shadow-sm">
-                    <div class="w-12 h-12 mx-auto mb-2 flex items-center justify-center bg-gray-100 rounded-lg group-hover:bg-[#2d5a27]/10 transition-colors">
-                        <svg class="w-6 h-6 text-gray-600 group-hover:text-[#2d5a27] transition-colors" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                        </svg>
+                <!-- Map Footer with Info -->
+                <div class="map-footer bg-gray-50 px-4 py-2 border-t border-gray-200">
+                    <div class="flex justify-between items-center text-xs text-gray-500">
+                        <span id="distance-info">Distance: --</span>
+                        <span id="time-info">Temps estimé: --</span>
+                        <span>Powered by OpenStreetMap</span>
                     </div>
-                    <p class="text-xs font-semibold text-gray-700">Places</p>
-                    <p class="text-xs text-gray-500 mt-1">{{ $event->max_participants ?? '∞' }}</p>
                 </div>
             </div>
         </div>
     </div>
+
 </div>
 
 <style>
@@ -908,6 +895,62 @@ nav {
 .small-cards-strip{ background: linear-gradient(180deg, #f3faf6 0%, #ffffff 100%); }
 .small-cards-strip .flex-shrink-0{ background: white; border-radius: 12px; padding: 16px; box-shadow: 0 6px 20px rgba(45,90,39,0.06); }
 
+/* Compact horizontal info cards */
+.small-info-card{
+    width: 150px;
+    min-width: 120px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #eef5ef;
+    padding: 10px 12px;
+    box-shadow: 0 6px 16px rgba(45,90,39,0.04);
+    text-align: center;
+}
+.small-info-card .icon-wrap{ width:36px; height:36px; background:#f3faf6; border-radius:8px; display:flex; align-items:center; justify-content:center; margin:0 auto; }
+.small-info-card p{ margin:0; }
+.small-info-card .text-xs{ font-size:12px; }
+.small-info-card .text-sm{ font-size:13px; }
+
+/* Compact Map Styles */
+.compact-map-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.map-header {
+    background: linear-gradient(90deg, #f8faf9 0%, #f1f7f2 100%);
+}
+
+.map-footer {
+    background: #f9fafb;
+}
+
+.route-map {
+    width: 100%;
+    background: #f8faf9;
+}
+
+/* Custom marker styles */
+.custom-user-marker {
+    background: #2d5a27;
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+@media (max-width: 640px){
+    .small-info-card{ width: 45%; min-width: unset; }
+    .map-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    .map-header .flex {
+        flex-wrap: wrap;
+    }
+}
+
 </style>
 
 @push('scripts')
@@ -953,6 +996,196 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+});
+</script>
+<!-- Leaflet and routing script -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Event coordinates from server - properly escaped
+    const eventLat = {!! json_encode($event->location->latitude ?? null) !!};
+    const eventLng = {!! json_encode($event->location->longitude ?? null) !!};
+
+    const mapEl = document.getElementById('route-map');
+    if (!mapEl || !eventLat || !eventLng) {
+        document.getElementById('map-status').textContent = 'Coordonnées de l\'événement manquantes.';
+        return;
+    }
+
+    // Initialize map
+    const map = L.map('route-map').setView([eventLat, eventLng], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '\u00A9 OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Create custom icons
+    const eventIcon = L.divIcon({
+        className: 'custom-event-marker',
+        html: '<div style="background:#2d5a27; border:3px solid white; border-radius:50%; width:20px; height:20px; box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+    });
+
+    const userIcon = L.divIcon({
+        className: 'custom-user-marker',
+        html: '<div style="background:#dc2626; border:3px solid white; border-radius:50%; width:16px; height:16px; box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+    });
+
+    // Add event marker
+    const eventMarker = L.marker([eventLat, eventLng], { icon: eventIcon })
+        .addTo(map)
+        .bindPopup({!! json_encode($event->title) !!})
+        .openPopup();
+
+    let userMarker = null;
+    let routeLayer = null;
+    let watchId = null;
+
+    function formatDistance(meters) {
+        if (meters < 1000) {
+            return Math.round(meters) + ' m';
+        } else {
+            return (meters / 1000).toFixed(1) + ' km';
+        }
+    }
+
+    function formatTime(seconds) {
+        const minutes = Math.round(seconds / 60);
+        if (minutes < 60) {
+            return minutes + ' min';
+        } else {
+            const hours = Math.floor(minutes / 60);
+            const remainingMinutes = minutes % 60;
+            return hours + 'h' + (remainingMinutes > 0 ? remainingMinutes + 'min' : '');
+        }
+    }
+
+    function fetchRoute(fromLat, fromLng, toLat, toLng) {
+        const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLng}?overview=full&geometries=geojson`;
+        return fetch(url).then(r => r.json());
+    }
+
+    function drawRoute(geojson, routeData) {
+        if (routeLayer) {
+            map.removeLayer(routeLayer);
+            routeLayer = null;
+        }
+        
+        routeLayer = L.geoJSON(geojson, { 
+            style: { 
+                color: '#2d5a27', 
+                weight: 6, 
+                opacity: 0.8,
+                lineCap: 'round',
+                lineJoin: 'round'
+            } 
+        }).addTo(map);
+        
+        // Update route info
+        if (routeData && routeData.routes && routeData.routes[0]) {
+            const route = routeData.routes[0];
+            document.getElementById('distance-info').textContent = 'Distance: ' + formatDistance(route.distance);
+            document.getElementById('time-info').textContent = 'Temps estimé: ' + formatTime(route.duration);
+        }
+        
+        // Fit map to show both markers and route
+        const group = new L.featureGroup([eventMarker, userMarker, routeLayer]);
+        map.fitBounds(group.getBounds(), { padding: [20, 20] });
+    }
+
+    function startNavigation() {
+        if (!navigator.geolocation) {
+            document.getElementById('map-status').textContent = 'Géolocalisation non supportée par ce navigateur.';
+            return;
+        }
+
+        document.getElementById('start-navigation').classList.add('hidden');
+        document.getElementById('stop-navigation').classList.remove('hidden');
+        document.getElementById('map-status').textContent = 'Navigation en cours...';
+        document.getElementById('map-status').className = 'text-xs text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-200';
+
+        // Watch position and update route
+        watchId = navigator.geolocation.watchPosition(async (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+
+            if (userMarker) {
+                userMarker.setLatLng([lat, lng]);
+            } else {
+                userMarker = L.marker([lat, lng], { icon: userIcon })
+                    .addTo(map)
+                    .bindPopup('Votre position actuelle')
+                    .openPopup();
+            }
+
+            try {
+                const data = await fetchRoute(lat, lng, eventLat, eventLng);
+                if (data && data.routes && data.routes.length) {
+                    drawRoute(data.routes[0].geometry, data);
+                }
+            } catch (err) {
+                console.error('Routing error', err);
+                document.getElementById('map-status').textContent = 'Erreur de calcul d\'itinéraire';
+                document.getElementById('map-status').className = 'text-xs text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-200';
+            }
+        }, (err) => {
+            let errorMessage = 'Erreur de géolocalisation: ';
+            switch(err.code) {
+                case err.PERMISSION_DENIED:
+                    errorMessage += 'Accès refusé';
+                    break;
+                case err.POSITION_UNAVAILABLE:
+                    errorMessage += 'Position indisponible';
+                    break;
+                case err.TIMEOUT:
+                    errorMessage += 'Timeout';
+                    break;
+                default:
+                    errorMessage += 'Erreur inconnue';
+            }
+            document.getElementById('map-status').textContent = errorMessage;
+            document.getElementById('map-status').className = 'text-xs text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-200';
+        }, { 
+            enableHighAccuracy: true, 
+            maximumAge: 10000, 
+            timeout: 15000 
+        });
+    }
+
+    function stopNavigation() {
+        if (watchId !== null) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+        }
+        
+        document.getElementById('start-navigation').classList.remove('hidden');
+        document.getElementById('stop-navigation').classList.add('hidden');
+        document.getElementById('map-status').textContent = 'Navigation arrêtée';
+        document.getElementById('map-status').className = 'text-xs text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-200';
+        
+        // Clear route info
+        document.getElementById('distance-info').textContent = 'Distance: --';
+        document.getElementById('time-info').textContent = 'Temps estimé: --';
+        
+        // Remove route and user marker
+        if (routeLayer) {
+            map.removeLayer(routeLayer);
+            routeLayer = null;
+        }
+        if (userMarker) {
+            map.removeLayer(userMarker);
+            userMarker = null;
+        }
+        
+        // Reset map view to event
+        map.setView([eventLat, eventLng], 13);
+    }
+
+    document.getElementById('start-navigation').addEventListener('click', startNavigation);
+    document.getElementById('stop-navigation').addEventListener('click', stopNavigation);
 });
 </script>
 @endpush
