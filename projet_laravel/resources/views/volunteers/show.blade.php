@@ -79,11 +79,11 @@
                 @endcan
 
                 @can('delete', $volunteer)
-                    <form method="POST" action="{{ route('volunteers.destroy', $volunteer) }}" onsubmit="return confirm('Supprimer votre profil volontaire ?');">
+                    <form method="POST" action="{{ route('volunteers.destroy', $volunteer) }}" style="display: inline;" onsubmit="return confirm('Supprimer définitivement votre profil volontaire ?')">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-outline-danger">
-                            <i class="fas fa-trash me-1"></i>Supprimer le profil volontaire
+                            <i class="fas fa-user-slash me-1"></i>Supprimer mon profil volontaire
                         </button>
                     </form>
                 @endcan
@@ -122,6 +122,23 @@
     </div>
     @endif
 </div>
+
+<!-- Script pour masquer les messages après 3 secondes -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Masquer les messages de succès/erreur après 3 secondes
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            alert.style.transition = 'opacity 0.5s';
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 500);
+        }, 3000);
+    });
+});
+</script>
 @endsection
 
 

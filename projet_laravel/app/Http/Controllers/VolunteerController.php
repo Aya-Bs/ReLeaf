@@ -150,19 +150,10 @@ class VolunteerController extends Controller
         }
 
         $validated = $request->validate([
-            'skills' => 'required|array|min:1',
-            'skills.*' => 'string|max:255',
-            'availability' => 'required|array|min:1',
-            'experience_level' => 'required|in:beginner,intermediate,advanced',
-            'preferred_regions' => 'required|array|min:1',
-            'preferred_regions.*' => 'string|max:255',
-            'max_hours_per_week' => 'required|integer|min:1|max:168',
-            'emergency_contact' => 'required|string|max:255',
-            'medical_conditions' => 'nullable|string|max:1000',
+            'status' => 'required|in:active,inactive',
             'bio' => 'required|string|max:1000',
             'motivation' => 'required|string|max:1000',
-            'previous_volunteer_experience' => 'nullable|string|max:1000',
-            'status' => 'sometimes|in:active,inactive,suspended',
+            'max_hours_per_week' => 'required|integer|min:1|max:168',
         ]);
 
         $volunteer->update($validated);
@@ -181,10 +172,13 @@ class VolunteerController extends Controller
             abort(403, 'Vous n\'êtes pas autorisé à supprimer ce profil.');
         }
 
-        // Check if volunteer has active assignments
-        if ($volunteer->assignments()->whereIn('status', ['pending', 'approved'])->exists()) {
-            return redirect()->back()
-                ->with('error', 'Impossible de supprimer le profil : des missions actives existent.');
+        // Cancel all active assignments before deleting
+        $activeAssignments = $volunteer->assignments()->whereIn('status', ['pending', 'approved'])->get();
+        foreach ($activeAssignments as $assignment) {
+            $assignment->update([
+                'status' => 'cancelled',
+                'notes' => ($assignment->notes ?? '') . "\nMission annulée - Profil volontaire supprimé."
+            ]);
         }
 
         $volunteer->delete();
