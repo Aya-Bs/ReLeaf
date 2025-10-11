@@ -84,6 +84,7 @@
                     </a>
                 </li>
 
+<<<<<<< HEAD
                 <!-- User Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -145,6 +146,46 @@
                         </li>
                     </ul>
                 </li>
+=======
+                    <!-- User Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-1"></i>
+                            {{ auth()->user()->name }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{{ route('profile.show') }}">
+                                    <i class="fas fa-user me-2"></i>Mon profil
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('user.certificates.index') }}">
+                                    <i class="fas fa-certificate me-2"></i>Mes Certifications
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('chatbot.index') }}">
+                                    <i class="fas fa-robot me-2"></i>Assistant IA
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                    <i class="fas fa-cog me-2"></i>Paramètres
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+>>>>>>> firas
                 @endguest
             </ul>
         </div>
@@ -166,17 +207,22 @@
 
 @push('styles')
 <style>
-.navbar {
-    box-shadow: 0 2px 4px rgba(0,0,0,.04);
-}
+<<<<<<< HEAD
+    .navbar {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, .04);
+    }
 
 .nav-link.active {
     color: #2d5a27 !important;
     font-weight: 500;
 }
 
-.dropdown-item:active {
-    background-color: #2d5a27;
+    .dropdown-item:active {
+        background-color: #2d5a27;
+    }
+=======
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,.04);
 }
 
 /* Bouton Chatbot Flottant */
@@ -274,5 +320,13 @@
         right: -10px;
     }
 }
+.nav-link.active {
+    color: #2d5a27 !important;
+    font-weight: 500;
+}
+.dropdown-item:active {
+    background-color: #2d5a27;
+}
+>>>>>>> firas
 </style>
 @endpush

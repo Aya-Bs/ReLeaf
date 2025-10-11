@@ -163,9 +163,9 @@
                     <div class="carousel-inner">
                         @foreach($recentEvents->chunk(4) as $chunkIndex => $eventsChunk)
                             <div class="carousel-item {{ $chunkIndex === 0 ? 'active' : '' }}">
-                                <div class="row">
+                                <div class="row" >
                                     @foreach($eventsChunk as $event)
-                                    <div class="col-lg-3 col-md-6 mb-4">
+                                    <div class="col-lg-3 col-md-6 mb-4" data-event-id="{{ $event->id }}">
                                         <div class="card event-card h-100 shadow-sm border-0">
                                             <!-- Event Image -->
                                         @if($event->images && is_array($event->images) && count($event->images) > 0 && !empty($event->images[0]))
@@ -178,16 +178,8 @@
 
 
 
-                                            <!-- Event Status Badge -->
-                                            <div class="event-badge">
-                                                @if($event->isPublished())
-                                                    <span class="badge bg-success">Publié</span>
-                                                @elseif($event->isPending())
-                                                    <span class="badge bg-warning">En attente</span>
-                                                @endif
-                                            </div>
-
-                                            <div class="card-body d-flex flex-column">
+                                           
+                                            <div class="card-body d-flex flex-column" >
                                                 <!-- Event Date -->
                                                 <div class="event-date mb-2">
                                                     <small class="text-success fw-bold">
@@ -222,18 +214,13 @@
                                                         <div class="col-4">
                                                             <small class="text-muted">
                                                                 <i class="fas fa-map-marker-alt me-1"></i>
-                                                                {{ Str::limit($event->location, 10) }}
+                                                                {{ Str::limit($event->location->name, 10) }}
                                                             </small>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <!-- View Event Button -->
-                                                <div class="mt-3">
-                                                    <a href="{{ route('events.show', $event) }}" class="btn btn-outline-success btn-sm w-100">
-                                                        <i class="fas fa-eye me-1"></i>Voir l'événement
-                                                    </a>
-                                                </div>
+                                               
                                             </div>
                                         </div>
                                     </div>
@@ -531,6 +518,31 @@
 
 @push('scripts')
 <script>
+
+    // Make event cards clickable
+document.addEventListener('DOMContentLoaded', function() {
+    const eventCards = document.querySelectorAll('.event-card');
+    
+    eventCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        
+        card.addEventListener('click', function(e) {
+            // Don't redirect if clicking on buttons or links inside the card
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.closest('button') || e.target.closest('a')) {
+                return;
+            }
+            
+            // Find the event ID from the card's data attribute or parent element
+            const eventId = this.closest('[data-event-id]')?.getAttribute('data-event-id') || 
+                           this.querySelector('a[href*="/events/"]')?.getAttribute('href')?.split('/').pop();
+            
+            if (eventId) {
+                window.location.href = `/events/${eventId}`;
+            }
+        });
+    });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     // Animation des statistiques au scroll
     const statNumbers = document.querySelectorAll('.stat-card h3');

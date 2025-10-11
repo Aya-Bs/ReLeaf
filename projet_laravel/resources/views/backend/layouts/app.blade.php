@@ -204,6 +204,14 @@
                         
 
                         
+                        <li class="nav-item">
+        <a href="{{ route('backend.locations.index') }}" class="nav-link {{ request()->routeIs('backend.locations.*') ? 'active' : '' }}">
+                <i class="nav-icon fas fa-calendar-alt"></i>
+                <p>Locations</p>
+        </a>
+</li>
+
+
                                                 <li class="nav-item">
 
                 <li class="nav-item has-treeview {{ request()->routeIs('backend.events.*') || request()->routeIs('backend.events.requests.*') ? 'menu-open' : '' }}">
@@ -236,12 +244,7 @@
                     </ul>
                 </li>
 
-    <li class="nav-item">
-        <a href="{{ route('backend.locations.index') }}" class="nav-link {{ request()->routeIs('backend.locations.*') ? 'active' : '' }}">
-                <i class="nav-icon fas fa-calendar-alt"></i>
-                <p>Locations</p>
-        </a>
-</li>
+    
 
 <li class="nav-item">
     <a href="{{ route('backend.campaigns.index') }}" class="nav-link {{ request()->routeIs('backend.campaigns.*') ? 'active' : '' }}">

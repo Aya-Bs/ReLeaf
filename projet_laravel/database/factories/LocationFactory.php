@@ -20,6 +20,9 @@ class LocationFactory extends Factory
             'latitude' => $this->faker->latitude,
             'longitude' => $this->faker->longitude,
             'images' => [],
+            'reserved' => false,
+            'in_repair' => false,
+            'price' => $this->faker->randomFloat(2, 50, 500), 
         ];
     }
 }
