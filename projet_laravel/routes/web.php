@@ -1,5 +1,14 @@
 <?php
 
+// Route de test simple
+Route::get('/test-simple', function() {
+    return 'Test simple fonctionne !';
+});
+
+// Route spécifique pour les missions disponibles (AVANT les routes avec paramètres)
+Route::get('/volunteers/available-missions', [\App\Http\Controllers\VolunteerMissionController::class, 'availableMissions'])
+    ->name('volunteers.available-missions');
+
 use App\Http\Controllers\Backend\AdminController;
 use App\Http\Controllers\Backend\SponsorController as BackendSponsorController;
 use App\Http\Controllers\Backend\UserController as BackendUserController;
@@ -12,7 +21,7 @@ use App\Http\Controllers\Sponsor\DashboardController as SponsorDashboardControll
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Backend\CampaignController;
 use App\Http\Controllers\Backend\ResourceController;
-use App\Http\Controllers\Backend\EventController;
+use App\Http\Controllers\Backend\EventController; 
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\VolunteerController;
 use App\Http\Controllers\AssignmentController; 
@@ -258,10 +267,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{campaign}/edit', [CampaignController::class, 'edit'])->name('edit');
         Route::put('/{campaign}', [CampaignController::class, 'update'])->name('update');
         Route::delete('/{campaign}', [CampaignController::class, 'destroy'])->name('destroy');
-
+        
         // Routes supplémentaires
         Route::post('/{campaign}/toggle-visibility', [CampaignController::class, 'toggleVisibility'])
-            ->name('toggle-visibility');
+             ->name('toggle-visibility');
         Route::get('/statistics', [CampaignController::class, 'statistics'])->name('statistics');
     });
 
@@ -274,14 +283,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{resource}/edit', [ResourceController::class, 'edit'])->name('edit');
         Route::put('/{resource}', [ResourceController::class, 'update'])->name('update');
         Route::delete('/{resource}', [ResourceController::class, 'destroy'])->name('destroy');
-
+        
         // Routes supplémentaires
         Route::post('/{resource}/update-status', [ResourceController::class, 'updateStatus'])
-            ->name('update-status');
+             ->name('update-status');
         Route::post('/{resource}/pledge', [ResourceController::class, 'pledge'])
-            ->name('pledge');
+             ->name('pledge');
         Route::get('/high-priority', [ResourceController::class, 'highPriority'])
-            ->name('high-priority');
+             ->name('high-priority');
     });
 
     // Redirections conviviales pour anciens liens
@@ -465,6 +474,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/reservations/{reservation}/delete', [ReservationController::class, 'destroy'])->name('reservations.destroy.fallback');
 });
 });
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/volunteers/apply-mission', 'App\Http\Controllers\VolunteerMissionController@applyForMission')
+        ->name('volunteers.apply-mission');
+    Route::get('/volunteers/mission-details', 'App\Http\Controllers\VolunteerMissionController@showMissionDetails')
+        ->name('volunteers.mission-details');
+});
+
+// Route de test
+Route::get('/test', 'App\Http\Controllers\TestController@test');
 
 require __DIR__ . '/auth.php';
 require __DIR__ . '/2fa.php';

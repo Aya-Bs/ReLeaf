@@ -6,7 +6,7 @@
 <style>
 /* Container principal style cinéma */
 .cinema-container {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     min-height: 100vh;
 }
 
@@ -45,7 +45,7 @@
 /* Section principale */
 .cinema-main {
     padding: 40px 0;
-    background: #1a1a1a;
+    background: #f8f9fa;
 }
 
 /* Légende */
@@ -54,16 +54,17 @@
     justify-content: center;
     gap: 30px;
     padding: 20px;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.8);
     border-radius: 15px;
     backdrop-filter: blur(10px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .legend-item {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #fff;
+    color: #333;
     font-size: 14px;
 }
 
@@ -110,7 +111,7 @@
 }
 
 .row-label {
-    color: #ffd700;
+    color: #2d5a27;
     font-weight: bold;
     font-size: 18px;
     width: 30px;
@@ -132,10 +133,11 @@
     position: relative;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
-    background: linear-gradient(145deg, #4a4a4a, #2a2a2a);
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
     box-shadow: 
-        0 4px 8px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        0 4px 8px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    border: 2px solid #e9ecef;
 }
 
 .cinema-seat:before {
@@ -154,7 +156,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #fff;
+    color: #333;
     font-weight: bold;
     font-size: 16px;
 }
@@ -169,7 +171,7 @@
     transform: translateY(-3px) scale(1.05);
     box-shadow: 
         0 8px 25px rgba(40, 167, 69, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .cinema-seat.reserved {
@@ -205,10 +207,10 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(135deg, #2d5a27 0%, #1e3c1a 100%);
-    border-top: 3px solid #ffd700;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-top: 3px solid #2d5a27;
     padding: 25px;
-    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(10px);
     z-index: 1000;
     animation: slideUp 0.3s ease-out;
@@ -224,7 +226,7 @@
 }
 
 .selected-seat-info h5 {
-    color: #ffd700;
+    color: #2d5a27;
     margin-bottom: 20px;
     text-align: center;
 }
@@ -255,17 +257,17 @@
 
 .btn-outline-secondary {
     background: transparent;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    color: #fff;
+    border: 2px solid rgba(45, 90, 39, 0.3);
+    color: #2d5a27;
     padding: 12px 30px;
     border-radius: 25px;
     transition: all 0.3s ease;
 }
 
 .btn-outline-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.5);
-    color: #fff;
+    background: rgba(45, 90, 39, 0.1);
+    border-color: rgba(45, 90, 39, 0.5);
+    color: #2d5a27;
 }
 
 /* Responsive */
@@ -435,7 +437,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Fonction pour mettre à jour le statut des places
     function updateSeatsStatus() {
-        fetch(`/ajax/event/${eventId}/seats-status`)
+        fetch(/ajax/event/${eventId}/seats-status)
             .then(response => response.json())
             .then(data => {
                 // Mettre à jour l'affichage de toutes les places
@@ -459,7 +461,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Restaurer la sélection de l'utilisateur actuel
                 if (data.user_lock && data.user_lock.seat_number) {
-                    const userSeat = document.querySelector(`[data-seat="${data.user_lock.seat_number}"]`);
+                    const userSeat = document.querySelector([data-seat="${data.user_lock.seat_number}"]);
                     if (userSeat) {
                         userSeat.classList.remove('available', 'locked');
                         userSeat.classList.add('selected');

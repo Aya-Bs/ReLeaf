@@ -268,6 +268,9 @@ body {
                                  <li><a class="dropdown-item" href="{{ route('assignments.index') }}">
                                      <i class="fas fa-tasks me-2"></i>Mes Missions
                                  </a></li>
+                                 <li><a class="dropdown-item" href="{{ route('volunteers.available-missions') }}">
+                                     <i class="fas fa-search me-2"></i>Missions Disponibles
+                                 </a></li>
                                  <li><a class="dropdown-item" href="{{ route('volunteers.index') }}">
                                      <i class="fas fa-users me-2"></i>Tous les Volontaires
                                  </a></li>
