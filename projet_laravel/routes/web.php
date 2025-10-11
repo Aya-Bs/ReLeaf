@@ -102,6 +102,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
     Route::post('users/{user}/toggle-eco-ambassador', [BackendUserController::class, 'toggleEcoAmbassador'])
         ->name('users.toggle-eco-ambassador');
 
+    // Gestion des volontaires
+    Route::resource('volunteers', \App\Http\Controllers\Backend\VolunteerController::class);
+
+    // Gestion des missions
+    Route::resource('assignments', \App\Http\Controllers\Backend\AssignmentController::class);
+    Route::post('assignments/{assignment}/approve', [\App\Http\Controllers\Backend\AssignmentController::class, 'approve'])
+        ->name('assignments.approve');
+    Route::post('assignments/{assignment}/reject', [\App\Http\Controllers\Backend\AssignmentController::class, 'reject'])
+        ->name('assignments.reject');
+
     // Gestion des sponsors
     Route::get('sponsors/pending', [BackendSponsorController::class, 'pending'])->name('sponsors.pending');
     // Place deletion-requested BEFORE resource to prevent capture by /sponsors/{sponsor} show route

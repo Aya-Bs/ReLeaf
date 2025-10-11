@@ -152,6 +152,20 @@
                         </li>
 
                         <li class="nav-item">
+                            <a href="{{ route('backend.volunteers.index') }}" class="nav-link {{ request()->routeIs('backend.volunteers.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-hands-helping"></i>
+                                <p>Volontaires</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="{{ route('backend.assignments.index') }}" class="nav-link {{ request()->routeIs('backend.assignments.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-tasks"></i>
+                                <p>Missions</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
                             <a href="{{ route('admin.reservations.index') }}" class="nav-link {{ request()->routeIs('admin.reservations.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-ticket-alt"></i>
                                 <p>Réservations</p>
