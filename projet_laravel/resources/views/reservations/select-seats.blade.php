@@ -4,7 +4,7 @@
 
 @section('content')
 <style>
-/* Container principal style cinéma */
+/* Container principal style moderne et clair */
 .cinema-container {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     min-height: 100vh;
@@ -45,7 +45,10 @@
 /* Section principale */
 .cinema-main {
     padding: 40px 0;
-    background: #f8f9fa;
+    background: #ffffff;
+    border-radius: 20px;
+    margin: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 /* Légende */
@@ -54,18 +57,19 @@
     justify-content: center;
     gap: 30px;
     padding: 20px;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(248, 249, 250, 0.8);
     border-radius: 15px;
+    border: 1px solid #e9ecef;
     backdrop-filter: blur(10px);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .legend-item {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #333;
+    color: #495057;
     font-size: 14px;
+    font-weight: 500;
 }
 
 .seat-mini {
@@ -116,6 +120,12 @@
     font-size: 18px;
     width: 30px;
     text-align: center;
+    background: rgba(45, 90, 39, 0.1);
+    border-radius: 50%;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .seats-section {
@@ -124,11 +134,11 @@
     justify-content: center;
 }
 
-/* Sièges style cinéma */
+/* Sièges style moderne */
 .cinema-seat {
     width: 60px;
     height: 60px;
-    border: none;
+    border: 2px solid #e9ecef;
     border-radius: 15px;
     position: relative;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -137,7 +147,6 @@
     box-shadow: 
         0 4px 8px rgba(0, 0, 0, 0.1),
         inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    border: 2px solid #e9ecef;
 }
 
 .cinema-seat:before {
@@ -156,7 +165,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #333;
+    color: #495057;
     font-weight: bold;
     font-size: 16px;
 }
@@ -165,25 +174,28 @@
 .cinema-seat.available {
     background: linear-gradient(145deg, #28a745, #1e7e34);
     color: white;
+    border-color: #28a745;
 }
 
 .cinema-seat.available:hover {
     transform: translateY(-3px) scale(1.05);
     box-shadow: 
         0 8px 25px rgba(40, 167, 69, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .cinema-seat.reserved {
     background: linear-gradient(145deg, #dc3545, #c82333);
     cursor: not-allowed;
     opacity: 0.7;
+    border-color: #dc3545;
 }
 
 .cinema-seat.locked {
     background: linear-gradient(145deg, #ff8c00, #ff6500);
     cursor: not-allowed;
     opacity: 0.8;
+    border-color: #ff8c00;
     animation: pulse-locked 2s infinite;
 }
 
@@ -195,6 +207,7 @@
 .cinema-seat.selected {
     background: linear-gradient(145deg, #ffd700, #ffb700);
     color: #000;
+    border-color: #ffd700;
     transform: translateY(-5px) scale(1.1);
     box-shadow: 
         0 10px 30px rgba(255, 215, 0, 0.5),
@@ -207,10 +220,10 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    border-top: 3px solid #2d5a27;
+    background: linear-gradient(135deg, #2d5a27 0%, #1e3c1a 100%);
+    border-top: 3px solid #ffd700;
     padding: 25px;
-    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
     z-index: 1000;
     animation: slideUp 0.3s ease-out;
@@ -226,7 +239,7 @@
 }
 
 .selected-seat-info h5 {
-    color: #2d5a27;
+    color: #ffd700;
     margin-bottom: 20px;
     text-align: center;
 }
@@ -257,21 +270,26 @@
 
 .btn-outline-secondary {
     background: transparent;
-    border: 2px solid rgba(45, 90, 39, 0.3);
-    color: #2d5a27;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
     padding: 12px 30px;
     border-radius: 25px;
     transition: all 0.3s ease;
 }
 
 .btn-outline-secondary:hover {
-    background: rgba(45, 90, 39, 0.1);
-    border-color: rgba(45, 90, 39, 0.5);
-    color: #2d5a27;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #fff;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
+    .cinema-main {
+        margin: 10px;
+        padding: 20px 0;
+    }
+    
     .event-details {
         gap: 10px;
     }
@@ -279,6 +297,7 @@
     .seat-legend-container {
         gap: 15px;
         padding: 15px;
+        flex-wrap: wrap;
     }
     
     .cinema-seat {
@@ -300,6 +319,10 @@
     
     .reservation-actions .btn {
         width: 100%;
+    }
+    
+    .legend-item {
+        font-size: 12px;
     }
 }
 </style>
@@ -437,7 +460,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Fonction pour mettre à jour le statut des places
     function updateSeatsStatus() {
-        fetch(/ajax/event/${eventId}/seats-status)
+        fetch(`/ajax/event/${eventId}/seats-status`)
             .then(response => response.json())
             .then(data => {
                 // Mettre à jour l'affichage de toutes les places
@@ -461,7 +484,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Restaurer la sélection de l'utilisateur actuel
                 if (data.user_lock && data.user_lock.seat_number) {
-                    const userSeat = document.querySelector([data-seat="${data.user_lock.seat_number}"]);
+                    const userSeat = document.querySelector(`[data-seat="${data.user_lock.seat_number}"]`);
                     if (userSeat) {
                         userSeat.classList.remove('available', 'locked');
                         userSeat.classList.add('selected');
