@@ -272,3 +272,4 @@ class VolunteerController extends Controller
         return view('volunteers.assignments', compact('assignments', 'volunteer'));
     }
 }
+

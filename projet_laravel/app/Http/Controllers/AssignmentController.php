@@ -295,3 +295,4 @@ class AssignmentController extends Controller
         return view('assignments.for-assignable', compact('assignments', 'assignable'));
     }
 }
+

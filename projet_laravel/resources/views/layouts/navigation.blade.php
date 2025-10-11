@@ -44,6 +44,21 @@
                     </a>
                 </li>
                 @endif
+
+                <!-- Lien Volontaire pour tous les utilisateurs connectés -->
+                @if(auth()->user()->isVolunteer())
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('volunteers.*') ? 'active' : '' }}" href="{{ route('volunteers.show', auth()->user()->volunteer->id) }}">
+                        <i class="fas fa-hands-helping me-1"></i>Volontaire
+                    </a>
+                </li>
+                @else
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('volunteers.create') ? 'active' : '' }}" href="{{ route('volunteers.create') }}">
+                        <i class="fas fa-user-plus me-1"></i>Devenir volontaire
+                    </a>
+                </li>
+                @endif
                 @endauth
             </ul>
 
@@ -69,10 +84,9 @@
                     </a>
                 </li>
 
-<<<<<<< HEAD
                 <!-- User Dropdown -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <img src="{{ auth()->user()->avatar_url }}" alt="Avatar" class="rounded-circle me-1" width="24">
                         {{ auth()->user()->name }}
                     </a>
@@ -83,8 +97,13 @@
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                <i class="fas fa-cog me-2"></i>Paramètres
+                            <a class="dropdown-item" href="{{ route('user.certificates.index') }}">
+                                <i class="fas fa-certificate me-2"></i>Mes Certifications
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('chatbot.index') }}">
+                                <i class="fas fa-robot me-2"></i>Assistant IA
                             </a>
                         </li>
                         @if(auth()->user()->role === 'sponsor' && auth()->user()->sponsor)
@@ -111,8 +130,11 @@
                         @endif
                         @endif
                         <li>
-                            <hr class="dropdown-divider">
+                            <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                <i class="fas fa-cog me-2"></i>Paramètres
+                            </a>
                         </li>
+                        <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
@@ -123,46 +145,6 @@
                         </li>
                     </ul>
                 </li>
-=======
-                    <!-- User Dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user-circle me-1"></i>
-                            {{ auth()->user()->name }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" href="{{ route('profile.show') }}">
-                                    <i class="fas fa-user me-2"></i>Mon profil
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ route('user.certificates.index') }}">
-                                    <i class="fas fa-certificate me-2"></i>Mes Certifications
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ route('chatbot.index') }}">
-                                    <i class="fas fa-robot me-2"></i>Assistant IA
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                    <i class="fas fa-cog me-2"></i>Paramètres
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item text-danger">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </li>
->>>>>>> firas
                 @endguest
             </ul>
         </div>
@@ -184,22 +166,17 @@
 
 @push('styles')
 <style>
-<<<<<<< HEAD
-    .navbar {
-        box-shadow: 0 2px 4px rgba(0, 0, 0, .04);
-    }
-
-    .nav-link.active {
-        color: #2d5a27 !important;
-        font-weight: 500;
-    }
-
-    .dropdown-item:active {
-        background-color: #2d5a27;
-    }
-=======
 .navbar {
     box-shadow: 0 2px 4px rgba(0,0,0,.04);
+}
+
+.nav-link.active {
+    color: #2d5a27 !important;
+    font-weight: 500;
+}
+
+.dropdown-item:active {
+    background-color: #2d5a27;
 }
 
 /* Bouton Chatbot Flottant */
@@ -297,13 +274,5 @@
         right: -10px;
     }
 }
-.nav-link.active {
-    color: #2d5a27 !important;
-    font-weight: 500;
-}
-.dropdown-item:active {
-    background-color: #2d5a27;
-}
->>>>>>> firas
 </style>
 @endpush
