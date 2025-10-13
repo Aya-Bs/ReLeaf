@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+
 class Event extends Model
 {
     use HasFactory;
@@ -104,13 +106,7 @@ class Event extends Model
         return $query->where('status', 'draft');
     }
 
-    /**
-     * Scope for events by organizer
-     */
-    public function scopeByOrganizer($query, $userId)
-    {
-        return $query->where('user_id', $userId);
-    }
+   
 
     /**
      * Scope pour les événements à venir.
@@ -161,9 +157,9 @@ class Event extends Model
     }
 
     public function isRejected(): bool
-    {
-        return $this->status === 'rejected';
-    }
+{
+    return $this->status === 'rejected';
+}
 
     public function isFull(): bool
     {
@@ -172,6 +168,8 @@ class Event extends Model
                                     ->count();
         return $confirmedReservations >= $this->max_participants;
     }
+
+    
 
     /**
      * Get available spots count.
@@ -184,12 +182,34 @@ class Event extends Model
         return max(0, $this->max_participants - $activeReservations);
     }
 
+
+     /**
+     * Scope for events by organizer
+     */
+    public function scopeByOrganizer($query, $userId)
+    {
+        return $query->where('user_id', $userId);
+    }
+
+
     /**
      * Get waiting list count.
      */
     public function getWaitingListCount(): int
     {
         return $this->waitingList()->where('status', 'waiting')->count();
+    }
+      
+    /**
+     * Scope to get events that have available seats.
+     * Usage: Event::withAvailableSeats()->get()
+     */
+    public function scopeWithAvailableSeats($query)
+    {
+        // Select events where max_participants > number of active reservations (pending or confirmed)
+        return $query->whereRaw(
+            "max_participants > (select count(*) from reservations where reservations.event_id = events.id and reservations.status in ('pending','confirmed'))"
+        );
     }
 
     public function canBeEdited(): bool
@@ -224,5 +244,36 @@ class Event extends Model
             return Storage::url($image);
         })->toArray();
     }
+ /**
+     * Get all assignments for this event.
+     */
+    public function assignments(): MorphMany
+    {
+        return $this->morphMany(Assignment::class, 'assignable');
+    }
+
+    /**
+     * Get approved volunteers for this event.
+     */
+    public function volunteers()
+    {
+        return $this->assignments()
+            ->where('status', 'approved')
+            ->with('volunteer.user');
+    }
+
+    /**
+     * Get pending volunteer applications for this event.
+     */
+    public function pendingVolunteers()
+    {
+        return $this->assignments()
+            ->where('status', 'pending')
+            ->with('volunteer.user');
+    }
 }
+
+    /**
+     * Check if event can be edited (only draft or pending events)
+     */
 

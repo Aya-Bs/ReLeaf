@@ -76,6 +76,22 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the user's volunteer profile.
+     */
+    public function volunteer(): HasOne
+    {
+        return $this->hasOne(Volunteer::class);
+    }
+
+    /**
+     * Check if user is a volunteer.
+     */
+    public function isVolunteer(): bool
+    {
+        return $this->volunteer !== null;
+    }
+
+    /**
      * Create a profile for the user if it doesn't exist.
      */
     public function createProfileIfNotExists(): void

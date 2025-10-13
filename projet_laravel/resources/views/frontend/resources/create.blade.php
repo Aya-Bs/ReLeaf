@@ -8,10 +8,10 @@
     <div class="container">
         <div class="row align-items-center">
             <div class="col-12 text-center">
-                <h1 class="display-5 fw-bold mb-3">
+                <h1 class="display-5 fw-bold mb-3" style="color: var(--eco-green) !important;">
                     <i class="fas fa-plus-circle me-2"></i>Créer une <span class="text-success">Nouvelle Ressource</span>
                 </h1>
-                <p class="lead">
+                <p class="lead" style="color: var(--eco-green) !important; font-weight: 600;">
                     Ajoutez une ressource nécessaire à votre campagne écologique
                 </p>
             </div>
@@ -50,7 +50,7 @@
                                     <label for="name" class="form-label fw-bold">
                                         <i class="fas fa-tag me-2 text-eco"></i>Nom de la ressource *
                                     </label>
-                                    <input type="text" class="form-control form-control-lg @error('name') is-invalid @enderror" 
+                                    <input type="text" class="form-control @error('name') is-invalid @enderror" 
                                            id="name" name="name" value="{{ old('name') }}" 
                                            placeholder="ex: Plants d'arbres, Gants de protection..." required>
                                     @error('name')
@@ -76,7 +76,7 @@
                                             <label for="campaign_id" class="form-label fw-bold">
                                                 <i class="fas fa-leaf me-2 text-eco"></i>Campagne associée *
                                             </label>
-                                            <select class="form-select form-select-lg @error('campaign_id') is-invalid @enderror" 
+                                            <select class="form-select @error('campaign_id') is-invalid @enderror" 
                                                     id="campaign_id" name="campaign_id" required>
                                                 <option value="">🌱 Sélectionnez une campagne</option>
                                                 @foreach($campaigns as $campaign)
@@ -95,7 +95,7 @@
                                             <label for="provider" class="form-label fw-bold">
                                                 <i class="fas fa-user me-2 text-eco"></i>Fournisseur
                                             </label>
-                                            <input type="text" class="form-control form-control-lg @error('provider') is-invalid @enderror" 
+                                            <input type="text" class="form-control @error('provider') is-invalid @enderror" 
                                                    id="provider" name="provider" value="{{ old('provider') }}"
                                                    placeholder="ex: Entreprise XYZ, Donateur...">
                                             @error('provider')
@@ -329,16 +329,17 @@
         padding: 3rem 2rem;
     }
     
-    /* Form Controls */
-    .form-control-lg, .form-select-lg {
+    /* Form Controls - Normal size text */
+    .form-control, .form-select {
         border-radius: 0.75rem;
         border: 2px solid #e9ecef;
         transition: all 0.3s ease;
         font-size: 1rem;
         padding: 0.75rem 1rem;
+        height: auto;
     }
     
-    .form-control-lg:focus, .form-select-lg:focus {
+    .form-control:focus, .form-select:focus {
         border-color: var(--eco-green);
         box-shadow: 0 0 0 0.2rem rgba(45, 90, 39, 0.25);
         background-color: #fff;
@@ -459,11 +460,36 @@
         transform: translateY(-2px);
     }
     
+    /* Improved visibility of title and subtitle - GREEN COLOR */
+    .hero-section h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--eco-green) !important;
+        text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+    }
+
+    .hero-section p.lead {
+        font-size: 1.5rem;
+        color: var(--eco-green) !important;
+        text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        font-weight: 600;
+    }
+    
     /* Responsive Design */
     @media (max-width: 768px) {
         .hero-section {
             min-height: 40vh;
             text-align: center;
+        }
+        
+        .hero-section h1 {
+            font-size: 2rem;
+            color: var(--eco-green) !important;
+        }
+        
+        .hero-section p {
+            font-size: 1.2rem;
+            color: var(--eco-green) !important;
         }
         
         .form-header {
@@ -557,7 +583,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Animation des formulaires
-    const formControls = document.querySelectorAll('.form-control-lg, .form-select-lg');
+    const formControls = document.querySelectorAll('.form-control, .form-select');
     formControls.forEach(control => {
         control.addEventListener('focus', function() {
             this.parentElement.classList.add('focused');

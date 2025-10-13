@@ -7,6 +7,7 @@ use App\Models\Campaign;
 use App\Http\Requests\StoreCampaignRequest;
 use App\Http\Requests\UpdateCampaignRequest;
 use Illuminate\Http\Request;
+use App\Models\CampaignDeletionRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -195,4 +196,105 @@ class CampaignController extends Controller
             'campaignsByCategory'
         ));
     }
+
+    /**
+ * Get featured campaigns for home page hero section
+ */
+public function featuredCampaigns()
+{
+    $featuredCampaigns = Campaign::where('visibility', true)
+                                ->where('status', 'active')
+                                ->where('end_date', '>', now())
+                                ->with('organizer')
+                                ->orderBy('start_date', 'asc')
+                                ->take(5)
+                                ->get();
+
+    return $featuredCampaigns;
+}
+
+// Ajouter ces méthodes dans CampaignController.php
+
+public function requestDeletion(Request $request, Campaign $campaign)
+{
+    // Vérifier si l'utilisateur peut faire la demande
+    if ($campaign->organizer_id !== Auth::id()) {
+        return redirect()->back()->with('error', 'Vous ne pouvez pas demander la suppression de cette campagne.');
+    }
+
+    // Vérifier s'il y a déjà une demande en attente
+    if ($campaign->pendingDeletionRequest) {
+        return redirect()->back()->with('warning', 'Une demande de suppression est déjà en attente.');
+    }
+
+    // Créer la demande de suppression
+    CampaignDeletionRequest::create([
+        'campaign_id' => $campaign->id,
+        'user_id' => Auth::id(),
+        'reason' => $request->reason,
+        'status' => 'pending'
+    ]);
+
+    return redirect()->back()->with('success', 'Demande de suppression envoyée. En attente de confirmation par l\'administrateur.');
+}
+
+public function deletionRequests()
+{
+    if (!Auth::user()->isAdmin()) {
+        return redirect()->route('dashboard')->with('error', 'Accès non autorisé.');
+    }
+
+    $deletionRequests = CampaignDeletionRequest::with(['campaign', 'user'])
+        ->pending()
+        ->latest()
+        ->paginate(10);
+
+    return view('backend.campaigns.index', compact('deletionRequests'));
+}
+
+public function processDeletionRequest(Request $request, CampaignDeletionRequest $deletionRequest)
+{
+    if (!Auth::user()->isAdmin()) {
+        return redirect()->route('dashboard')->with('error', 'Accès non autorisé.');
+    }
+
+    $request->validate([
+        'action' => 'required|in:approve,reject',
+        'admin_notes' => 'nullable|string|max:500'
+    ]);
+
+    if ($request->action === 'approve') {
+        // Supprimer la campagne
+        $campaign = $deletionRequest->campaign;
+        
+        // Supprimer l'image associée
+        if ($campaign->image_url) {
+            Storage::disk('public')->delete($campaign->image_url);
+        }
+
+        $campaign->delete();
+
+        // Mettre à jour la demande
+        $deletionRequest->update([
+            'status' => 'approved',
+            'processed_by' => Auth::id(),
+            'admin_notes' => $request->admin_notes,
+            'processed_at' => now()
+        ]);
+
+        return redirect()->route('backend.campaigns.deletion-requests')
+            ->with('success', 'Demande de suppression approuvée et campagne supprimée.');
+    } else {
+        // Rejeter la demande
+        $deletionRequest->update([
+            'status' => 'rejected',
+            'processed_by' => Auth::id(),
+            'admin_notes' => $request->admin_notes,
+            'processed_at' => now()
+        ]);
+
+        return redirect()->route('backend.campaigns.deletion-requests')
+            ->with('success', 'Demande de suppression rejetée.');
+    }
+}
 }

@@ -4,8 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
+use Illuminate\Support\Facades\Auth;
 class Campaign extends Model
 {
     use HasFactory;
@@ -96,8 +97,7 @@ class Campaign extends Model
         $this->participants_count = $this->events->sum('max_participants');
         $this->save();
     }
-
-     /**
+      /**
      * Vérifier si la campagne peut être modifiée
      * ✅ AJOUTÉ : Même pattern que Event
      */
@@ -117,5 +117,44 @@ class Campaign extends Model
         // Exemple : les campagnes avec des ressources ou événements ne peuvent pas être supprimées
         // Ajustez cette logique selon vos besoins
         return $this->resources->isEmpty() && $this->events->isEmpty();
+    }
+
+    /**
+     * Get all assignments for this campaign.
+     */
+    public function assignments(): MorphMany
+    {
+        return $this->morphMany(Assignment::class, 'assignable');
+    }
+
+    /**
+     * Get approved volunteers for this campaign.
+     */
+    public function volunteers()
+    {
+        return $this->assignments()
+            ->where('status', 'approved')
+            ->with('volunteer.user');
+    }
+
+    /**
+     * Get pending volunteer applications for this campaign.
+     */
+    public function pendingVolunteers()
+    {
+        return $this->assignments()
+            ->where('status', 'pending')
+            ->with('volunteer.user');
+    }
+
+    // Ajouter cette relation dans Campaign.php
+    public function deletionRequests()
+    {
+        return $this->hasMany(CampaignDeletionRequest::class);
+    }
+
+    public function pendingDeletionRequest()
+    {
+        return $this->hasOne(CampaignDeletionRequest::class)->where('status', 'pending');
     }
 }

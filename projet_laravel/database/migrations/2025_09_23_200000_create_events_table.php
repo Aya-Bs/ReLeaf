@@ -22,6 +22,7 @@ return new class extends Migration
             $table->json('images')->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('duration')->nullable();
+            $table->foreignId('campaign_id')->nullable()->constrained('campaigns')->onDelete('set null');
             $table->timestamps();
 
             $table->index(['date', 'status']);

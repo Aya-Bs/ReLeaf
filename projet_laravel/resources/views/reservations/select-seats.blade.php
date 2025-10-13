@@ -4,9 +4,9 @@
 
 @section('content')
 <style>
-/* Container principal style cinéma */
+/* Container principal style moderne et clair */
 .cinema-container {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     min-height: 100vh;
 }
 
@@ -45,7 +45,10 @@
 /* Section principale */
 .cinema-main {
     padding: 40px 0;
-    background: #1a1a1a;
+    background: #ffffff;
+    border-radius: 20px;
+    margin: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 /* Légende */
@@ -54,8 +57,9 @@
     justify-content: center;
     gap: 30px;
     padding: 20px;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(248, 249, 250, 0.8);
     border-radius: 15px;
+    border: 1px solid #e9ecef;
     backdrop-filter: blur(10px);
 }
 
@@ -63,8 +67,9 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #fff;
+    color: #495057;
     font-size: 14px;
+    font-weight: 500;
 }
 
 .seat-mini {
@@ -110,11 +115,17 @@
 }
 
 .row-label {
-    color: #ffd700;
+    color: #2d5a27;
     font-weight: bold;
     font-size: 18px;
     width: 30px;
     text-align: center;
+    background: rgba(45, 90, 39, 0.1);
+    border-radius: 50%;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .seats-section {
@@ -123,19 +134,19 @@
     justify-content: center;
 }
 
-/* Sièges style cinéma */
+/* Sièges style moderne */
 .cinema-seat {
     width: 60px;
     height: 60px;
-    border: none;
+    border: 2px solid #e9ecef;
     border-radius: 15px;
     position: relative;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
-    background: linear-gradient(145deg, #4a4a4a, #2a2a2a);
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
     box-shadow: 
-        0 4px 8px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        0 4px 8px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .cinema-seat:before {
@@ -154,7 +165,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #fff;
+    color: #495057;
     font-weight: bold;
     font-size: 16px;
 }
@@ -163,6 +174,7 @@
 .cinema-seat.available {
     background: linear-gradient(145deg, #28a745, #1e7e34);
     color: white;
+    border-color: #28a745;
 }
 
 .cinema-seat.available:hover {
@@ -176,12 +188,14 @@
     background: linear-gradient(145deg, #dc3545, #c82333);
     cursor: not-allowed;
     opacity: 0.7;
+    border-color: #dc3545;
 }
 
 .cinema-seat.locked {
     background: linear-gradient(145deg, #ff8c00, #ff6500);
     cursor: not-allowed;
     opacity: 0.8;
+    border-color: #ff8c00;
     animation: pulse-locked 2s infinite;
 }
 
@@ -193,6 +207,7 @@
 .cinema-seat.selected {
     background: linear-gradient(145deg, #ffd700, #ffb700);
     color: #000;
+    border-color: #ffd700;
     transform: translateY(-5px) scale(1.1);
     box-shadow: 
         0 10px 30px rgba(255, 215, 0, 0.5),
@@ -270,6 +285,11 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+    .cinema-main {
+        margin: 10px;
+        padding: 20px 0;
+    }
+    
     .event-details {
         gap: 10px;
     }
@@ -277,6 +297,7 @@
     .seat-legend-container {
         gap: 15px;
         padding: 15px;
+        flex-wrap: wrap;
     }
     
     .cinema-seat {
@@ -298,6 +319,10 @@
     
     .reservation-actions .btn {
         width: 100%;
+    }
+    
+    .legend-item {
+        font-size: 12px;
     }
 }
 </style>

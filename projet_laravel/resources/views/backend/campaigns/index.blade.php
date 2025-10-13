@@ -1,11 +1,12 @@
 @extends('backend.layouts.app')
 
-@section('title', 'Gestion des Campagnes')
-@section('page-title', 'Gestion des Campagnes')
+@section('title', 'Demandes de Suppression de Campagnes')
+@section('page-title', 'Demandes de Suppression')
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('backend.dashboard') }}">Tableau de bord</a></li>
-    <li class="breadcrumb-item active">Campagnes</li>
+    <li class="breadcrumb-item"><a href="{{ route('backend.campaigns.index') }}">Campagnes</a></li>
+    <li class="breadcrumb-item active">Demandes de suppression</li>
 @endsection
 
 @section('content')
@@ -13,33 +14,47 @@
     <div class="row">
         <div class="col-12">
             <div class="card card-eco">
-                <div class="card-header">
-                    <h3 class="card-title">Liste des campagnes</h3>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Demandes de suppression en attente</h3>
+                    @php
+                        $pendingCount = \App\Models\CampaignDeletionRequest::pending()->count();
+                    @endphp
+                    @if($pendingCount > 0)
+                        <span class="badge bg-warning">
+                            {{ $pendingCount }} demande(s) en attente
+                        </span>
+                    @endif
                 </div>
 
                 <div class="card-body">
-                    @if($campaigns->count() > 0)
+                    @php
+                        // Récupérer les demandes directement dans la vue si nécessaire
+                        $deletionRequests = \App\Models\CampaignDeletionRequest::with(['campaign', 'user'])
+                            ->pending()
+                            ->latest()
+                            ->paginate(10);
+                    @endphp
+
+                    @if($deletionRequests->count() > 0)
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover">
                             <thead class="thead-light">
                                 <tr>
-                                    <th>Nom</th>
-                                    <th>Organisateur</th>
-                                    <th>Catégorie</th>
-                                    <th>Date de début</th>
-                                    <th>Date de fin</th>
-                                    <th>Statut</th>
-                                    <th>Progression</th>
+                                    <th>Campagne</th>
+                                    <th>Demandeur</th>
+                                    <th>Raison</th>
+                                    <th>Date de demande</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($campaigns as $campaign)
-                                <tr onclick="window.location='{{ route('backend.campaigns.show', $campaign) }}'" style="cursor: pointer;">
+                                @foreach($deletionRequests as $request)
+                                <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            @if($campaign->image_url)
-                                                <img src="{{ Storage::url($campaign->image_url) }}" 
-                                                     alt="{{ $campaign->name }}" 
+                                            @if($request->campaign->image_url)
+                                                <img src="{{ Storage::url($request->campaign->image_url) }}" 
+                                                     alt="{{ $request->campaign->name }}" 
                                                      class="rounded me-3"
                                                      style="width: 40px; height: 40px; object-fit: cover;">
                                             @else
@@ -49,73 +64,83 @@
                                                 </div>
                                             @endif
                                             <div>
-                                                <strong>{{ $campaign->name }}</strong>
-                                                @if(!$campaign->visibility)
-                                                    <i class="fas fa-eye-slash text-warning ms-1" title="Non visible publiquement"></i>
-                                                @endif
+                                                <strong>{{ $request->campaign->name }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ $request->campaign->category }}</small>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>{{ $campaign->organizer->name }}</td>
+                                    <td>{{ $request->user->name }}</td>
+                                    <td>{{ $request->reason ?? 'Aucune raison fournie' }}</td>
+                                    <td>{{ $request->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
-                                        @switch($campaign->category)
-                                            @case('reforestation')
-                                                <span class="badge badge-success">🌲 Reforestation</span>
-                                                @break
-                                            @case('nettoyage')
-                                                <span class="badge badge-info">🧹 Nettoyage</span>
-                                                @break
-                                            @case('sensibilisation')
-                                                <span class="badge badge-warning">📢 Sensibilisation</span>
-                                                @break
-                                            @case('recyclage')
-                                                <span class="badge badge-primary">♻️ Recyclage</span>
-                                                @break
-                                            @case('biodiversite')
-                                                <span class="badge badge-success">🦋 Biodiversité</span>
-                                                @break
-                                            @case('energie_renouvelable')
-                                                <span class="badge badge-warning">⚡ Énergie</span>
-                                                @break
-                                            @default
-                                                <span class="badge badge-secondary">🔧 Autre</span>
-                                        @endswitch
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-light">
-                                            {{ $campaign->start_date->format('d/m/Y') }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-light">
-                                            {{ $campaign->end_date->format('d/m/Y') }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        @if($campaign->status === 'active')
-                                            <span class="badge badge-success">Active</span>
-                                        @elseif($campaign->status === 'inactive')
-                                            <span class="badge badge-secondary">Inactive</span>
-                                        @elseif($campaign->status === 'completed')
-                                            <span class="badge badge-primary">Terminée</span>
-                                        @elseif($campaign->status === 'cancelled')
-                                            <span class="badge badge-danger">Annulée</span>
-                                        @else
-                                            <span class="badge badge-light">{{ $campaign->status }}</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
-                                                <div class="progress-bar bg-success" 
-                                                     role="progressbar" 
-                                                     style="width: {{ $campaign->funds_progress_percentage }}%"
-                                                     aria-valuenow="{{ $campaign->funds_progress_percentage }}" 
-                                                     aria-valuemin="0" 
-                                                     aria-valuemax="100">
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-success btn-sm" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#approveModal{{ $request->id }}">
+                                                <i class="fas fa-check"></i> Approuver
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#rejectModal{{ $request->id }}">
+                                                <i class="fas fa-times"></i> Rejeter
+                                            </button>
+                                        </div>
+
+                                        <!-- Modal pour l'approbation -->
+                                        <div class="modal fade" id="approveModal{{ $request->id }}" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Approuver la suppression</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <form action="{{ route('backend.campaigns.process-deletion-request', $request) }}" method="POST">
+                                                        @csrf
+                                                        <div class="modal-body">
+                                                            <p>Êtes-vous sûr de vouloir approuver la suppression de la campagne <strong>"{{ $request->campaign->name }}"</strong> ?</p>
+                                                            <div class="mb-3">
+                                                                <label for="admin_notes_approve{{ $request->id }}" class="form-label">Notes (optionnel)</label>
+                                                                <textarea class="form-control" id="admin_notes_approve{{ $request->id }}" 
+                                                                          name="admin_notes" rows="3" placeholder="Notes pour le demandeur..."></textarea>
+                                                            </div>
+                                                            <input type="hidden" name="action" value="approve">
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                            <button type="submit" class="btn btn-success">Confirmer l'approbation</button>
+                                                        </div>
+                                                    </form>
                                                 </div>
                                             </div>
-                                            <small class="text-muted">{{ $campaign->funds_progress_percentage }}%</small>
+                                        </div>
+
+                                        <!-- Modal pour le rejet -->
+                                        <div class="modal fade" id="rejectModal{{ $request->id }}" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Rejeter la demande</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <form action="{{ route('backend.campaigns.process-deletion-request', $request) }}" method="POST">
+                                                        @csrf
+                                                        <div class="modal-body">
+                                                            <p>Êtes-vous sûr de vouloir rejeter la demande de suppression pour la campagne <strong>"{{ $request->campaign->name }}"</strong> ?</p>
+                                                            <div class="mb-3">
+                                                                <label for="admin_notes_reject{{ $request->id }}" class="form-label">Raison du rejet</label>
+                                                                <textarea class="form-control" id="admin_notes_reject{{ $request->id }}" 
+                                                                          name="admin_notes" rows="3" placeholder="Pourquoi rejetez-vous cette demande ?" required></textarea>
+                                                            </div>
+                                                            <input type="hidden" name="action" value="reject">
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                            <button type="submit" class="btn btn-danger">Confirmer le rejet</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -126,13 +151,13 @@
                     
                     <!-- Pagination -->
                     <div class="d-flex justify-content-center mt-4">
-                        {{ $campaigns->links() }}
+                        {{ $deletionRequests->links() }}
                     </div>
                     @else
                     <div class="text-center py-5">
-                        <i class="fas fa-leaf fa-3x text-muted mb-3"></i>
-                        <h4 class="text-muted">Aucune campagne trouvée</h4>
-                        <p class="text-muted">Aucune campagne n'a été créée pour le moment.</p>
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h4 class="text-muted">Aucune demande en attente</h4>
+                        <p class="text-muted">Toutes les demandes de suppression ont été traitées.</p>
                     </div>
                     @endif
                 </div>

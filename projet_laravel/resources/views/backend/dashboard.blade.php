@@ -43,7 +43,7 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-warning">
             <div class="inner">
-                <h3>0</h3>
+                <h3>{{ \App\Models\Event::count() }}</h3>
                 <p>Événements créés</p>
             </div>
             <div class="icon">
@@ -58,11 +58,74 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-danger">
             <div class="inner">
-                <h3>0</h3>
-                <p>Participations</p>
+                <h3>{{ $stats['total_volunteers'] }}</h3>
+                <p>Volontaires</p>
             </div>
             <div class="icon">
-                <i class="fas fa-handshake"></i>
+                <i class="fas fa-hands-helping"></i>
+            </div>
+            <a href="{{ route('backend.volunteers.index') }}" class="small-box-footer">
+                Plus d'infos <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Deuxième ligne de statistiques -->
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{{ $stats['active_volunteers'] }}</h3>
+                <p>Volontaires actifs</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <a href="{{ route('backend.volunteers.index') }}" class="small-box-footer">
+                Plus d'infos <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>{{ $stats['total_assignments'] }}</h3>
+                <p>Missions totales</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-tasks"></i>
+            </div>
+            <a href="{{ route('backend.assignments.index') }}" class="small-box-footer">
+                Plus d'infos <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>{{ $stats['pending_assignments'] }}</h3>
+                <p>Missions en attente</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <a href="{{ route('backend.assignments.index') }}" class="small-box-footer">
+                Plus d'infos <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-secondary">
+            <div class="inner">
+                <h3>0</h3>
+                <p>Événements créés</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-calendar-alt"></i>
             </div>
             <a href="#" class="small-box-footer">
                 Bientôt disponible <i class="fas fa-arrow-circle-right"></i>
@@ -101,9 +164,9 @@
             </div>
             <div class="card-body p-0">
                 <ul class="users-list clearfix">
-                    @foreach(\App\Models\User::with('profile')->latest()->take(8)->get() as $user)
+                    @foreach($stats['recent_users'] as $user)
                         <li>
-                            <img src="{{ $user->avatar_url }}" alt="Avatar" class="img-circle">
+                            <img src="{{ $user->avatar_url ?? asset('images/default-avatar.png') }}" alt="Avatar" class="img-circle">
                             <a class="users-list-name" href="{{ route('backend.users.show', $user) }}">
                                 {{ $user->name }}
                             </a>
@@ -114,6 +177,105 @@
             </div>
             <div class="card-footer text-center">
                 <a href="{{ route('backend.users.index') }}">Voir tous les utilisateurs</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section Volontaires -->
+<div class="row">
+    <!-- Derniers volontaires -->
+    <div class="col-md-6">
+        <div class="card card-eco">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-hands-helping mr-1"></i>
+                    Derniers volontaires
+                </h3>
+            </div>
+            <div class="card-body p-0">
+                <ul class="users-list clearfix">
+                    @foreach($stats['recent_volunteers'] as $volunteer)
+                        <li>
+                            <img src="{{ $volunteer->user->avatar_url ?? asset('images/default-avatar.png') }}" alt="Avatar" class="img-circle">
+                            <a class="users-list-name" href="{{ route('volunteers.show', $volunteer) }}">
+                                {{ $volunteer->user->name }}
+                            </a>
+                            <span class="users-list-date">
+                                <span class="badge badge-{{ $volunteer->status === 'active' ? 'success' : 'warning' }}">
+                                    {{ ucfirst($volunteer->status) }}
+                                </span>
+                                <br>{{ $volunteer->created_at->diffForHumans() }}
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{{ route('backend.volunteers.index') }}">Voir tous les volontaires</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques des missions -->
+    <div class="col-md-6">
+        <div class="card card-eco">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-tasks mr-1"></i>
+                    Statistiques des missions
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-success">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Approuvées</span>
+                                <span class="info-box-number">{{ \App\Models\Assignment::where('status', 'approved')->count() }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-warning">
+                                <i class="fas fa-clock"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">En attente</span>
+                                <span class="info-box-number">{{ \App\Models\Assignment::where('status', 'pending')->count() }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-info">
+                                <i class="fas fa-check-circle"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Terminées</span>
+                                <span class="info-box-number">{{ \App\Models\Assignment::where('status', 'completed')->count() }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-danger">
+                                <i class="fas fa-times"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Annulées</span>
+                                <span class="info-box-number">{{ \App\Models\Assignment::where('status', 'cancelled')->count() }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{{ route('backend.assignments.index') }}">Voir toutes les missions</a>
             </div>
         </div>
     </div>

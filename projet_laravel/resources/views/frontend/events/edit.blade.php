@@ -15,8 +15,7 @@
                     <!-- Breadcrumb path on top right -->
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-4" style="background: transparent; padding: 0; margin: 0;">
-                            <li class="breadcrumb-item"><a href="{{ route('home') }}" style="color: #2d5a27;">Accueil</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('events.index') }}" style="color: #2d5a27;">Événements</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('events.my-events') }}" style="color: #2d5a27;">Événements</a></li>
                             <li class="breadcrumb-item active" aria-current="page" style="color: #2d5a27;"><strong>Modifier</strong></li>
                         </ol>
                     </nav>
@@ -260,7 +259,7 @@
 
                                 <!-- Buttons -->
                                 <div class="d-flex justify-content-between mt-4">
-                                    <a href="{{ route('events.index') }}" class="btn btn-outline-secondary">
+                                    <a href="{{ route('events.my-events') }}" class="btn btn-outline-secondary">
                                         <i class="fas fa-arrow-left me-2"></i>Cancel
                                     </a>
                                     

@@ -152,6 +152,20 @@
                         </li>
 
                         <li class="nav-item">
+                            <a href="{{ route('backend.volunteers.index') }}" class="nav-link {{ request()->routeIs('backend.volunteers.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-hands-helping"></i>
+                                <p>Volontaires</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="{{ route('backend.assignments.index') }}" class="nav-link {{ request()->routeIs('backend.assignments.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-tasks"></i>
+                                <p>Missions</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
                             <a href="{{ route('admin.reservations.index') }}" class="nav-link {{ request()->routeIs('admin.reservations.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-ticket-alt"></i>
                                 <p>Réservations</p>
@@ -204,6 +218,14 @@
                         
 
                         
+                        <li class="nav-item">
+        <a href="{{ route('backend.locations.index') }}" class="nav-link {{ request()->routeIs('backend.locations.*') ? 'active' : '' }}">
+                <i class="nav-icon fas fa-calendar-alt"></i>
+                <p>Locations</p>
+        </a>
+</li>
+
+
                                                 <li class="nav-item">
 
                 <li class="nav-item has-treeview {{ request()->routeIs('backend.events.*') || request()->routeIs('backend.events.requests.*') ? 'menu-open' : '' }}">
@@ -236,12 +258,7 @@
                     </ul>
                 </li>
 
-    <li class="nav-item">
-        <a href="{{ route('backend.locations.index') }}" class="nav-link {{ request()->routeIs('backend.locations.*') ? 'active' : '' }}">
-                <i class="nav-icon fas fa-calendar-alt"></i>
-                <p>Locations</p>
-        </a>
-</li>
+    
 
 <li class="nav-item">
     <a href="{{ route('backend.campaigns.index') }}" class="nav-link {{ request()->routeIs('backend.campaigns.*') ? 'active' : '' }}">

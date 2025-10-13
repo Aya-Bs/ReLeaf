@@ -27,12 +27,23 @@
                     <a href="{{ route('campaigns.index') }}" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left me-2"></i>Retour
                     </a>
+                    
+                    <!-- Bouton de demande de suppression -->
+                    @if(!$campaign->pendingDeletionRequest)
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteRequestModal">
+                            <i class="fas fa-trash-alt me-2"></i>Demander la suppression
+                        </button>
+                    @else
+                        <button type="button" class="btn btn-outline-warning" disabled>
+                            <i class="fas fa-clock me-2"></i>Demande en attente
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Main Content -->
+    <!-- Le reste du contenu de votre page -->
     <div class="row">
         <!-- Left Column - Campaign Details -->
         <div class="col-lg-8">
@@ -418,6 +429,35 @@
 </div>
 @endsection
 
+<!-- MODAL PLACÉ EN DEHORS DE LA SECTION CONTENT -->
+<div class="modal fade" id="deleteRequestModal" tabindex="-1" aria-labelledby="deleteRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteRequestModalLabel">Demander la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('campaigns.request-deletion', $campaign) }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir demander la suppression de la campagne <strong>"{{ $campaign->name }}"</strong> ?</p>
+                    <p class="text-muted small">Cette demande devra être approuvée par un administrateur avant que la campagne ne soit supprimée.</p>
+                    
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Raison (optionnelle)</label>
+                        <textarea class="form-control" id="reason" name="reason" rows="3" 
+                                  placeholder="Pourquoi souhaitez-vous supprimer cette campagne ?"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Confirmer la demande</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @push('styles')
 <style>
     .campaign-main-image {
@@ -473,6 +513,15 @@
         color: white;
     }
 
+    /* Styles pour garantir que le modal fonctionne */
+    .modal {
+        z-index: 1060 !important;
+    }
+    
+    .modal-backdrop {
+        z-index: 1050 !important;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .campaign-main-image {
@@ -487,6 +536,10 @@
         
         .d-flex.gap-2.align-items-center {
             margin-top: 0.5rem;
+        }
+        
+        .modal-dialog {
+            margin: 1rem;
         }
     }
 </style>

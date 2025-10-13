@@ -17,7 +17,7 @@
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-4" style="background: transparent; padding: 0; margin: 0;">
                             <li class="breadcrumb-item"><a href="{{ route('home') }}" style="color: #2d5a27;">Accueil</a></li>
-                            <li class="breadcrumb-item"><a href="{{ route('events.index') }}" style="color: #2d5a27;">Événements</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('events.my-events') }}" style="color: #2d5a27;">Événements</a></li>
                             <li class="breadcrumb-item active" aria-current="page" style="color: #2d5a27;"><strong>Créer</strong></li>
                         </ol>
                     </nav>
@@ -123,7 +123,7 @@
                                         <i class="fas fa-map-marker-alt me-2" style="color: #2d5a27;"></i>Lieu <span class="text-danger">*</span>
                                     </label>
                                     @php
-                                        $locations = \App\Models\Location::all();
+                                        $locations = \App\Models\Location::where('in_repair', false)->get();
                                     @endphp
                                     <select class="form-select @error('location_id') is-invalid @enderror" id="location_id" name="location_id" required>
                                         <option value="">Sélectionnez un lieu</option>
@@ -184,7 +184,11 @@
                             <!-- Right Column - More Fields, Images and Actions -->
                             <div class="col-md-4 ">
                                 <!-- Max Participants -->
-                         
+                         <div class="alert alert-info mt-10 mb-4">
+                                    <i class="fas fa-info-circle me-2 "></i>
+                                    <strong>Important :</strong> Après la création, votre événement sera en statut "Brouillon". 
+                                    Vous pourrez le soumettre pour approbation depuis la liste de vos événements.
+                                </div>
 
                                 <!-- Images - Updated Drag & Drop Style -->
                                 <div class="mb-4">
@@ -210,14 +214,11 @@
                                     </small>
                                     <!-- Image preview -->
                                     <div id="imagePreview" class="mt-3 row g-2"></div>
-                                </div>
-
-                                <!-- Information Box -->
-                               
+                                </div>                               
 
                                 <!-- Buttons -->
-                                <div class="d-flex justify-content-between mt-4">
-                                    <a href="{{ route('events.index') }}" class="btn btn-outline-secondary">
+                                <div class="d-flex justify-content-between mt-4 mb-30">
+                                    <a href="{{ route('events.my-events') }}" class="btn btn-outline-secondary">
                                         <i class="fas fa-arrow-left me-2"></i>Cancel
                                     </a>
                                     <button type="submit" class="btn btn-eco" style="background-color: #2d5a27; border-color: #2d5a27; color: white;">
@@ -225,11 +226,7 @@
                                     </button>
                                 </div>
 
-                                 <div class="alert alert-info mt-6 mb-4">
-                                    <i class="fas fa-info-circle me-2 "></i>
-                                    <strong>Important :</strong> Après la création, votre événement sera en statut "Brouillon". 
-                                    Vous pourrez le soumettre pour approbation depuis la liste de vos événements.
-                                </div>
+                                 
                             </div>
                         </div>
                     </form>
