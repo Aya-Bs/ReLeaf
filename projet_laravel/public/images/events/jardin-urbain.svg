@@ -1,0 +1,37 @@
+<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#27ae60;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2d5a27;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="200" fill="url(#grad2)"/>
+  
+  <!-- Pots de plantes -->
+  <rect x="50" y="120" width="40" height="50" fill="#8b4513" rx="5"/>
+  <rect x="150" y="110" width="45" height="60" fill="#a0522d" rx="5"/>
+  <rect x="280" y="115" width="42" height="55" fill="#8b4513" rx="5"/>
+  
+  <!-- Plantes -->
+  <!-- Plante 1 -->
+  <path d="M 70 120 Q 60 100, 65 85 Q 75 80, 80 95 Q 75 110, 70 120" fill="#228b22"/>
+  <path d="M 70 120 Q 80 105, 85 90 Q 90 85, 85 100 Q 80 115, 70 120" fill="#32cd32"/>
+  
+  <!-- Plante 2 -->
+  <ellipse cx="172" cy="95" rx="15" ry="25" fill="#228b22"/>
+  <ellipse cx="165" cy="100" rx="12" ry="20" fill="#32cd32"/>
+  <ellipse cx="180" cy="105" rx="10" ry="18" fill="#90ee90"/>
+  
+  <!-- Plante 3 -->
+  <path d="M 301 115 Q 290 90, 295 75 Q 305 70, 310 85 Q 305 100, 301 115" fill="#228b22"/>
+  <path d="M 301 115 Q 315 95, 320 80 Q 325 75, 320 90 Q 315 105, 301 115" fill="#32cd32"/>
+  <path d="M 301 115 Q 295 100, 290 85 Q 285 80, 290 95 Q 295 110, 301 115" fill="#90ee90"/>
+  
+  <!-- Soleil -->
+  <circle cx="350" cy="50" r="20" fill="#ffd700" opacity="0.8"/>
+  <path d="M 350 20 L 350 30 M 350 70 L 350 80 M 380 50 L 370 50 M 320 50 L 330 50" stroke="#ffd700" stroke-width="3" opacity="0.6"/>
+  <path d="M 370 30 L 365 35 M 335 65 L 330 70 M 370 70 L 365 65 M 335 35 L 330 30" stroke="#ffd700" stroke-width="3" opacity="0.6"/>
+  
+  <!-- Titre -->
+  <text x="200" y="180" text-anchor="middle" fill="white" font-family="Arial" font-size="16" font-weight="bold">Jardin Urbain</text>
+</svg>
