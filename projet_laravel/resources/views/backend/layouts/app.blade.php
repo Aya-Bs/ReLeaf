@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-    
+
     <!-- Custom CSS -->
     <style>
         :root {
@@ -22,57 +23,57 @@
             --eco-accent: #8bc34a;
             --eco-dark: #1b3a17;
         }
-        
+
         .main-header .navbar-nav .nav-link {
-            color: rgba(255,255,255,.8);
+            color: rgba(255, 255, 255, .8);
         }
-        
+
         .main-header .navbar-nav .nav-link:hover {
             color: #fff;
         }
-        
+
         .navbar-eco {
             background: linear-gradient(135deg, var(--eco-green) 0%, var(--eco-light-green) 100%);
         }
-        
+
         .sidebar-eco {
             background-color: var(--eco-dark);
         }
-        
+
         .sidebar-eco .nav-sidebar .nav-item .nav-link {
-            color: rgba(255,255,255,.8);
+            color: rgba(255, 255, 255, .8);
         }
-        
+
         .sidebar-eco .nav-sidebar .nav-item .nav-link:hover {
-            background-color: rgba(255,255,255,.1);
+            background-color: rgba(255, 255, 255, .1);
             color: #fff;
         }
-        
+
         .sidebar-eco .nav-sidebar .nav-item .nav-link.active {
             background-color: var(--eco-accent);
             color: var(--eco-dark);
         }
-        
+
         .btn-eco {
             background-color: var(--eco-green);
             border-color: var(--eco-green);
             color: white;
         }
-        
+
         .btn-eco:hover {
             background-color: var(--eco-light-green);
             border-color: var(--eco-light-green);
             color: white;
         }
-        
+
         .card-eco {
             border-top: 3px solid var(--eco-accent);
         }
-        
+
         .text-eco {
             color: var(--eco-green) !important;
         }
-        
+
         .bg-eco {
             background-color: var(--eco-green) !important;
         }
@@ -80,6 +81,7 @@
 
     @stack('styles')
 </head>
+
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
         <!-- Navbar -->
@@ -139,21 +141,111 @@
                                 <p>Tableau de bord</p>
                             </a>
                         </li>
-                        
+
                         <li class="nav-header">GESTION</li>
-                        
+
                         <li class="nav-item">
                             <a href="{{ route('backend.users.index') }}" class="nav-link {{ request()->routeIs('backend.users.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-users"></i>
                                 <p>Utilisateurs</p>
                             </a>
                         </li>
+
+                        <li class="nav-item has-treeview {{ request()->routeIs('backend.sponsors.*') ? 'menu-open' : '' }}">
+                            <a href="#" class="nav-link {{ request()->routeIs('backend.sponsors.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-handshake"></i>
+                        
+                        <li class="nav-item">
+                            <a href="{{ route('admin.reservations.index') }}" class="nav-link {{ request()->routeIs('admin.reservations.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-ticket-alt"></i>
+                                <p>Réservations</p>
+                            </a>
+                        </li>
+                        
+                        
+                        <li class="nav-item">
+                            <a href="{{ route('admin.certificates.index') }}" class="nav-link {{ request()->routeIs('admin.certificates.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-certificate"></i>
+                                <p>Certifications</p>
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="nav-icon fas fa-calendar-alt"></i>
+                                <p>
+                                    Sponsors
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="{{ route('backend.sponsors.index') }}" class="nav-link {{ request()->routeIs('backend.sponsors.index') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Tous les sponsors</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('backend.sponsors.pending') }}" class="nav-link {{ request()->routeIs('backend.sponsors.pending') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Demandes en attente</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('backend.sponsors.deletion-requested') }}" class="nav-link {{ request()->routeIs('backend.sponsors.deletion-requested') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon text-warning"></i>
+                                        <p>Demandes suppression</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('backend.sponsors.trashed') }}" class="nav-link {{ request()->routeIs('backend.sponsors.trashed') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon text-danger"></i>
+                                        <p>Archives (supprimés)</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        
+
                         
                                                 <li class="nav-item">
-    <a href="{{ route('backend.events.index') }}" class="nav-link {{ request()->routeIs('backend.events.*') ? 'active' : '' }}">
-        <i class="nav-icon fas fa-calendar-alt"></i>
-        <p>Événements</p>
-    </a>
+
+                <li class="nav-item has-treeview {{ request()->routeIs('backend.events.*') || request()->routeIs('backend.events.requests.*') ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ request()->routeIs('backend.events.*') || request()->routeIs('backend.events.requests.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-calendar-alt"></i>
+                        <p>
+                            Événements
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ route('backend.events.index') }}" class="nav-link {{ request()->routeIs('backend.events.index') ? 'active' : '' }}">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Tous les événements</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('backend.events.requests.pending') }}" class="nav-link {{ request()->routeIs('backend.events.requests.pending') ? 'active' : '' }}">
+                                <i class="far fa-clock nav-icon text-warning"></i>
+                                <p>Demandes en attente</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('backend.events.requests.rejected') }}" class="nav-link {{ request()->routeIs('backend.events.requests.rejected') ? 'active' : '' }}">
+                                <i class="far fa-times-circle nav-icon text-danger"></i>
+                                <p>Événements rejetés</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+    <li class="nav-item">
+        <a href="{{ route('backend.locations.index') }}" class="nav-link {{ request()->routeIs('backend.locations.*') ? 'active' : '' }}">
+                <i class="nav-icon fas fa-calendar-alt"></i>
+                <p>Locations</p>
+        </a>
 </li>
 
 <li class="nav-item">
@@ -168,9 +260,10 @@
         <p>Resources</p>
     </a>
 </li>
+
                         
                         <li class="nav-header">STATISTIQUES</li>
-                        
+
                         <li class="nav-item">
                             <a href="#" class="nav-link">
                                 <i class="nav-icon fas fa-chart-bar"></i>
@@ -192,7 +285,6 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0">@yield('page-title', 'Administration')</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
@@ -207,21 +299,21 @@
             <section class="content">
                 <div class="container-fluid">
                     @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show">
-                            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                            <button type="button" class="close" data-dismiss="alert">
-                                <span>&times;</span>
-                            </button>
-                        </div>
+                    <div class="alert alert-success alert-dismissible fade show">
+                        <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                        <button type="button" class="close" data-dismiss="alert">
+                            <span>&times;</span>
+                        </button>
+                    </div>
                     @endif
 
                     @if(session('error'))
-                        <div class="alert alert-danger alert-dismissible fade show">
-                            <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
-                            <button type="button" class="close" data-dismiss="alert">
-                                <span>&times;</span>
-                            </button>
-                        </div>
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
+                        <button type="button" class="close" data-dismiss="alert">
+                            <span>&times;</span>
+                        </button>
+                    </div>
                     @endif
 
                     @yield('content')
@@ -248,4 +340,5 @@
 
     @stack('scripts')
 </body>
+
 </html>

@@ -4,6 +4,7 @@
 
 @section('content')
 <div class="container">
+
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -68,7 +69,7 @@
                                         <h6 class="card-title">{{ $event->title }}</h6>
                                         <p class="card-text small text-muted">
                                             <i class="fas fa-calendar me-1"></i>{{ $event->date->format('d/m/Y H:i') }}<br>
-                                            <i class="fas fa-map-marker-alt me-1"></i>{{ $event->location }}
+                                            <i class="fas fa-map-marker-alt me-1"></i>{{ $event->location ? $event->location->name : '' }}
                                         </p>
                                         <span class="badge bg-warning">En attente</span>
                                     </div>
@@ -117,7 +118,7 @@
                                     <tr>
                                         <td>{{ $event->title }}</td>
                                         <td>{{ $event->date->format('d/m/Y H:i') }}</td>
-                                        <td>{{ $event->location }}</td>
+                                        <td>{{ $event->location ? $event->location->name : '' }}</td>
                                         <td>
                                             @if($event->isDraft())
                                                 <span class="badge bg-secondary">Brouillon</span>

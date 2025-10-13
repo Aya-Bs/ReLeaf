@@ -48,7 +48,14 @@ class EventController extends Controller
             return redirect()->route('dashboard')->with('error', 'Accès non autorisé.');
         }
 
-        return view('frontend.events.create');
+        // Get campaigns for dropdown
+        if (Auth::user()->isAdmin()) {
+            $campaigns = \App\Models\Campaign::all();
+        } else {
+            $campaigns = \App\Models\Campaign::where('organizer_id', Auth::id())->get();
+        }
+
+        return view('frontend.events.create', compact('campaigns'));
     }
 
     /**
@@ -65,10 +72,11 @@ $validated = $request->validate([
         'description' => 'required|string',
         'date' => 'required|date|after:now',
         'duration' => 'required|string',
-        'location' => 'required|string|max:255',
         'max_participants' => 'nullable|integer|min:1',
         'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        'campaign_id' => 'nullable|exists:campaigns,id' // Validation ajoutée
+        'campaign_id' => 'nullable|exists:campaigns,id',
+        'location_id' => 'nullable|exists:locations,id' 
+
     ]);
 
    
@@ -78,13 +86,13 @@ $validated = $request->validate([
             'title' => $request->title,
             'description' => $request->description,
             'date' => $request->date,
-            'location' => $request->location,
             'max_participants' => $request->max_participants,
             'duration' => $request->duration,
             'user_id' => Auth::id(),
             'status' => 'draft', 
             'images' => [], 
             'campaign_id' => $request->campaign_id,
+            'location_id' => $request->location_id,
 
         ]);
 
@@ -130,7 +138,14 @@ if ($request->hasFile('images')) {
             return redirect()->route('events.index')->with('error', 'Cet événement ne peut pas être modifié.');
         }
 
-        return view('frontend.events.edit', compact('event'));
+        // Get campaigns for dropdown
+        if (Auth::user()->isAdmin()) {
+            $campaigns = \App\Models\Campaign::all();
+        } else {
+            $campaigns = \App\Models\Campaign::where('organizer_id', Auth::id())->get();
+        }
+
+        return view('frontend.events.edit', compact('event', 'campaigns'));
     }
 
     /**
@@ -142,25 +157,23 @@ if ($request->hasFile('images')) {
             return redirect()->route('events.index')->with('error', 'Cet événement ne peut pas être modifié.');
         }
 
+
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'date' => 'required|date|after:now',
-            'location' => 'required|string|max:255',
+            'location_id' => 'required|exists:locations,id',
             'max_participants' => 'nullable|integer|min:1',
             'duration' => 'required|string|max:50',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'campaign_id' => 'nullable|exists:campaigns,id' // Validation ajoutée
-
+            'campaign_id' => 'nullable|exists:campaigns,id'
         ]);
-
-   
 
         $event->update([
             'title' => $request->title,
             'description' => $request->description,
             'date' => $request->date,
-            'location' => $request->location,
+            'location_id' => $request->location_id,
             'max_participants' => $request->max_participants,
             'duration' => $request->duration,
             'campaign_id' => $request->campaign_id,

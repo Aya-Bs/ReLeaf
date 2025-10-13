@@ -6,21 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::create('resources', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->integer('quantity_needed')->default(0);
+            $table->integer('quantity_pledged')->default(0);
+            $table->string('unit')->default('unité');
+            $table->string('provider')->nullable();
+            $table->enum('status', ['needed', 'pledged', 'received', 'in_use'])->default('needed');
+            $table->enum('resource_type', ['money', 'food', 'clothing', 'medical', 'equipment', 'human', 'other']);
+            $table->enum('category', ['materiel', 'financier', 'humain', 'technique'])->default('materiel');
+            $table->enum('priority', ['low', 'medium', 'high', 'urgent'])->default('medium');
+            $table->text('notes')->nullable();
+            $table->string('image_url')->nullable();
+            $table->foreignId('campaign_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('resources');
     }

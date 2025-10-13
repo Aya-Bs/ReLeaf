@@ -195,4 +195,20 @@ class CampaignController extends Controller
             'campaignsByCategory'
         ));
     }
+
+    /**
+ * Get featured campaigns for home page hero section
+ */
+public function featuredCampaigns()
+{
+    $featuredCampaigns = Campaign::where('visibility', true)
+                                ->where('status', 'active')
+                                ->where('end_date', '>', now())
+                                ->with('organizer')
+                                ->orderBy('start_date', 'asc')
+                                ->take(5)
+                                ->get();
+
+    return $featuredCampaigns;
+}
 }

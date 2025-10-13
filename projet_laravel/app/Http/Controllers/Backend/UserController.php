@@ -15,7 +15,7 @@ class UserController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = User::with('profile');
+        $query = User::with('profile')->where('role', '!=', 'admin');
 
         // Search functionality
         if ($request->filled('search')) {

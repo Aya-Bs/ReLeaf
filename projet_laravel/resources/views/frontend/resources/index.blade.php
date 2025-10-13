@@ -76,19 +76,6 @@
                             </select>
                         </div>
                         
-                        <!-- Type Filter -->
-                        <div>
-                            <select id="typeFilter" class="form-select form-select-sm" style="width: 180px;">
-                                <option value="">Tous les types</option>
-                                <option value="money" {{ request('resource_type') == 'money' ? 'selected' : '' }}>💰 Argent</option>
-                                <option value="food" {{ request('resource_type') == 'food' ? 'selected' : '' }}>🍎 Nourriture</option>
-                                <option value="clothing" {{ request('resource_type') == 'clothing' ? 'selected' : '' }}>👕 Vêtements</option>
-                                <option value="medical" {{ request('resource_type') == 'medical' ? 'selected' : '' }}>🏥 Médical</option>
-                                <option value="equipment" {{ request('resource_type') == 'equipment' ? 'selected' : '' }}>🛠️ Équipement</option>
-                                <option value="human" {{ request('resource_type') == 'human' ? 'selected' : '' }}>👥 Main d'œuvre</option>
-                            </select>
-                        </div>
-                        
                         <!-- Sort Filter -->
                         <div>
                             <select id="sortFilter" class="form-select form-select-sm" style="width: 180px;">
@@ -114,6 +101,39 @@
         </div>
     </div>
 
+    <!-- Type Filter Bar -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-center flex-wrap gap-2" id="typeFilterBar">
+                        <button class="resource-type-filter btn btn-outline-eco btn-sm active" data-type="">
+                            <span class="me-2">📦</span>Tous
+                        </button>
+                        <button class="resource-type-filter btn btn-outline-eco btn-sm" data-type="money">
+                            <span class="me-2">💰</span>Argent
+                        </button>
+                        <button class="resource-type-filter btn btn-outline-eco btn-sm" data-type="food">
+                            <span class="me-2">🍎</span>Nourriture
+                        </button>
+                        <button class="resource-type-filter btn btn-outline-eco btn-sm" data-type="clothing">
+                            <span class="me-2">👕</span>Vêtements
+                        </button>
+                        <button class="resource-type-filter btn btn-outline-eco btn-sm" data-type="medical">
+                            <span class="me-2">🏥</span>Médical
+                        </button>
+                        <button class="resource-type-filter btn btn-outline-eco btn-sm" data-type="equipment">
+                            <span class="me-2">🛠️</span>Équipement
+                        </button>
+                        <button class="resource-type-filter btn btn-outline-eco btn-sm" data-type="human">
+                            <span class="me-2">👥</span>Main d'œuvre
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Loading Indicator -->
     <div id="loadingIndicator" class="text-center py-4" style="display: none;">
         <div class="spinner-border text-eco" role="status">
@@ -124,176 +144,175 @@
 
     <!-- Content Container -->
     <div id="contentContainer">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    Liste des ressources 
-                    <small id="filterInfo" class="text-muted"></small>
-                </h5>
-            </div>
-            <div class="card-body">
-                @if($resources->count() > 0)
-                    <!-- Resources Table -->
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Type</th>
-                                    <th>Nom</th>
-                                    <th>Campagne</th>
-                                    <th>Statut</th>
-                                    <th>Priorité</th>
-                                    <th>Progression</th>
-                                    <th>Quantité</th>
-                                    <th>Fournisseur</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($resources as $resource)
-                                <tr>
-                                    <td>
-                                        <span class="resource-type-icon">
-                                            @switch($resource->resource_type)
-                                                @case('money') 💰 @break
-                                                @case('food') 🍎 @break
-                                                @case('clothing') 👕 @break
-                                                @case('medical') 🏥 @break
-                                                @case('equipment') 🛠️ @break
-                                                @case('human') 👥 @break
-                                                @default 🔧 @break
-                                            @endswitch
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <strong>{{ $resource->name }}</strong>
-                                        @if($resource->description)
-                                            <br><small class="text-muted">{{ Str::limit($resource->description, 50) }}</small>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <a href="{{ route('campaigns.show', $resource->campaign) }}" class="campaign-link">
-                                            {{ Str::limit($resource->campaign->name, 25) }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-{{ $resource->status == 'received' ? 'success' : ($resource->status == 'pledged' ? 'info' : ($resource->status == 'in_use' ? 'primary' : 'secondary')) }}">
-                                            @switch($resource->status)
-                                                @case('needed') ⏳ @break
-                                                @case('pledged') 📋 @break
-                                                @case('received') ✅ @break
-                                                @case('in_use') 🔄 @break
-                                                @default ❓ @break
-                                            @endswitch
-                                            {{ ucfirst($resource->status) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-{{ $resource->priority == 'urgent' ? 'danger' : ($resource->priority == 'high' ? 'warning' : ($resource->priority == 'medium' ? 'info' : 'success')) }}">
-                                            @switch($resource->priority)
-                                                @case('urgent') 🚨 @break
-                                                @case('high') ⚠️ @break
-                                                @case('medium') 📊 @break
-                                                @default 📌 @break
-                                            @endswitch
-                                            {{ ucfirst($resource->priority) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="progress mb-1" style="height: 6px;">
-                                            <div class="progress-bar bg-{{ $resource->progress_percentage == 100 ? 'success' : ($resource->progress_percentage > 50 ? 'warning' : 'danger') }}" 
-                                                 style="width: {{ $resource->progress_percentage }}%"></div>
-                                        </div>
-                                        <small class="text-muted">{{ $resource->progress_percentage }}%</small>
-                                    </td>
-                                    <td>
-                                        <div class="quantity-info">
-                                            <strong class="text-success">{{ $resource->quantity_pledged }}</strong>
-                                            <span class="text-muted">/</span>
-                                            <strong class="text-eco">{{ $resource->quantity_needed }}</strong>
-                                            <small class="text-muted d-block">{{ $resource->unit }}</small>
-                                        </div>
-                                        @if($resource->missing_quantity > 0)
-                                            <small class="text-warning">
-                                                <i class="fas fa-exclamation-triangle me-1"></i>
-                                                Manque {{ $resource->missing_quantity }}
-                                            </small>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($resource->provider)
-                                            <small>{{ Str::limit($resource->provider, 20) }}</small>
-                                        @else
-                                            <small class="text-muted">-</small>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="{{ route('resources.show', $resource) }}" class="btn btn-outline-info" title="Voir">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ route('resources.edit', $resource) }}" class="btn btn-outline-warning" title="Modifier">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <div class="dropdown">
-                                                <button class="btn btn-outline-secondary dropdown-toggle" 
-                                                        type="button" data-bs-toggle="dropdown"
-                                                        title="Changer statut">
-                                                    <i class="fas fa-exchange-alt"></i>
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    @foreach(['needed' => 'Nécessaire', 'pledged' => 'Promis', 'received' => 'Reçu', 'in_use' => 'Utilisé'] as $value => $label)
-                                                        <li>
-                                                            <form action="{{ route('resources.update-status', $resource) }}" method="POST" class="d-inline">
-                                                                @csrf
-                                                                <button type="submit" 
-                                                                        class="dropdown-item {{ $resource->status == $value ? 'active' : '' }}"
-                                                                        onclick="return confirm('Changer le statut à {{ $label }}?')">
-                                                                    {{ $label }}
-                                                                </button>
-                                                                <input type="hidden" name="status" value="{{ $value }}">
-                                                            </form>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+        @php
+            $userResources = $resources->filter(function($resource) {
+                return $resource->campaign && $resource->campaign->organizer_id === auth()->id();
+            });
+        @endphp
 
-                    <!-- Pagination -->
-                    @if($resources->hasPages())
-                    <div class="d-flex justify-content-between align-items-center mt-4">
-                        <div class="pagination-info">
-                            <p class="mb-0 text-muted">
-                                Affichage de <strong>{{ $resources->firstItem() }}</strong> à <strong>{{ $resources->lastItem() }}</strong> 
-                                sur <strong>{{ $resources->total() }}</strong> ressources
-                            </p>
+        @if($userResources->count() > 0)
+            <!-- Resources Cards -->
+            <div class="row g-4" id="resourcesGrid">
+                @foreach($userResources as $resource)
+                <div class="col-12 col-md-6 col-lg-4 resource-card" data-type="{{ $resource->resource_type }}">
+                    <div class="card h-100 resource-card-item shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center py-3">
+                            <div class="d-flex align-items-center">
+                                <span class="resource-type-icon me-2 fs-4">
+                                    @switch($resource->resource_type)
+                                        @case('money') 💰 @break
+                                        @case('food') 🍎 @break
+                                        @case('clothing') 👕 @break
+                                        @case('medical') 🏥 @break
+                                        @case('equipment') 🛠️ @break
+                                        @case('human') 👥 @break
+                                        @default 🔧 @break
+                                    @endswitch
+                                </span>
+                                <div>
+                                    <h6 class="mb-0">{{ Str::limit($resource->name, 20) }}</h6>
+                                    <small class="text-muted">{{ Str::limit($resource->campaign->name, 25) }}</small>
+                                </div>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                        type="button" data-bs-toggle="dropdown"
+                                        title="Actions">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a href="{{ route('resources.show', $resource) }}" class="dropdown-item">
+                                            <i class="fas fa-eye me-2"></i>Voir
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('resources.edit', $resource) }}" class="dropdown-item">
+                                            <i class="fas fa-edit me-2"></i>Modifier
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    @foreach(['needed' => 'Nécessaire', 'pledged' => 'Promis', 'received' => 'Reçu', 'in_use' => 'Utilisé'] as $value => $label)
+                                        <li>
+                                            <form action="{{ route('resources.update-status', $resource) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" 
+                                                        class="dropdown-item {{ $resource->status == $value ? 'active' : '' }}"
+                                                        onclick="return confirm('Changer le statut à {{ $label }}?')">
+                                                    {{ $label }}
+                                                </button>
+                                                <input type="hidden" name="status" value="{{ $value }}">
+                                            </form>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
                         </div>
-                        <div class="pagination-links">
-                            {{ $resources->links() }}
+                        
+                        <div class="card-body">
+                            @if($resource->description)
+                                <p class="card-text">{{ Str::limit($resource->description, 100) }}</p>
+                            @endif
+                            
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-muted">Progression</span>
+                                    <span class="fw-bold">{{ $resource->progress_percentage }}%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-{{ $resource->progress_percentage == 100 ? 'success' : ($resource->progress_percentage > 50 ? 'warning' : 'danger') }}" 
+                                         style="width: {{ $resource->progress_percentage }}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="row text-center mb-3">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <div class="fw-bold text-success">{{ $resource->quantity_pledged }}</div>
+                                        <small class="text-muted">Promis</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="fw-bold text-eco">{{ $resource->quantity_needed }}</div>
+                                    <small class="text-muted">Nécessaire</small>
+                                </div>
+                            </div>
+                            
+                            @if($resource->missing_quantity > 0)
+                                <div class="alert alert-warning py-2 mb-3">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    Manque {{ $resource->missing_quantity }} {{ $resource->unit }}
+                                </div>
+                            @endif
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-{{ $resource->status == 'received' ? 'success' : ($resource->status == 'pledged' ? 'info' : ($resource->status == 'in_use' ? 'primary' : 'secondary')) }}">
+                                    @switch($resource->status)
+                                        @case('needed') ⏳ @break
+                                        @case('pledged') 📋 @break
+                                        @case('received') ✅ @break
+                                        @case('in_use') 🔄 @break
+                                        @default ❓ @break
+                                    @endswitch
+                                    {{ ucfirst($resource->status) }}
+                                </span>
+                                
+                                <span class="badge bg-{{ $resource->priority == 'urgent' ? 'danger' : ($resource->priority == 'high' ? 'warning' : ($resource->priority == 'medium' ? 'info' : 'success')) }}">
+                                    @switch($resource->priority)
+                                        @case('urgent') 🚨 @break
+                                        @case('high') ⚠️ @break
+                                        @case('medium') 📊 @break
+                                        @default 📌 @break
+                                    @endswitch
+                                    {{ ucfirst($resource->priority) }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    @if($resource->provider)
+                                        Fourni par: {{ Str::limit($resource->provider, 15) }}
+                                    @else
+                                        Aucun fournisseur
+                                    @endif
+                                </small>
+                                <small class="text-muted">{{ $resource->unit }}</small>
+                            </div>
                         </div>
                     </div>
-                    @endif
-                @else
-                <div class="text-center py-5">
-                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
-                    <p class="text-muted" id="emptyMessage">
-                        @if(request()->has('search') || request()->has('campaign_id') || request()->has('status') || request()->has('resource_type') || request()->has('sort'))
-                            Aucune ressource trouvée avec les critères de recherche.
-                        @else
-                            Aucune ressource créée pour le moment.
-                        @endif
-                    </p>
-                    <a href="{{ route('resources.create') }}" class="btn btn-eco">Créer votre première ressource</a>
                 </div>
-                @endif
+                @endforeach
             </div>
+
+            <!-- Pagination -->
+            @if($resources->hasPages())
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <div class="pagination-info">
+                    <p class="mb-0 text-muted">
+                        Affichage de <strong>{{ $resources->firstItem() }}</strong> à <strong>{{ $resources->lastItem() }}</strong> 
+                        sur <strong>{{ $resources->total() }}</strong> ressources
+                    </p>
+                </div>
+                <div class="pagination-links">
+                    {{ $resources->links() }}
+                </div>
+            </div>
+            @endif
+        @else
+        <div class="text-center py-5">
+            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+            <p class="text-muted" id="emptyMessage">
+                @if(request()->has('search') || request()->has('campaign_id') || request()->has('status') || request()->has('resource_type') || request()->has('sort'))
+                    Aucune ressource trouvée avec les critères de recherche.
+                @else
+                    Aucune ressource créée pour le moment.
+                @endif
+            </p>
+            <a href="{{ route('resources.create') }}" class="btn btn-eco">Créer votre première ressource</a>
         </div>
+        @endif
     </div>
 </div>
 @endsection
@@ -304,56 +323,62 @@
         font-size: 1.25rem;
     }
     
-    .table th {
-        border-top: none;
-        font-weight: 600;
-        color: #2d5a27;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+    /* Type Filter Bar */
+    .resource-type-filter {
+        transition: all 0.3s ease;
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
     }
     
-    .table td {
-        vertical-align: middle;
-        padding: 1rem 0.75rem;
-    }
-    
-    .campaign-link {
-        color: var(--eco-green);
-        text-decoration: none;
-        font-weight: 500;
-    }
-    
-    .campaign-link:hover {
-        color: var(--eco-light-green);
-        text-decoration: underline;
-    }
-    
-    .quantity-info {
-        font-size: 0.9rem;
-        text-align: center;
-    }
-    
-    .progress {
-        background-color: #e9ecef;
-        border-radius: 0.25rem;
-        height: 6px !important;
-        min-width: 80px;
-    }
-    
-    .btn-group-sm > .btn {
-        padding: 0.25rem 0.5rem;
-    }
-    
-    .dropdown-menu {
-        min-width: 150px;
-    }
-    
-    .dropdown-item.active {
+    .resource-type-filter.active {
         background-color: var(--eco-green);
+        color: white;
         border-color: var(--eco-green);
     }
     
+    /* Resource Cards */
+    .resource-card-item {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .resource-card-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    
+    .resource-card {
+        transition: all 0.5s ease;
+    }
+    
+    .resource-card.hidden {
+        opacity: 0;
+        transform: scale(0.9);
+        height: 0;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+    
+    /* Card Header */
+    .card-header h6 {
+        color: #2d5a27;
+    }
+    
+    /* Progress Bar */
+    .progress {
+        background-color: #e9ecef;
+        border-radius: 0.5rem;
+    }
+    
+    /* Badges */
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.4em 0.6em;
+    }
+    
+    /* Pagination */
     .pagination-links .pagination {
         margin: 0;
     }
@@ -387,37 +412,27 @@
             flex: 1 1 100%;
         }
         
-        .table-responsive {
+        .resource-type-filter {
+            padding: 0.4rem 0.8rem;
             font-size: 0.875rem;
-        }
-        
-        .btn-group-sm > .btn {
-            padding: 0.125rem 0.25rem;
-        }
-        
-        .quantity-info {
-            font-size: 0.8rem;
         }
         
         .pagination-links .page-link {
             padding: 0.25rem 0.5rem;
             font-size: 0.875rem;
         }
-        
-        .table th:nth-child(4),
-        .table td:nth-child(4),
-        .table th:nth-child(8),
-        .table td:nth-child(8) {
-            display: none;
-        }
     }
     
     @media (max-width: 576px) {
-        .table th:nth-child(5),
-        .table td:nth-child(5),
-        .table th:nth-child(7),
-        .table td:nth-child(7) {
+        .resource-type-filter span {
             display: none;
+        }
+        
+        .resource-type-filter {
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
         }
     }
 </style>
@@ -425,138 +440,210 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+// Fonction pour initialiser les gestionnaires d'événements
+function initializeEventHandlers() {
+    // Récupérer les éléments du DOM
     const searchInput = document.getElementById('searchInput');
     const campaignFilter = document.getElementById('campaignFilter');
     const statusFilter = document.getElementById('statusFilter');
     const typeFilter = document.getElementById('typeFilter');
     const sortFilter = document.getElementById('sortFilter');
     const clearFilters = document.getElementById('clearFilters');
-    const contentContainer = document.getElementById('contentContainer');
+    const typeFilterBar = document.getElementById('typeFilterBar');
     const loadingIndicator = document.getElementById('loadingIndicator');
-    const filterInfo = document.getElementById('filterInfo');
-
-    let searchTimeout;
-
-    // Set initial values from URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('search')) {
-        searchInput.value = urlParams.get('search');
+    const contentContainer = document.getElementById('contentContainer');
+    
+    // Variables pour le contrôle des timeouts
+    let searchTimeout = null;
+    
+    // Vérifier si les éléments existent avant d'ajouter les écouteurs
+    if (searchInput) {
+        searchInput.addEventListener('input', handleSearchInput);
     }
-    if (urlParams.get('campaign_id')) {
-        campaignFilter.value = urlParams.get('campaign_id');
+    
+    if (campaignFilter) {
+        campaignFilter.addEventListener('change', updateFilters);
     }
-    if (urlParams.get('status')) {
-        statusFilter.value = urlParams.get('status');
+    
+    if (statusFilter) {
+        statusFilter.addEventListener('change', updateFilters);
     }
-    if (urlParams.get('resource_type')) {
-        typeFilter.value = urlParams.get('resource_type');
+    
+    if (typeFilter) {
+        typeFilter.addEventListener('change', updateFilters);
     }
-    if (urlParams.get('sort')) {
-        sortFilter.value = urlParams.get('sort');
+    
+    if (sortFilter) {
+        sortFilter.addEventListener('change', updateFilters);
     }
-    updateFilterInfo();
-
-    // Search input event
-    searchInput.addEventListener('input', function() {
+    
+    if (clearFilters) {
+        clearFilters.addEventListener('click', handleClearFilters);
+    }
+    
+    if (typeFilterBar) {
+        typeFilterBar.addEventListener('click', handleTypeFilterClick);
+    }
+    
+    // Initialiser les filtres depuis l'URL
+    initializeFiltersFromURL();
+    
+    // Fonction pour gérer la recherche avec délai
+    function handleSearchInput() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(updateFilters, 500);
-    });
-
-    // Filter events
-    campaignFilter.addEventListener('change', updateFilters);
-    statusFilter.addEventListener('change', updateFilters);
-    typeFilter.addEventListener('change', updateFilters);
-    sortFilter.addEventListener('change', updateFilters);
-
-    // Clear filters event
-    clearFilters.addEventListener('click', function() {
-        searchInput.value = '';
-        campaignFilter.value = '';
-        statusFilter.value = '';
-        typeFilter.value = '';
-        sortFilter.value = 'latest';
+    }
+    
+    // Fonction pour gérer le clic sur les filtres de type
+    function handleTypeFilterClick(event) {
+        const target = event.target.closest('.resource-type-filter');
+        if (!target) return;
+        
+        // Mettre à jour les boutons actifs
+        document.querySelectorAll('.resource-type-filter').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        target.classList.add('active');
+        
+        // Mettre à jour le filtre de type
+        if (typeFilter) {
+            typeFilter.value = target.dataset.type;
+            updateFilters();
+        }
+    }
+    
+    // Fonction pour effacer tous les filtres
+    function handleClearFilters() {
+        if (searchInput) searchInput.value = '';
+        if (campaignFilter) campaignFilter.value = '';
+        if (statusFilter) statusFilter.value = '';
+        if (typeFilter) typeFilter.value = '';
+        if (sortFilter) sortFilter.value = 'latest';
+        
+        // Réinitialiser les boutons de type
+        document.querySelectorAll('.resource-type-filter').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        const allTypesBtn = document.querySelector('.resource-type-filter[data-type=""]');
+        if (allTypesBtn) allTypesBtn.classList.add('active');
+        
         updateFilters();
-    });
-
+    }
+    
+    // Fonction pour initialiser les filtres depuis l'URL
+    function initializeFiltersFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        if (searchInput && urlParams.get('search')) {
+            searchInput.value = urlParams.get('search');
+        }
+        
+        if (campaignFilter && urlParams.get('campaign_id')) {
+            campaignFilter.value = urlParams.get('campaign_id');
+        }
+        
+        if (statusFilter && urlParams.get('status')) {
+            statusFilter.value = urlParams.get('status');
+        }
+        
+        if (typeFilter && urlParams.get('resource_type')) {
+            typeFilter.value = urlParams.get('resource_type');
+            // Activer le bouton correspondant
+            document.querySelectorAll('.resource-type-filter').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.type === urlParams.get('resource_type')) {
+                    btn.classList.add('active');
+                }
+            });
+        } else {
+            // Activer le bouton "Tous" par défaut
+            const allTypesBtn = document.querySelector('.resource-type-filter[data-type=""]');
+            if (allTypesBtn) allTypesBtn.classList.add('active');
+        }
+        
+        if (sortFilter && urlParams.get('sort')) {
+            sortFilter.value = urlParams.get('sort');
+        }
+    }
+    
+    // Fonction principale pour mettre à jour les filtres
     function updateFilters() {
-        // Show loading
-        loadingIndicator.style.display = 'block';
-        contentContainer.style.opacity = '0.5';
-
+        // Afficher l'indicateur de chargement
+        if (loadingIndicator) loadingIndicator.style.display = 'block';
+        if (contentContainer) contentContainer.style.opacity = '0.5';
+        
+        // Récupérer les valeurs des filtres
         const filters = {
-            search: searchInput.value,
-            campaign_id: campaignFilter.value,
-            status: statusFilter.value,
-            resource_type: typeFilter.value,
-            sort: sortFilter.value
+            search: searchInput ? searchInput.value : '',
+            campaign_id: campaignFilter ? campaignFilter.value : '',
+            status: statusFilter ? statusFilter.value : '',
+            resource_type: typeFilter ? typeFilter.value : '',
+            sort: sortFilter ? sortFilter.value : 'latest'
         };
-
-        // Update URL without page reload
+        
+        // Mettre à jour l'URL sans recharger la page
         const url = new URL(window.location);
-        if (filters.search) {
-            url.searchParams.set('search', filters.search);
-        } else {
-            url.searchParams.delete('search');
-        }
-        if (filters.campaign_id) {
-            url.searchParams.set('campaign_id', filters.campaign_id);
-        } else {
-            url.searchParams.delete('campaign_id');
-        }
-        if (filters.status) {
-            url.searchParams.set('status', filters.status);
-        } else {
-            url.searchParams.delete('status');
-        }
-        if (filters.resource_type) {
-            url.searchParams.set('resource_type', filters.resource_type);
-        } else {
-            url.searchParams.delete('resource_type');
-        }
-        if (filters.sort) {
-            url.searchParams.set('sort', filters.sort);
-        } else {
-            url.searchParams.delete('sort');
-        }
+        
+        Object.keys(filters).forEach(key => {
+            if (filters[key]) {
+                url.searchParams.set(key, filters[key]);
+            } else {
+                url.searchParams.delete(key);
+            }
+        });
+        
         window.history.pushState({}, '', url);
-
-        // Fetch updated content
+        
+        // Récupérer le contenu mis à jour
         fetch(url, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => response.text())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
         .then(html => {
-            // Parse the HTML response
+            // Parser la réponse HTML
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             
-            // Extract the content container from the response
+            // Extraire le conteneur de contenu de la réponse
             const newContent = doc.getElementById('contentContainer');
-            if (newContent) {
+            if (newContent && contentContainer) {
                 contentContainer.innerHTML = newContent.innerHTML;
+                
+                // Réinitialiser les gestionnaires d'événements pour les nouveaux éléments
+                initializeEventHandlers();
             }
             
             updateFilterInfo();
         })
         .catch(error => {
             console.error('Error:', error);
+            // En cas d'erreur, recharger la page complète
+            window.location.href = url;
         })
         .finally(() => {
-            // Hide loading
-            loadingIndicator.style.display = 'none';
-            contentContainer.style.opacity = '1';
+            // Masquer l'indicateur de chargement
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
+            if (contentContainer) contentContainer.style.opacity = '1';
         });
     }
-
+    
+    // Fonction pour mettre à jour les informations de filtre
     function updateFilterInfo() {
-        const search = searchInput.value;
-        const campaign = campaignFilter.value;
-        const status = statusFilter.value;
-        const type = typeFilter.value;
-        const sort = sortFilter.value;
+        const filterInfo = document.getElementById('filterInfo');
+        if (!filterInfo) return;
+        
+        const search = searchInput ? searchInput.value : '';
+        const campaign = campaignFilter ? campaignFilter.value : '';
+        const status = statusFilter ? statusFilter.value : '';
+        const type = typeFilter ? typeFilter.value : '';
+        const sort = sortFilter ? sortFilter.value : 'latest';
         
         let info = '';
         if (search || campaign || status || type || sort !== 'latest') {
@@ -564,10 +651,22 @@ document.addEventListener('DOMContentLoaded', function() {
             const filters = [];
             
             if (search) filters.push(`"${search}"`);
-            if (campaign) filters.push(`Campagne: ${campaignFilter.options[campaignFilter.selectedIndex].text}`);
-            if (status) filters.push(`Statut: ${statusFilter.options[statusFilter.selectedIndex].text}`);
-            if (type) filters.push(`Type: ${typeFilter.options[typeFilter.selectedIndex].text}`);
-            if (sort !== 'latest') filters.push(`Tri: ${sortFilter.options[sortFilter.selectedIndex].text}`);
+            if (campaign) {
+                const selectedOption = campaignFilter.options[campaignFilter.selectedIndex];
+                if (selectedOption) filters.push(`Campagne: ${selectedOption.text}`);
+            }
+            if (status) {
+                const selectedOption = statusFilter.options[statusFilter.selectedIndex];
+                if (selectedOption) filters.push(`Statut: ${selectedOption.text}`);
+            }
+            if (type) {
+                const selectedOption = typeFilter.options[typeFilter.selectedIndex];
+                if (selectedOption) filters.push(`Type: ${selectedOption.text}`);
+            }
+            if (sort !== 'latest') {
+                const selectedOption = sortFilter.options[sortFilter.selectedIndex];
+                if (selectedOption) filters.push(`Tri: ${selectedOption.text}`);
+            }
             
             info += filters.join(' | ');
             info += ')';
@@ -575,27 +674,32 @@ document.addEventListener('DOMContentLoaded', function() {
         
         filterInfo.textContent = info;
     }
-
-    // Handle browser back/forward buttons
+    
+    // Gérer les boutons de navigation du navigateur
     window.addEventListener('popstate', function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        searchInput.value = urlParams.get('search') || '';
-        campaignFilter.value = urlParams.get('campaign_id') || '';
-        statusFilter.value = urlParams.get('status') || '';
-        typeFilter.value = urlParams.get('resource_type') || '';
-        sortFilter.value = urlParams.get('sort') || 'latest';
+        initializeFiltersFromURL();
         updateFilters();
     });
-
-    // Confirmation pour les actions sensibles
-    const deleteForms = document.querySelectorAll('form[action*="/destroy"]');
-    deleteForms.forEach(form => {
-        form.addEventListener('submit', function(e) {
+    
+    // Confirmation pour les actions de suppression
+    document.addEventListener('submit', function(event) {
+        const form = event.target;
+        if (form.action && form.action.includes('/destroy')) {
             if (!confirm('Êtes-vous sûr de vouloir supprimer cette ressource ? Cette action est irréversible.')) {
-                e.preventDefault();
+                event.preventDefault();
             }
-        });
+        }
     });
+}
+
+// Initialiser lorsque le DOM est chargé
+document.addEventListener('DOMContentLoaded', function() {
+    initializeEventHandlers();
+});
+
+// Réinitialiser après les chargements AJAX
+document.addEventListener('ajaxComplete', function() {
+    initializeEventHandlers();
 });
 </script>
 @endpush

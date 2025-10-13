@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class UserProfileRequest extends FormRequest
 {
@@ -12,7 +13,7 @@ class UserProfileRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->check();
+        return Auth::check();
     }
 
     /**
@@ -22,7 +23,7 @@ class UserProfileRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'first_name' => ['nullable', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'regex:/^([0-9\s\-\+\(\)]*)$/', 'min:10', 'max:20'],
@@ -36,6 +37,21 @@ class UserProfileRequest extends FormRequest
             'notification_preferences' => ['required', Rule::in(['email', 'sms', 'both', 'none'])],
             'is_eco_ambassador' => ['boolean'],
         ];
+
+        // If user is sponsor allow sponsor company fields (optional edits)
+        if (Auth::check() && Auth::user()->role === 'sponsor') {
+            $rules = array_merge($rules, [
+                'company_name' => ['sometimes', 'string', 'max:255'],
+                'contact_email' => ['sometimes', 'email', 'max:255'],
+                'contact_phone' => ['sometimes', 'nullable', 'string', 'max:50'],
+                'website' => ['sometimes', 'nullable', 'url', 'max:255'],
+                'address' => ['sometimes', 'nullable', 'string', 'max:255'],
+                'motivation' => ['sometimes', 'nullable', 'string', 'max:500'],
+                'additional_info' => ['sometimes', 'nullable', 'string', 'max:1000'],
+            ]);
+        }
+
+        return $rules;
     }
 
     /**
