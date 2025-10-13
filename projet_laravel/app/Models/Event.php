@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+
 class Event extends Model
 {
     use HasFactory;
@@ -155,10 +157,9 @@ class Event extends Model
     }
 
     public function isRejected(): bool
-    {
-        return $this->status === 'rejected';
-    }
-
+{
+    return $this->status === 'rejected';
+}
 
     public function isFull(): bool
     {
@@ -198,7 +199,7 @@ class Event extends Model
     {
         return $this->waitingList()->where('status', 'waiting')->count();
     }
-
+      
     /**
      * Scope to get events that have available seats.
      * Usage: Event::withAvailableSeats()->get()
@@ -243,7 +244,36 @@ class Event extends Model
             return Storage::url($image);
         })->toArray();
     }
+ /**
+     * Get all assignments for this event.
+     */
+    public function assignments(): MorphMany
+    {
+        return $this->morphMany(Assignment::class, 'assignable');
+    }
 
+    /**
+     * Get approved volunteers for this event.
+     */
+    public function volunteers()
+    {
+        return $this->assignments()
+            ->where('status', 'approved')
+            ->with('volunteer.user');
+    }
 
+    /**
+     * Get pending volunteer applications for this event.
+     */
+    public function pendingVolunteers()
+    {
+        return $this->assignments()
+            ->where('status', 'pending')
+            ->with('volunteer.user');
+    }
 }
+
+    /**
+     * Check if event can be edited (only draft or pending events)
+     */
 

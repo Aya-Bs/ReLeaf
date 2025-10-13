@@ -12,10 +12,19 @@ class EventController extends Controller
      */
  public function index(Request $request)
     {
-        // Start from published AND cancelled events
-        $query = Event::whereIn('status', ['published', 'cancelled'])
+        
+              $query = Event::whereIn('status', ['published', 'cancelled'])
                  ->with(['user', 'reservations', 'location'])
                  ->orderBy('date', 'asc');
+
+        // Logique selon le rôle de l'utilisateur
+        if (auth()->check()) {
+            if (auth()->user()->role === 'organizer') {
+                // Les organisateurs voient seulement leurs propres événements
+                $query->where('user_id', auth()->id());
+            }
+            // Les utilisateurs avec rôle 'user' voient tous les événements (pas de filtre supplémentaire)
+        }
 
         // Filtres
         // Apply filters using model scopes when available
@@ -33,7 +42,7 @@ class EventController extends Controller
         }
 
         // Recherche textuelle
-        // Search by title/description/location
+       // Search by title/description/location
         if ($request->filled('search')) {
             $query->where('title', 'like', '%' . $request->search . '%')
                   ->orWhere('description', 'like', '%' . $request->search . '%')

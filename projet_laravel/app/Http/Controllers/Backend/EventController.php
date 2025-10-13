@@ -15,7 +15,8 @@ class EventController extends Controller
      */
  public function index(Request $request)
     {
-        $query = Event::where('user_id', auth()->id());
+        $query = Event::where('user_id', auth()->id())
+                     ->with('location'); // Charger la relation location
         
         // Search by title
         if ($request->has('search') && !empty($request->search)) {
@@ -30,6 +31,12 @@ class EventController extends Controller
         
         // Get all events based on filters
         $allEvents = $query->orderBy('created_at', 'desc')->get();
+        
+        // Pour chaque événement, charger la réservation de l'utilisateur connecté (s'il n'est pas l'organisateur)
+        $allEvents->load(['reservations' => function($query) {
+            $query->where('user_id', auth()->id())
+                  ->whereIn('status', ['pending', 'confirmed']);
+        }]);
         
         // Separate pending events from others
         $pendingEvents = $allEvents->where('status', 'pending');
