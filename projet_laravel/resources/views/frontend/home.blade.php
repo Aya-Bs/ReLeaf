@@ -262,8 +262,9 @@
                     <div class="carousel-inner">
                         @foreach($recentEvents->chunk(4) as $chunkIndex => $eventsChunk)
                             <div class="carousel-item {{ $chunkIndex === 0 ? 'active' : '' }}">
-                                <div class="row">
+                                <div class="row" >
                                     @foreach($eventsChunk as $event)
+<<<<<<< HEAD
                                     <div class="col-lg-3 col-md-6 mb-4">
                                         <div class="event-card-wrapper">
                                             <div class="event-card-rectangle position-relative overflow-hidden rounded shadow-sm">
@@ -297,10 +298,63 @@
                                                             <small class="text-white fw-bold bg-success px-2 py-1 rounded">
                                                                 <i class="fas fa-calendar me-1"></i>
                                                                 {{ $event->date->format('d/m/Y') }}
+=======
+                                    <div class="col-lg-3 col-md-6 mb-4" data-event-id="{{ $event->id }}">
+                                        <div class="card event-card h-100 shadow-sm border-0">
+                                            <!-- Event Image -->
+                                        @if($event->images && is_array($event->images) && count($event->images) > 0 && !empty($event->images[0]))
+    <img src="{{ asset('storage/' . $event->images[0]) }}" 
+         class="card-img-top w-100" 
+         style="height: 200px; object-fit: cover;" 
+         onerror="this.src='https://via.placeholder.com/300x200?text=Image+Not+Found'">
+@endif
+
+
+
+
+                                           
+                                            <div class="card-body d-flex flex-column" >
+                                                <!-- Event Date -->
+                                                <div class="event-date mb-2">
+                                                    <small class="text-success fw-bold">
+                                                        <i class="fas fa-calendar me-1"></i>
+                                                        {{ $event->date->format('d/m/Y à H:i') }}
+                                                    </small>
+                                                </div>
+
+                                                <!-- Event Title -->
+                                                <h5 class="card-title text-dark">{{ $event->title }}</h5>
+
+                                                <!-- Event Description -->
+                                                <p class="card-text text-muted flex-grow-1">
+                                                    {{ Str::limit($event->description, 80) }}
+                                                </p>
+
+                                                <!-- Event Meta Information -->
+                                                <div class="event-meta mt-auto">
+                                                    <div class="row text-center">
+                                                        <div class="col-4">
+                                                            <small class="text-primary">
+                                                                <i class="fas fa-money-bill-wave me-1"></i>
+                                                                {{ $event->price ? $event->price . 'TND' : '100TND' }}
+                                                            </small>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <small class="text-info">
+                                                                <i class="fas fa-users me-1"></i>
+                                                                {{ $event->max_participants ?? 0 }}
+                                                            </small>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <small class="text-muted">
+                                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                                {{ Str::limit($event->location->name, 10) }}
+>>>>>>> b8512a4eef8437741b4c78cc050ef4b68f278093
                                                             </small>
                                                         </div>
                                                     </div>
 
+<<<<<<< HEAD
                                                     <!-- Contenu principal -->
                                                     <div class="event-main text-center flex-grow-1 d-flex flex-column justify-content-center">
                                                         <h5 class="event-title text-white mb-2">
@@ -345,6 +399,9 @@
                                                         </div>
                                                     </div>
                                                 </div>
+=======
+                                               
+>>>>>>> b8512a4eef8437741b4c78cc050ef4b68f278093
                                             </div>
                                         </div>
                                     </div>
@@ -837,6 +894,31 @@
 
 @push('scripts')
 <script>
+
+    // Make event cards clickable
+document.addEventListener('DOMContentLoaded', function() {
+    const eventCards = document.querySelectorAll('.event-card');
+    
+    eventCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        
+        card.addEventListener('click', function(e) {
+            // Don't redirect if clicking on buttons or links inside the card
+            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.closest('button') || e.target.closest('a')) {
+                return;
+            }
+            
+            // Find the event ID from the card's data attribute or parent element
+            const eventId = this.closest('[data-event-id]')?.getAttribute('data-event-id') || 
+                           this.querySelector('a[href*="/events/"]')?.getAttribute('href')?.split('/').pop();
+            
+            if (eventId) {
+                window.location.href = `/events/${eventId}`;
+            }
+        });
+    });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     // Animation des statistiques au scroll
     const statNumbers = document.querySelectorAll('.stat-card h3');

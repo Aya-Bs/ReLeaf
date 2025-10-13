@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Event;
+use App\Models\Volunteer;
+use App\Models\Assignment;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -23,8 +25,16 @@ class AdminController extends Controller
             'eco_ambassadors' => User::whereHas('profile', function($query) {
                 $query->where('is_eco_ambassador', true);
             })->count(),
+            'total_volunteers' => Volunteer::count(),
+            'active_volunteers' => Volunteer::where('status', 'active')->count(),
+            'total_assignments' => Assignment::count(),
+            'pending_assignments' => Assignment::where('status', 'pending')->count(),
             'recent_users' => User::with('profile')
                 ->where('role', 'user')
+                ->latest()
+                ->limit(5)
+                ->get(),
+            'recent_volunteers' => Volunteer::with('user')
                 ->latest()
                 ->limit(5)
                 ->get(),

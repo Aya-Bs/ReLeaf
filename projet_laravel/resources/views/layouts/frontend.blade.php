@@ -183,7 +183,7 @@ body {
     </style>
 
     <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
 </head>
 <body class="font-sans antialiased">
     <!-- Navigation -->
@@ -207,19 +207,30 @@ body {
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('about') }}">À propos</a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-calendar-alt me-1"></i>Événements
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('events.index') }}">
-                                <i class="fas fa-list me-2"></i>Mes événements
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ route('events.create') }}">
-                                <i class="fas fa-plus me-2"></i>Créer un événement
-                            </a></li>
-                        </ul>
-                    </li>
+                    @if(auth()->user()->role === 'organizer')
+                        <!-- Menu pour les organisateurs -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-calendar-alt me-1"></i>Événements
+                            </a>
+                            <ul class="dropdown-menu">
+                                 <li><a class="dropdown-item" href="{{ route('locations.index') }}">
+                                    <i class="fas fa-home me-2"></i>Lieux
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ route('events.my-events') }}">
+                                    <i class="fas fa-calendar-alt me-2"></i>Mes événements
+                                </a></li>
+                               
+                            </ul>
+                        </li>
+                    @else
+                        <!-- Menu pour les utilisateurs normaux -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('events.index') }}">
+                                <i class="fas fa-calendar-alt me-1"></i>Événements
+                            </a>
+                        </li>
+                    @endif
                     
                     <!-- Campaigns Menu -->
                     <li class="nav-item dropdown">
@@ -236,40 +247,56 @@ body {
                         </ul>
                     </li>
 
-                    <!-- Resources Menu -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('resources.index') }}">
-                            <i class="fas fa-box me-1"></i>Ressources
-                        </a>
-                    </li>
+                     <!-- Resources Menu -->
+                     <li class="nav-item">
+                         <a class="nav-link" href="{{ route('resources.index') }}">
+                             <i class="fas fa-box me-1"></i>Ressources
+                         </a>
+                     </li>
 
-                    <!-- Chatbot Menu -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('chatbot.index') }}">
-                            <i class="fas fa-robot me-1"></i>Assistant IA
-                        </a>
-                    </li>
+                     <!-- Section Volontaires -->
+                     <li class="nav-item dropdown">
+                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                             <i class="fas fa-hands-helping me-1"></i>Volontaires
+                         </a>
+                         <ul class="dropdown-menu">
+                             @if(auth()->user()->isVolunteer())
+                                 <!-- Si l'utilisateur est déjà volontaire -->
+                                 <li><a class="dropdown-item" href="{{ route('volunteers.show', auth()->user()->volunteer) }}">
+                                     <i class="fas fa-user me-2"></i>Mon Profil Volontaire
+                                 </a></li>
+                                 <li><a class="dropdown-item" href="{{ route('assignments.index') }}">
+                                     <i class="fas fa-tasks me-2"></i>Mes Missions
+                                 </a></li>
+                                 <li><a class="dropdown-item" href="{{ route('volunteers.available-missions') }}">
+                                     <i class="fas fa-search me-2"></i>Missions Disponibles
+                                 </a></li>
+                                 <li><a class="dropdown-item" href="{{ route('volunteers.index') }}">
+                                     <i class="fas fa-users me-2"></i>Tous les Volontaires
+                                 </a></li>
+                                 <li><hr class="dropdown-divider"></li>
+                                 <li><a class="dropdown-item" href="{{ route('volunteers.edit', auth()->user()->volunteer) }}">
+                                     <i class="fas fa-edit me-2"></i>Modifier mon profil
+                                 </a></li>
+                             @else
+                                 <!-- Si l'utilisateur n'est pas encore volontaire -->
+                                 <li><a class="dropdown-item" href="{{ route('volunteers.create') }}">
+                                     <i class="fas fa-plus me-2"></i>Devenir Volontaire
+                                 </a></li>
+                                 <li><a class="dropdown-item" href="{{ route('volunteers.index') }}">
+                                     <i class="fas fa-users me-2"></i>Voir les Volontaires
+                                 </a></li>
+                             @endif
+                         </ul>
+                     </li>
 
-                    <!-- Profile Dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user me-1"></i>Mon Profil
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('profile.show') }}">
-                                <i class="fas fa-eye me-2"></i>Voir le profil
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ route('profile.edit.extended') }}">
-                                <i class="fas fa-edit me-2"></i>Modifier le profil
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ route('user.certificates.index') }}">
-                                <i class="fas fa-certificate me-2"></i>Mes certificats
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ route('donations.list') }}">
-                                <i class="fas fa-donate me-2"></i>Mes dons
-                            </a></li>
-                        </ul>
-                    </li>
+                     <!-- Chatbot Menu -->
+                     <li class="nav-item">
+                         <a class="nav-link" href="{{ route('chatbot.index') }}">
+                             <i class="fas fa-robot me-1"></i>Assistant IA
+                         </a>
+                     </li>
+
                 @endauth
             </ul>
             
@@ -293,10 +320,16 @@ body {
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="{{ route('profile.show') }}">
-                                <i class="fas fa-user me-2"></i>Mon Profil
+                                <i class="fas fa-eye me-2"></i>Voir le profil
                             </a></li>
                             <li><a class="dropdown-item" href="{{ route('profile.edit.extended') }}">
                                 <i class="fas fa-edit me-2"></i>Modifier le profil
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ route('user.certificates.index') }}">
+                                <i class="fas fa-certificate me-2"></i>Mes certificats
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ route('donations.list') }}">
+                                <i class="fas fa-donate me-2"></i>Mes dons
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             
@@ -336,6 +369,19 @@ body {
             </div>
         </div>
     </div>
+
+     <!-- Bouton Chatbot Flottant -->
+     <div class="chatbot-float-btn">
+         <a href="{{ route('chatbot.index') }}" class="btn btn-info btn-lg rounded-circle shadow-lg" title="Assistant IA EcoEvents">
+             <i class="fas fa-robot"></i>
+         </a>
+         <div class="chatbot-tooltip">
+             <div class="tooltip-content">
+                 <strong>Assistant IA</strong><br>
+                 <small>Disponible 24/7</small>
+             </div>
+         </div>
+     </div>
 
     <!-- Main Content -->
     <main class="py-4">

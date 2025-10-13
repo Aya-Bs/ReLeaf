@@ -48,7 +48,7 @@
                             </div>
                             <div class="col-md-4">
                                 <i class="fas fa-map-marker-alt text-eco me-2"></i>
-                                <strong>{{ $certification->reservation->event->location }}</strong>
+                                <strong>{{ $certification->reservation->event->location->name ?? 'Lieu non défini' }}</strong>
                             </div>
                         </div>
                     </div>

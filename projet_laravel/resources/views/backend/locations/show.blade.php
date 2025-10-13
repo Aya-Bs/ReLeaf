@@ -2,232 +2,617 @@
 
 @section('title', $location->name)
 
+@section('breadcrumb')
+    <li class="breadcrumb-item"><a href="{{ route('backend.dashboard') }}">Tableau de bord</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('backend.locations.index') }}">Locations</a></li>
+    <li class="breadcrumb-item active">{{ $location->name }}</li>
+@endsection
+
+
 @section('content')
 <style>
-    body, .container-fluid {
-        background: #f7f8fa !important;
-    }
-    .location-map-section {
-        position: relative;
-        width: 100vw;
-        left: 50%;
-        right: 50%;
-        margin-left: -50vw;
-        margin-right: -50vw;
-        background: #eaf3ea;
-        min-height: 420px;
-        overflow: visible;
-        z-index: 1;
-    }
-    #map {
-        width: 100%;
-        height: 420px;
-        border-radius: 0 0 32px 32px;
-        box-shadow: 0 4px 24px rgba(45,90,39,0.10);
-        z-index: 1;
-    }
-    .floating-stats {
-        position: absolute;
-        top: 32px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        gap: 18px;
-        z-index: 10;
-    }
-    .stat-card {
-        background: #111;
-        color: #fff;
-        border-radius: 18px;
-        padding: 18px 28px 12px 28px;
-        min-width: 120px;
-        text-align: center;
-        font-size: 22px;
-        font-weight: 600;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.10);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    .stat-card-label {
-        font-size: 13px;
-        color: #e0e0e0;
-        font-weight: 400;
-        margin-top: 2px;
-    }
-    .location-main {
-        margin-top: -90px;
-        z-index: 2;
-        position: relative;
-    }
-    .location-info-card {
-        background: #fff;
-        border-radius: 24px;
-        box-shadow: 0 2px 16px rgba(45,90,39,0.10);
-        padding: 32px 32px 24px 32px;
-        margin-bottom: 24px;
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-    }
-    .location-info-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 12px;
-    }
-    .location-info-title {
-        font-size: 22px;
-        font-weight: 700;
-        color: #222;
-    }
-    .location-info-heart {
-        color: #f7b731;
-        font-size: 22px;
-        margin-left: 8px;
-        cursor: pointer;
-    }
-    .location-info-meta {
-        color: #888;
-        font-size: 15px;
-        margin-bottom: 8px;
-    }
-    .location-info-icons {
-        display: flex;
-        gap: 18px;
-        margin-top: 10px;
-    }
-    .location-info-icon {
-        background: #f4f7f4;
-        border-radius: 12px;
-        padding: 10px 14px;
-        font-size: 18px;
-        color: #2d5a27;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .location-stats-row {
-        display: flex;
-        gap: 18px;
-        margin-top: 18px;
-    }
-    .location-stat-box {
-        background: #f4f7f4;
+    .location-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 2rem;
         border-radius: 16px;
-        flex: 1;
-        padding: 18px 0 10px 0;
-        text-align: center;
-        font-size: 20px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .location-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .location-title-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .location-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #2d5a27 0%, #3d7a37 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+        box-shadow: 0 2px 6px rgba(45, 90, 39, 0.18);
+    }
+    
+    .location-title-text h1 {
+        margin: 0;
+        font-size: 24px;
         font-weight: 600;
-        color: #222;
-        box-shadow: 0 1px 4px rgba(45,90,39,0.04);
+        color: #2d5a27;
     }
-    .location-stat-label {
-        font-size: 13px;
-        color: #888;
-        font-weight: 400;
-        margin-top: 2px;
+    
+    .location-title-text p {
+        margin: 0;
+        color: #6c757d;
+        font-size: 14px;
     }
-    .location-image-card {
-        background: #fff;
-        border-radius: 24px;
-        box-shadow: 0 2px 16px rgba(45,90,39,0.10);
-        padding: 18px;
+    
+    .info-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        border: 1px solid #f0f0f0;
+        height: 100%;
+    }
+    
+    .info-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-section:last-child {
+        margin-bottom: 0;
+    }
+    
+    .info-section h4 {
+        color: #2d5a27;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .info-section h4 i {
+        color: #2d5a27;
+    }
+    
+    .info-content {
+        color: #495057;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+    
+    .info-item {
         display: flex;
         flex-direction: column;
-        align-items: center;
-        margin-bottom: 24px;
+        gap: 0.25rem;
     }
-    .location-image-main {
+    
+    .info-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        font-size: 14px;
+        font-weight: 500;
+        color: #2d5a27;
+    }
+    
+    .badge-modern {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .badge-modern.badge-success {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+        border: 1px solid #b1dfbb;
+    }
+    
+    .badge-modern.badge-secondary {
+        background: linear-gradient(135deg, #e2e3e5 0%, #d6d8db 100%);
+        color: #383d41;
+        border: 1px solid #c6c8ca;
+    }
+    
+    .badge-modern.badge-danger {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+        border: 1px solid #f1b0b7;
+    }
+    
+    .badge-modern.badge-light {
+        background: linear-gradient(135deg, #fdfdfe 0%, #f8f9fa 100%);
+        color: #495057;
+        border: 1px solid #e9ecef;
+    }
+    
+    .map-container {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        border: 1px solid #f0f0f0;
+        height: 100%;
+    }
+    
+    #locationMap {
+        height: 400px;
         width: 100%;
-        max-width: 340px;
-        border-radius: 18px;
-        box-shadow: 0 2px 8px rgba(45,90,39,0.10);
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+    }
+    
+    .gallery-section {
+        margin-top: 2rem;
+    }
+    
+    .gallery-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        overflow: hidden;
+        border: 1px solid #f0f0f0;
+    }
+    
+    .gallery-header {
+        padding: 1.5rem;
+        border-bottom: 2px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .gallery-header h3 {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 600;
+        color: #2d5a27;
+    }
+    
+    .gallery-header i {
+        color: #2d5a27;
+        font-size: 20px;
+    }
+    
+    .events-section {
+        margin-top: 2rem;
+    }
+    
+    .events-list-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        overflow: hidden;
+        border: 1px solid #f0f0f0;
+    }
+    
+    .events-list-header {
+        padding: 1.5rem;
+        border-bottom: 2px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .events-list-header h3 {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 600;
+        color: #2d5a27;
+    }
+    
+    .events-list-header i {
+        color: #2d5a27;
+        font-size: 20px;
+    }
+    
+    .table-modern {
+        margin: 0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    
+    .table-modern thead th {
+        background: #f8f9fa;
+        border: none;
+        padding: 0.75rem 1.2rem;
+        font-weight: 500;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #2d5a27;
+    }
+    
+    .table-modern tbody tr {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f0f0f0;
+        background: #fff;
+    }
+    
+    .table-modern tbody tr:hover {
+        background: #f4f8f4;
+        transform: scale(1.01);
+    }
+    
+    .table-modern tbody td {
+        padding: 0.85rem 1.2rem;
+        vertical-align: middle;
+        border: none;
+        font-size: 13px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+    }
+    
+    .empty-state-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 24px;
+        color: #adb5bd;
+    }
+    
+    .empty-state h4 {
+        color: #6c757d;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 16px;
+    }
+    
+    .empty-state p {
+        color: #adb5bd;
+        margin: 0;
+        font-size: 14px;
+    }
+    
+    /* Updated Image Gallery Styles */
+    .image-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+    
+    .image-item {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .image-item:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+    
+    .image-item img {
+        width: 100%;
+        height: 140px;
         object-fit: cover;
-        aspect-ratio: 4/3;
+        display: block;
+    }
+    
+    .image-item:hover img {
+        transform: scale(1.05);
+    }
+    
+    /* Custom Pagination Styles */
+    .custom-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.9rem;
+        margin-top: 1.5rem;
+        padding: 1rem;
+    }
+    
+    .custom-pagination .page-item {
+        margin: 0;
+    }
+    
+    .custom-pagination .page-link {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 14px;
+        font-weight: 500;
+        color: #2d5a27;
+        background: white;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        min-width: 42px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .custom-pagination .page-item.active .page-link {
+        background: #2d5a27;
+        border-color: #2d5a27;
+        color: white;
+    }
+    
+    .custom-pagination .page-link:hover {
+        background: #e9f5e6;
+        border-color: #2d5a27;
+        color: #2d5a27;
+    }
+    
+    .custom-pagination .page-item.disabled .page-link {
+        color: #bdbdbd;
+        background: #f8f9fa;
+        border-color: #e0e0e0;
+        cursor: not-allowed;
+    }
+    
+    .custom-pagination .pagination-info {
+        font-size: 14px;
+        color: #6c757d;
+        margin: 0 1rem;
+        font-weight: 500;
+    }
+    
+    @media (max-width: 768px) {
+        .image-gallery {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
+        }
+        
+        .image-item img {
+            height: 120px;
+        }
+        
+        .custom-pagination {
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+        
+        .custom-pagination .pagination-info {
+            order: -1;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .image-gallery {
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 0.75rem;
+        }
+        
+        .image-item img {
+            height: 100px;
+        }
+        
+        .custom-pagination .page-link {
+            padding: 0.4rem 0.8rem;
+            font-size: 13px;
+            min-width: 38px;
+        }
     }
 </style>
-<div class="location-map-section">
-    <div id="map"></div>
-    <div class="floating-stats">
-        <div class="stat-card">
-            {{ $location->latitude ?? '-' }}
-            <div class="stat-card-label">Latitude</div>
-        </div>
-        <div class="stat-card">
-            {{ $location->longitude ?? '-' }}
-            <div class="stat-card-label">Longitude</div>
-        </div>
-        <div class="stat-card">
-            {{ $location->capacity ?? '-' }}
-            <div class="stat-card-label">Capacity</div>
-        </div>
-    </div>
-</div>
-<div class="container location-main">
-    <div class="row g-4">
-        <div class="col-lg-7">
-            <div class="location-info-card">
-                <div class="location-info-header">
-                    <div>
-                        <div class="location-info-title">{{ $location->name }}</div>
-                        <div class="location-info-meta">{{ $location->full_address ?? ($location->address . ', ' . $location->city) }}</div>
-                    </div>
-                    <div class="location-info-heart"><i class="fas fa-heart"></i></div>
+
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="location-header">
+        <div class="location-header-content">
+            <div class="location-title-section">
+                <div class="location-icon">
+                    <i class="fas fa-map-marker-alt"></i>
                 </div>
-                <div class="location-info-description" style="margin-top:10px; color:#444; font-size:16px;">
-                    {{ $location->description ?? '-' }}
-                </div>
-                <div class="location-stats-row">
-                    <div class="location-stat-box">
-                        {{ $location->capacity ?? '-' }}
-                        <div class="location-stat-label">Capacity</div>
-                    </div>
-                    <div class="location-stat-box">
-                        {{ $location->city ?? '-' }}
-                        <div class="location-stat-label">City</div>
-                    </div>
-                    <div class="location-stat-box">
-                        {{-- TODO: Replace 'temperature' with real value from weather API in controller --}}
-                        {{ isset($temperature) ? $temperature . '°C' : '-' }}
-                        <div class="location-stat-label">Temperature</div>
-                    </div>
+                <div class="location-title-text">
+                    <h1>{{ $location->name }}</h1>
+                    <p>Détails du lieu</p>
                 </div>
             </div>
+            <div>
+                <a href="{{ route('backend.locations.index') }}" class="btn btn-outline-secondary">
+                   {{ $location->city }} 
+                </a>
+            </div>
         </div>
-        <div class="col-lg-5">
-            <div class="location-image-card">
-                @if($location->images && count($location->images))
-                    <img src="{{ asset('storage/' . $location->images[0]) }}" class="location-image-main" alt="Location image">
-                @else
-                    <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80" class="location-image-main" alt="Location image">
+    </div>
+
+    <!-- Main Content - Two Columns -->
+    <div class="row">
+        <!-- Left Column: Location Information -->
+        <div class="col-lg-6 mb-4">
+            <div class="info-card">
+                <!-- Basic Information -->
+                <div class="info-section">
+                    <!-- Description -->
+                @if($location->description)
+                <div class="info-section">
+                    <h4><i class="fas fa-align-left"></i> Description</h4>
+                    <div class="info-content">
+                        {{ $location->description }}
+                    </div>
+                </div>
                 @endif
+                
+                    <h4><i class="fas fa-info-circle"></i> Informations de base</h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Nom</span>
+                            <span class="info-value">{{ $location->name }}</span>
+                        </div>
+                         <div class="info-item">
+                            <span class="info-label">Price</span>
+                            <span class="info-value">{{ $location->price ?? 'Gratuit' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Capacité</span>
+                            <span class="info-value">{{ $location->capacity ?? 'Non spécifiée' }}</span>
+                        </div>
+                       
+                        <div class="info-item">
+                            <span class="info-label">Adresse</span>
+                            <span class="info-value"> {{ $location->address  ?? 'Non spécifiée' }}</span>
+                        </div>
+                    </div>
+                </div>
+               
+                
+
+                <!-- Status -->
+                <div class="info-section">
+                    <h4><i class="fas fa-tag"></i> Statut</h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Réservation</span>
+                            <div>
+                                @if($location->reserved)
+                                    <span class="badge-modern badge-success">
+                                        <i class="fas fa-lock"></i> Réservé
+                                    </span>
+                                @else
+                                    <span class="badge-modern badge-secondary">
+                                        <i class="fas fa-unlock"></i> Libre
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Maintenance</span>
+                            <div>
+                                @if($location->in_repair)
+                                    <span class="badge-modern badge-danger">
+                                        <i class="fas fa-tools"></i> En réparation
+                                    </span>
+                                @else
+                                    <span class="badge-modern badge-light">
+                                        <i class="fas fa-check"></i> Opérationnel
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coordinates -->
+                <div class="info-section">
+                    <h4><i class="fas fa-globe"></i> Coordonnées GPS</h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Latitude</span>
+                            <span class="info-value">{{ $location->latitude }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Longitude</span>
+                            <span class="info-value">{{ $location->longitude }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Map -->
+        <div class="col-lg-6 mb-4">
+            <div class="map-container">
+                <div id="locationMap"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery Section - Full Width -->
+    @if($location->images && count($location->images) > 0)
+    <div class="gallery-section">
+        <div class="gallery-card">
+            <div class="gallery-header">
+                <i class="fas fa-images"></i>
+                <h3>Galerie d'images</h3>
+            </div>
+            <div class="image-gallery">
+                @foreach($location->images as $image)
+                <div class="image-item">
+                    <img src="{{ asset('storage/' . $image) }}" alt="Image du lieu {{ $location->name }}">
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
+
+<!-- Events Section -->
+<div class="events-section">
+    <div class="events-list-card">
+        <div class="events-list-header">
+            <i class="fas fa-calendar-alt"></i>
+            <h3>Événements à ce lieu</h3>
+        </div>
+        <div class="card-body p-0">
+            <div id="events-table-container">
+                @include('backend.locations.partials.events_table', ['events' => $events])
             </div>
         </div>
     </div>
 </div>
 </div>
+
 @push('scripts')
+<!-- Leaflet.js for map -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    let lat = {{ $location->latitude ?? 'null' }};
-    let lng = {{ $location->longitude ?? 'null' }};
-    let map = L.map('map').setView([lat || 36.8065, lng || 10.1815], lat && lng ? 13 : 7);
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize map
+    const map = L.map('locationMap').setView([{{ $location->latitude }}, {{ $location->longitude }}], 15);
+    
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18,
         attribution: '© OpenStreetMap'
     }).addTo(map);
-    if(lat && lng) {
-        const cuteIcon = L.icon({
-            iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', // green marker icon
-            iconSize: [38, 38],
-            iconAnchor: [19, 38],
-            popupAnchor: [0, -38],
-        });
-        L.marker([lat, lng], {icon: cuteIcon}).addTo(map);
-    }
+    
+    // Add marker for the location
+    L.marker([{{ $location->latitude }}, {{ $location->longitude }}])
+        .addTo(map)
+        .bindPopup('<strong>{{ $location->name }}</strong><br>{{ $location->address }}')
+        .openPopup();
+});
 </script>
 @endpush
 @endsection
