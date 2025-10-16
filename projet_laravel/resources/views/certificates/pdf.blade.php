@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,7 @@
             margin: 0;
             size: A4 portrait;
         }
-        
+
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -17,7 +18,7 @@
             background: white;
             color: #333;
         }
-        
+
         .certificate {
             width: 100%;
             height: 100vh;
@@ -26,7 +27,7 @@
             position: relative;
             box-sizing: border-box;
         }
-        
+
         /* Bordures décoratives aux coins */
         .corner-top-left {
             position: absolute;
@@ -37,7 +38,7 @@
             border-top: 5px solid #2d5a27;
             border-left: 5px solid #2d5a27;
         }
-        
+
         .corner-top-right {
             position: absolute;
             top: 25px;
@@ -47,7 +48,7 @@
             border-top: 5px solid #2d5a27;
             border-right: 5px solid #2d5a27;
         }
-        
+
         .corner-bottom-left {
             position: absolute;
             bottom: 25px;
@@ -57,7 +58,7 @@
             border-bottom: 5px solid #2d5a27;
             border-left: 5px solid #2d5a27;
         }
-        
+
         .corner-bottom-right {
             position: absolute;
             bottom: 25px;
@@ -67,18 +68,18 @@
             border-bottom: 5px solid #2d5a27;
             border-right: 5px solid #2d5a27;
         }
-        
+
         .certificate-content {
             padding: 80px 60px 60px;
             height: calc(100vh - 160px);
             text-align: center;
             position: relative;
         }
-        
+
         .header {
             margin-bottom: 60px;
         }
-        
+
         .logo {
             font-size: 60px;
             color: #2d5a27;
@@ -86,7 +87,7 @@
             font-weight: bold;
             display: none;
         }
-        
+
         .title {
             font-size: 42px;
             font-weight: bold;
@@ -95,24 +96,24 @@
             text-transform: uppercase;
             letter-spacing: 4px;
         }
-        
+
         .subtitle {
             font-size: 20px;
             color: #666;
             margin-bottom: 50px;
         }
-        
+
         .main-content {
             margin: 50px 0;
         }
-        
+
         .certificate-text {
             font-size: 22px;
             margin-bottom: 25px;
             line-height: 1.6;
             color: #333;
         }
-        
+
         .participant-name {
             font-size: 36px;
             font-weight: bold;
@@ -121,7 +122,7 @@
             text-decoration: underline;
             text-decoration-color: #2d5a27;
         }
-        
+
         .event-details {
             background: #f8f9fa;
             border: 4px solid #e9ecef;
@@ -130,7 +131,7 @@
             width: 85%;
             max-width: 700px;
         }
-        
+
         .event-title {
             font-size: 26px;
             font-weight: bold;
@@ -138,16 +139,16 @@
             margin-bottom: 25px;
             line-height: 1.3;
         }
-        
+
         .event-info {
             margin: 25px 0;
         }
-        
+
         .event-info-item {
             margin: 15px 0;
             text-align: center;
         }
-        
+
         .event-info-label {
             font-size: 14px;
             color: #666;
@@ -156,13 +157,13 @@
             letter-spacing: 2px;
             font-weight: bold;
         }
-        
+
         .event-info-value {
             font-size: 18px;
             font-weight: bold;
             color: #2d5a27;
         }
-        
+
         .verification-section {
             background: #e8f5e8;
             border: 4px dashed #2d5a27;
@@ -171,45 +172,45 @@
             width: 75%;
             max-width: 500px;
         }
-        
+
         .verification-label {
             font-size: 16px;
             color: #666;
             margin-bottom: 12px;
             font-weight: bold;
         }
-        
+
         .verification-value {
             font-size: 22px;
             font-weight: bold;
             color: #2d5a27;
             font-family: monospace;
         }
-        
+
         .certificate-footer {
             margin-top: 50px;
             text-align: center;
         }
-        
+
         .signature-line {
             border-bottom: 4px solid #2d5a27;
             width: 300px;
             margin: 25px auto 15px;
             height: 40px;
         }
-        
+
         .signature-text {
             font-size: 16px;
             color: #666;
             margin-top: 10px;
         }
-        
+
         .date-issued {
             font-size: 16px;
             color: #666;
             margin-top: 25px;
         }
-        
+
         /* Élément décoratif central */
         .decorative-center {
             position: absolute;
@@ -222,7 +223,7 @@
             border: 4px solid #2d5a27;
             opacity: 0.05;
         }
-        
+
         .decorative-center::before {
             content: '🌱';
             position: absolute;
@@ -235,6 +236,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="certificate">
         <!-- Bordures décoratives aux coins -->
@@ -242,32 +244,32 @@
         <div class="corner-top-right"></div>
         <div class="corner-bottom-left"></div>
         <div class="corner-bottom-right"></div>
-        
+
         <!-- Élément décoratif central -->
         <div class="decorative-center"></div>
-        
+
         <div class="certificate-content">
             <div class="header">
                 <div class="title">EcoEvents</div>
                 <div class="subtitle">Certificat de Participation</div>
             </div>
-            
+
             <div class="main-content">
                 <div class="certificate-text">
                     Ce certificat atteste que
                 </div>
-                
+
                 <div class="participant-name">
                     {{ $certification->reservation->user->name }}
                 </div>
-                
+
                 <div class="certificate-text">
                     a participé avec succès à l'événement suivant :
                 </div>
-                
+
                 <div class="event-details">
                     <div class="event-title">{{ $certification->reservation->event->title }}</div>
-                    
+
                     <div class="event-info">
                         <div class="event-info-item">
                             <div class="event-info-label">Date</div>
@@ -279,17 +281,17 @@
                         </div>
                         <div class="event-info-item">
                             <div class="event-info-label">Lieu</div>
-                            <div class="event-info-value">{{ $certification->reservation->event->location }}</div>
+                            <div class="event-info-value">{{ $certification->reservation->event->location->name ?? 'Lieu non défini' }}</div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="verification-section">
                     <div class="verification-label">Code de Vérification</div>
                     <div class="verification-value">{{ $certification->certificate_code }}</div>
                 </div>
             </div>
-            
+
             <div class="certificate-footer">
                 <div class="signature-line"></div>
                 <div class="signature-text">
@@ -303,4 +305,5 @@
         </div>
     </div>
 </body>
+
 </html>

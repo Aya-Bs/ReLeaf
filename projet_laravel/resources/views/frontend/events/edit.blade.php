@@ -1,16 +1,24 @@
-@extends('layouts.app')
+@extends('layouts.frontend')
 
 @section('title', 'Modifier l\'Événement')
 
 @section('content')
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="mb-0">
-                        <i class="fas fa-edit me-2"></i>Modifier l'événement
+
+    <div class="row">
+        <div class="col-12">
+            <div >
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-4">
+                        <i class="fas fa-edit me-2" style="color: #2d5a27;"></i><strong>Modifier l'événement</strong>
                     </h4>
+                    <!-- Breadcrumb path on top right -->
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-4" style="background: transparent; padding: 0; margin: 0;">
+                            <li class="breadcrumb-item"><a href="{{ route('events.my-events') }}" style="color: #2d5a27;">Événements</a></li>
+                            <li class="breadcrumb-item active" aria-current="page" style="color: #2d5a27;"><strong>Modifier</strong></li>
+                        </ol>
+                    </nav>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('events.update', $event) }}" method="POST" enctype="multipart/form-data" id="eventForm">
@@ -30,251 +38,244 @@
                         </div>
                         @endif
 
-                        <!-- Title -->
-                        <div class="mb-3">
-                            <label for="title" class="form-label">
-                                <i class="fas fa-heading me-2"></i>Titre de l'événement <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" 
-                                   class="form-control @error('title') is-invalid @enderror" 
-                                   id="title" 
-                                   name="title" 
-                                   value="{{ old('title', $event->title) }}" 
-                                   required 
-                                   {{ !$event->canBeEdited() ? 'disabled' : '' }}
-                                   placeholder="Ex: Nettoyage de la plage">
-                            @error('title')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Description -->
-                        <div class="mb-3">
-                            <label for="description" class="form-label">
-                                <i class="fas fa-align-left me-2"></i>Description <span class="text-danger">*</span>
-                            </label>
-                            <textarea class="form-control @error('description') is-invalid @enderror" 
-                                      id="description" 
-                                      name="description" 
-                                      rows="4" 
-                                      required 
-                                      {{ !$event->canBeEdited() ? 'disabled' : '' }}
-                                      placeholder="Décrivez votre événement...">{{ old('description', $event->description) }}</textarea>
-                            @error('description')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Date and Time -->
                         <div class="row">
-                            <div class="col-md-6">
+                            <!-- Left Column - Form Fields -->
+                            <div class="col-md-8">
+                                <!-- Title -->
                                 <div class="mb-3">
-                                    <label for="date" class="form-label">
-                                        <i class="fas fa-calendar-day me-2"></i>Date et heure <span class="text-danger">*</span>
+                                    <label for="title" class="form-label">
+                                        <i class="fas fa-heading me-2" style="color: #2d5a27;"></i>Titre de l'événement <span class="text-danger">*</span>
                                     </label>
-                                    <input type="datetime-local" 
-                                           class="form-control @error('date') is-invalid @enderror" 
-                                           id="date" 
-                                           name="date" 
-                                           value="{{ old('date', $event->date->format('Y-m-d\TH:i')) }}" 
+                                    <input type="text" 
+                                           class="form-control @error('title') is-invalid @enderror" 
+                                           id="title" 
+                                           name="title" 
+                                           value="{{ old('title', $event->title) }}" 
                                            required 
                                            {{ !$event->canBeEdited() ? 'disabled' : '' }}
-                                           min="{{ now()->format('Y-m-d\TH:i') }}">
-                                    @error('date')
+                                           placeholder="Ex: Nettoyage de la plage">
+                                    @error('title')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-                            </div>
-                            <div class="col-md-6">
+
+                                <!-- Description -->
                                 <div class="mb-3">
-                                    <label for="duration" class="form-label">
-                                        <i class="fas fa-clock me-2"></i>Durée <span class="text-danger">*</span>
+                                    <label for="description" class="form-label">
+                                        <i class="fas fa-align-left me-2" style="color: #2d5a27;"></i>Description <span class="text-danger">*</span>
                                     </label>
-                                    <select class="form-select @error('duration') is-invalid @enderror" 
-                                            id="duration" 
-                                            name="duration" 
-                                            required 
-                                            {{ !$event->canBeEdited() ? 'disabled' : '' }}>
-                                        <option value="">Sélectionnez une durée</option>
-                                        <option value="1 heure" {{ old('duration', $event->duration) == '1 heure' ? 'selected' : '' }}>1 heure</option>
-                                        <option value="2 heures" {{ old('duration', $event->duration) == '2 heures' ? 'selected' : '' }}>2 heures</option>
-                                        <option value="3 heures" {{ old('duration', $event->duration) == '3 heures' ? 'selected' : '' }}>3 heures</option>
-                                        <option value="4 heures" {{ old('duration', $event->duration) == '4 heures' ? 'selected' : '' }}>4 heures</option>
-                                        <option value="Demi-journée" {{ old('duration', $event->duration) == 'Demi-journée' ? 'selected' : '' }}>Demi-journée</option>
-                                        <option value="Journée entière" {{ old('duration', $event->duration) == 'Journée entière' ? 'selected' : '' }}>Journée entière</option>
-                                        <option value="Week-end" {{ old('duration', $event->duration) == 'Week-end' ? 'selected' : '' }}>Week-end</option>
-                                    </select>
-                                    @error('duration')
+                                    <textarea class="form-control @error('description') is-invalid @enderror" 
+                                              id="description" 
+                                              name="description" 
+                                              rows="4" 
+                                              required 
+                                              {{ !$event->canBeEdited() ? 'disabled' : '' }}
+                                              placeholder="Décrivez votre événement...">{{ old('description', $event->description) }}</textarea>
+                                    @error('description')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-                            </div>
-                        </div>
 
-                        <!-- Location -->
-                        <div class="mb-3">
-                            <label for="location" class="form-label">
-                                <i class="fas fa-map-marker-alt me-2"></i>Lieu <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" 
-                                   class="form-control @error('location') is-invalid @enderror" 
-                                   id="location" 
-                                   name="location" 
-                                   value="{{ old('location', $event->location) }}" 
-                                   required 
-                                   {{ !$event->canBeEdited() ? 'disabled' : '' }}
-                                   placeholder="Ex: Plage de Sidi Bou Said, Tunis">
-                            @error('location')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                                <!-- Date and Time -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="date" class="form-label">
+                                                <i class="fas fa-calendar-day me-2" style="color: #2d5a27;"></i>Date et heure <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="datetime-local" 
+                                                   class="form-control @error('date') is-invalid @enderror" 
+                                                   id="date" 
+                                                   name="date" 
+                                                   value="{{ old('date', $event->date->format('Y-m-d\TH:i')) }}" 
+                                                   required 
+                                                   {{ !$event->canBeEdited() ? 'disabled' : '' }}
+                                                   min="{{ now()->format('Y-m-d\TH:i') }}">
+                                            @error('date')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="duration" class="form-label">
+                                                <i class="fas fa-clock me-2" style="color: #2d5a27;"></i>Durée <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-select @error('duration') is-invalid @enderror" 
+                                                    id="duration" 
+                                                    name="duration" 
+                                                    required 
+                                                    {{ !$event->canBeEdited() ? 'disabled' : '' }}>
+                                                <option value="">Sélectionnez une durée</option>
+                                                <option value="1 heure" {{ old('duration', $event->duration) == '1 heure' ? 'selected' : '' }}>1 heure</option>
+                                                <option value="2 heures" {{ old('duration', $event->duration) == '2 heures' ? 'selected' : '' }}>2 heures</option>
+                                                <option value="3 heures" {{ old('duration', $event->duration) == '3 heures' ? 'selected' : '' }}>3 heures</option>
+                                                <option value="4 heures" {{ old('duration', $event->duration) == '4 heures' ? 'selected' : '' }}>4 heures</option>
+                                                <option value="Demi-journée" {{ old('duration', $event->duration) == 'Demi-journée' ? 'selected' : '' }}>Demi-journée</option>
+                                                <option value="Journée entière" {{ old('duration', $event->duration) == 'Journée entière' ? 'selected' : '' }}>Journée entière</option>
+                                                <option value="Week-end" {{ old('duration', $event->duration) == 'Week-end' ? 'selected' : '' }}>Week-end</option>
+                                            </select>
+                                            @error('duration')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+                               
+                                <div class="row mb-3">
+                                <!-- Location Dropdown -->
+                                <div class="col-md-6">
+                                    <label for="location_id" class="form-label">
+                                        <i class="fas fa-map-marker-alt me-2" style="color: #2d5a27;"></i>Lieu <span class="text-danger">*</span>
+                                    </label>
+                                    @php
+                                        $locations = \App\Models\Location::all();
+                                    @endphp
+                                    <select class="form-select @error('location_id') is-invalid @enderror" id="location_id" name="location_id" required {{ !$event->canBeEdited() ? 'disabled' : '' }}>
+                                        <option value="">Sélectionnez un lieu</option>
+                                        @foreach($locations as $location)
+                                            <option value="{{ $location->id }}" {{ old('location_id', $event->location_id) == $location->id ? 'selected' : '' }}>{{ $location->name }} ({{ $location->city }})</option>
+                                        @endforeach
+                                    </select>
+                                    @error('location_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
 
-                        <!-- Max Participants -->
-                        <div class="mb-3">
-                            <label for="max_participants" class="form-label">
-                                <i class="fas fa-users me-2"></i>Nombre maximum de participants
-                            </label>
-                            <input type="number" 
-                                   class="form-control @error('max_participants') is-invalid @enderror" 
-                                   id="max_participants" 
-                                   name="max_participants" 
-                                   value="{{ old('max_participants', $event->max_participants) }}" 
-                                   min="1" 
-                                   {{ !$event->canBeEdited() ? 'disabled' : '' }}
-                                   placeholder="Laissez vide pour illimité">
-                            @error('max_participants')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <small class="form-text text-muted">Optionnel - Laissez vide si pas de limite</small>
-                        </div>
-
-                        <!-- Campaign Selection -->
-<div class="mb-3">
+<div class="col-md-6">
     <label for="campaign_id" class="form-label">
-        <i class="fas fa-bullhorn me-2"></i>Campagne associée
+        <i class="fas fa-bullhorn me-2" style="color: #2d5a27;"></i>Campagne    
     </label>
-    <select class="form-select @error('campaign_id') is-invalid @enderror" 
-            id="campaign_id" 
-            name="campaign_id"
-            {{ !$event->canBeEdited() ? 'disabled' : '' }}>
+    @php
+        $campaigns = \App\Models\Campaign::all();
+    @endphp
+    <select class="form-select @error('campaign_id') is-invalid @enderror" id="campaign_id" name="campaign_id" {{ !$event->canBeEdited() ? 'disabled' : '' }}>
         <option value="">Aucune campagne</option>
-        @php
-            $userCampaigns = \App\Models\Campaign::where('organizer_id', auth()->id())
-                ->get();
-        @endphp
-        @foreach($userCampaigns as $campaign)
-            <option value="{{ $campaign->id }}" {{ old('campaign_id', $event->campaign_id) == $campaign->id ? 'selected' : '' }}>
-                {{ $campaign->name }} 
-                ({{ $campaign->status === 'active' ? 'Active' : 'Inactive' }})
-                @if($campaign->end_date->isFuture())
-                    - J-{{ $campaign->days_remaining }}
-                @endif
-            </option>
+        @foreach($campaigns as $campaign)
+            <option value="{{ $campaign->id }}" {{ old('campaign_id', $event->campaign_id) == $campaign->id ? 'selected' : '' }}>{{ $campaign->name }}</option>
         @endforeach
     </select>
     @error('campaign_id')
         <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-    <small class="form-text text-muted">
-        Associez cet événement à l'une de vos campagnes.
-    </small>
+    @enderror                                    
 </div>
+</div>
+                                <!-- Max Participants -->
+                                <div class="mb-3">
+                                    <label for="max_participants" class="form-label">
+                                        <i class="fas fa-users me-2" style="color: #2d5a27;"></i>Nombre maximum de participants
+                                    </label>
+                                    <input type="number" 
+                                           class="form-control @error('max_participants') is-invalid @enderror" 
+                                           id="max_participants" 
+                                           name="max_participants" 
+                                           value="{{ old('max_participants', $event->max_participants) }}" 
+                                           min="1" 
+                                           {{ !$event->canBeEdited() ? 'disabled' : '' }}
+                                           placeholder="Laissez vide pour illimité">
+                                    @error('max_participants')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <small class="form-text text-muted">Optionnel - Laissez vide si pas de limite</small>
+                                </div>
 
-                        <!-- Current Images -->
-                        @if($event->images && is_array($event->images) && count($event->images) > 0)
-                        <div class="mb-3">
-                            <label class="form-label">
-                                <i class="fas fa-images me-2"></i>Images actuelles
-                            </label>
-                            <div class="row">
-                                @foreach($event->images as $image)
-                                    @if(!empty($image))
-                                    <div class="col-md-3 mb-2">
-                                        <div class="card">
-                                            <img src="{{ asset('storage/' . $image) }}" 
-                                                 class="card-img-top" 
-                                                 style="height: 100px; object-fit: cover;"
-                                                 alt="Event image"
-                                                 onerror="this.src='https://via.placeholder.com/150x100?text=Image+Non+Trouvée'">
-                                            <div class="card-body p-2 text-center">
-                                                @if($event->canBeEdited())
-                                                <button type="button" 
-                                                        class="btn btn-sm btn-outline-danger mt-1 remove-image-btn" 
-                                                        data-image-path="{{ $image }}">
-                                                    <i class="fas fa-trash"></i> 
-                                                </button>
-                                                @endif
+                               
+                            </div>
+
+                            <!-- Right Column - Images and Actions -->
+                            <div class="col-md-4">
+                                <!-- Current Images -->
+                                @if($event->images && is_array($event->images) && count($event->images) > 0)
+                                <div class="mb-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-images me-2" style="color: #2d5a27;"></i>Images actuelles
+                                    </label>
+                                    <div class="row">
+                                        @foreach($event->images as $image)
+                                            @if(!empty($image))
+                                            <div class="col-md-6 col-lg-4 mb-3">
+                                                <div class="card position-relative">
+                                                    <img src="{{ asset('storage/' . $image) }}" 
+                                                         class="card-img-top" 
+                                                         style="height: 120px; object-fit: cover;"
+                                                         alt="Event image"
+                                                         onerror="this.src='https://via.placeholder.com/150x100?text=Image+Non+Trouvée'">
+                                                    @if($event->canBeEdited())
+                                                    <div class="card-body p-2 text-center">
+                                                        <button type="button" 
+                                                                class="btn btn-sm btn-outline-danger remove-image-btn" 
+                                                                data-image-path="{{ $image }}">
+                                                            <i class="fas fa-trash"></i> Supprimer
+                                                        </button>
+                                                    </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                </div>
+                                @else
+                                <div class="mb-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-images me-2" style="color: #2d5a27;"></i>Images actuelles
+                                    </label>
+                                    <p class="text-muted">Aucune image pour cet événement.</p>
+                                </div>
+                                @endif
+
+                                <!-- New Images - Updated Drag & Drop Style -->
+                                <div class="mb-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-plus-circle me-2" style="color: #2d5a27;"></i>Ajouter de nouvelles images
+                                    </label>
+                                    
+                                    <div class="drag-drop-area @error('images.*') is-invalid @enderror" 
+                                         id="dragDropArea" 
+                                         style="border:2px dashed #2d5a27; border-radius:12px; background:#f4fbf4; padding:1.2rem 0.5rem; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; max-width:340px; margin:auto; {{ !$event->canBeEdited() ? 'opacity: 0.6; pointer-events: none;' : '' }}">
+                                        <div class="drag-drop-content" style="pointer-events:none;">
+                                            <i class="fas fa-cloud-upload-alt" style="font-size:2.1rem; color:#2d5a27; margin-bottom:0.5rem;"></i>
+                                            <div style="font-size:1.05rem; color:#2d5a27; font-weight:500;">Drag & Drop vos images</div>
+                                            <div style="color:#2d5a27; margin:0.25rem 0; font-size:0.95rem;">ou</div>
+                                            <div style="pointer-events:all;">
+                                                <button type="button" class="btn btn-outline-success btn-sm" id="browseBtn" style="border-color:#2d5a27; color:#2d5a27;">Parcourir les fichiers</button>
+                                                <input type="file" id="images" name="images[]" multiple accept="image/*" style="display:none;">
                                             </div>
                                         </div>
                                     </div>
-                                    @endif
-                                @endforeach
-                            </div>
-                        </div>
-                        @else
-                        <div class="mb-3">
-                            <label class="form-label">
-                                <i class="fas fa-images me-2"></i>Images actuelles
-                            </label>
-                            <p class="text-muted">Aucune image pour cet événement.</p>
-                        </div>
-                        @endif
+                                    
+                                    @error('images.*')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                    <small class="form-text text-muted">
+                                        Vous pouvez sélectionner plusieurs images. Formats acceptés: JPG, PNG, GIF. Max: 2MB par image.
+                                    </small>
+                                    
+                                    <!-- Image preview -->
+                                    <div id="imagePreview" class="mt-3 row g-2"></div>
+                                </div>
 
-                        <!-- New Images - Drag & Drop Style -->
-                        <div class="mb-4">
-                            <label class="form-label">
-                                <i class="fas fa-plus-circle me-2"></i>Ajouter de nouvelles images
-                            </label>
-                            
-                            <div class="drag-drop-area @error('images.*') is-invalid @enderror" 
-                                 id="dragDropArea"
-                                 {{ !$event->canBeEdited() ? 'style="opacity: 0.6; pointer-events: none;"' : '' }}>
-                                <div class="drag-drop-content">
-                                    <i class="fas fa-cloud-upload-alt drag-drop-icon"></i>
-                                    <h5>Drag & Drop vos images</h5>
-                                    <p class="text-muted">ou</p>
-                                    <button type="button" class="btn btn-outline-primary btn-sm" id="browseBtn">
-                                        Parcourir les fichiers
+                               
+
+                                <!-- Buttons -->
+                                <div class="d-flex justify-content-between mt-4">
+                                    <a href="{{ route('events.my-events') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Cancel
+                                    </a>
+                                    
+                                    @if($event->canBeEdited())
+                                    <button type="submit" class="btn btn-eco" style="background-color: #2d5a27; border-color: #2d5a27; color: white;">
+                                        <i class="fas fa-save me-2"></i>Mettre à jour
                                     </button>
-                                    <input type="file" 
-                                           class="d-none" 
-                                           id="images" 
-                                           name="images[]" 
-                                           multiple 
-                                           accept="image/*">
+                                    @else
+                                    <button type="button" class="btn btn-secondary" disabled>
+                                        <i class="fas fa-lock me-2"></i>Modification non autorisée
+                                    </button>
+                                    @endif
                                 </div>
                             </div>
-                            
-                            @error('images.*')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                            <small class="form-text text-muted">
-                                Vous pouvez sélectionner plusieurs images. Formats acceptés: JPG, PNG, GIF. Max: 2MB par image.
-                            </small>
-                            
-                            <!-- Image preview -->
-                            <div id="imagePreview" class="mt-3 row"></div>
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ route('events.index') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left me-2"></i>Retour
-                            </a>
-                            
-                            @if($event->canBeEdited())
-<button type="submit" class="btn btn-eco" style="background-color: #2d5a27; border-color: #2d5a27; color: white;">
-    <i class="fas fa-save me-2"></i>Mettre à jour
-</button>
-                            @else
-                            <button type="button" class="btn btn-secondary" disabled>
-                                <i class="fas fa-lock me-2"></i>Modification non autorisée
-                            </button>
-                            @endif
                         </div>
                     </form>
-
-                   
                 </div>
             </div>
         </div>
@@ -344,15 +345,15 @@ function handleFiles(files) {
             
             reader.onload = function(e) {
                 const col = document.createElement('div');
-                col.className = 'col-md-3 mb-2';
+                col.className = 'col-6 col-md-4 mb-2';
                 col.innerHTML = `
-                    <div class="card">
+                    <div class="card position-relative">
                         <img src="${e.target.result}" class="card-img-top" style="height: 100px; object-fit: cover;">
+                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 remove-new-image" data-file-name="${file.name}" style="padding: 0.25rem 0.5rem;">
+                            <i class="fas fa-times"></i>
+                        </button>
                         <div class="card-body p-2">
-                            <small class="text-muted">${file.name}</small>
-                            <button type="button" class="btn btn-sm btn-outline-danger mt-1 remove-new-image" data-file-name="${file.name}">
-                                <i class="fas fa-times"></i>
-                            </button>
+                            <small class="text-muted d-block text-truncate">${file.name}</small>
                         </div>
                     </div>
                 `;
@@ -372,7 +373,7 @@ function handleFiles(files) {
 // Remove new image before upload
 function removeNewImage(button, fileName) {
     if (confirm('Supprimer cette image ?')) {
-        const card = button.closest('.col-md-3');
+        const card = button.closest('.col-6');
         card.remove();
         
         // Remove file from input
@@ -424,7 +425,7 @@ function removeImage(imagePath) {
         .then(data => {
             if (data.success) {
                 // Remove the image card from the DOM
-                const imageCard = document.querySelector(`[data-image-path="${imagePath}"]`).closest('.col-md-3');
+                const imageCard = document.querySelector(`[data-image-path="${imagePath}"]`).closest('.col-md-6');
                 if (imageCard) {
                     imageCard.remove();
                 }
@@ -433,7 +434,7 @@ function removeImage(imagePath) {
                 showAlert('Image supprimée avec succès!', 'success');
                 
                 // If no images left, show message
-                const remainingImages = document.querySelectorAll('.col-md-3.mb-2').length;
+                const remainingImages = document.querySelectorAll('.col-md-6.mb-3').length;
                 if (remainingImages === 0) {
                     location.reload(); // Reload to show "no images" message
                 }
@@ -541,13 +542,13 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .drag-drop-area:hover {
-    border-color: #0d6efd;
-    background-color: #e7f1ff;
+    border-color: #2d5a27;
+    background-color: #f0f9f0;
 }
 
 .drag-drop-area.drag-over {
-    border-color: #0d6efd;
-    background-color: #d1e7ff;
+    border-color: #2d5a27;
+    background-color: #e8f5e8;
 }
 
 .drag-drop-content {
@@ -567,6 +568,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
 #browseBtn {
     pointer-events: all;
+    background-color: white;
+    border: 1px solid #2d5a27;
+    color: #2d5a27;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+#browseBtn:hover {
+    background-color: #2d5a27;
+    color: white;
+}
+
+.remove-new-image {
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.remove-new-image:hover {
+    opacity: 1;
+}
+
+.alert-info {
+    background-color: #e8f4f8;
+    border-color: #b3e0f0;
+    color: #055160;
+}
+
+.alert-info i {
+    color: #055160;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .col-md-6 {
+        width: 100%;
+    }
+    
+    .drag-drop-area {
+        padding: 30px 15px;
+    }
+    
+    .drag-drop-icon {
+        font-size: 36px;
+    }
 }
 </style>
 @endpush

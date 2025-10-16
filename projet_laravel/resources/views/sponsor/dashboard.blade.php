@@ -1,7 +1,18 @@
-@extends('layouts.app')
+@extends('layouts.frontend')
+
+@section('title', 'Tableau de bord Sponsor')
 
 @section('content')
 <div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0" style="background: transparent; padding: 0;">
+            <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-eco">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('sponsor.dashboard') }}" class="text-eco">Sponsor</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Tableau de bord</li>
+        </ol>
+    </nav>
+
     <!-- Welcome Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -11,25 +22,7 @@
             </h1>
             <p class="text-muted">Bienvenue, {{ Auth::user()->name }} !</p>
         </div>
-        <div class="dropdown">
-            <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
-                <img src="{{ Auth::user()->avatar_url }}" alt="avatar" width="32" class="rounded-circle me-2">
-                <span>{{ Auth::user()->name }}</span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="{{ route('sponsor.profile') }}"><i class="fas fa-user me-2"></i>Profil sponsor</a></li>
-                <li><a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="fas fa-cog me-2"></i>Paramètres</a></li>
-                <li>
-                    <hr class="dropdown-divider">
-                </li>
-                <li>
-                    <form method="POST" action="{{ route('logout') }}" class="m-0 p-0">
-                        @csrf
-                        <button class="dropdown-item text-danger"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</button>
-                    </form>
-                </li>
-            </ul>
-        </div>
+
     </div>
 
     <div class="row mb-4">
@@ -59,8 +52,37 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted">This section will display your sponsoring demands.</p>
-                    {{-- This will be implemented later --}}
+                    @php
+                    $s = Auth::user()->sponsor;
+                    $requests = $s ? \App\Models\SponsorEvent::with('event')->where('sponsor_id', $s->id)->pending()->latest()->take(5)->get() : collect();
+                    @endphp
+                    @if($requests->isEmpty())
+                    <p class="text-muted mb-0">Aucune demande récente.</p>
+                    @else
+                    <div class="list-group mb-3">
+                        @foreach($requests as $req)
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold">{{ $req->event?->title ?? 'Événement' }}</div>
+                                <small class="text-muted">{{ optional($req->event?->date)->format('d/m/Y H:i') }}</small>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <form method="POST" action="{{ route('sponsor.requests.accept', $req) }}">
+                                    @csrf
+                                    <button class="btn btn-sm btn-success"><i class="fas fa-check"></i></button>
+                                </form>
+                                <form method="POST" action="{{ route('sponsor.requests.decline', $req) }}" onsubmit="return confirm('Refuser cette demande ?');">
+                                    @csrf
+                                    <button class="btn btn-sm btn-outline-danger"><i class="fas fa-times"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    <div class="text-end">
+                        <a href="{{ route('sponsor.requests.index') }}" class="btn btn-sm btn-outline-primary">Voir toutes les demandes</a>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -75,20 +97,65 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <p>Choose an event to support:</p>
-                    <div class="list-group">
-                        @forelse($events as $event)
-                        <a href="{{ route('donations.create', $event) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">{{ $event->title }}</h6>
-                                <small class="text-muted">{{ $event->date->format('d/m/Y') }} - {{ $event->location }}</small>
+                    @php
+                    $s = Auth::user()->sponsor;
+                    $mySponsoredIds = $s ? \App\Models\SponsorEvent::where('sponsor_id', $s->id)
+                    ->whereIn('status', ['active','pending'])
+                    ->pluck('event_id') : collect();
+                    $mySponsoredEvents = $mySponsoredIds && $mySponsoredIds->count()
+                    ? \App\Models\Event::whereIn('id', $mySponsoredIds)->where('status','published')->orderBy('date','desc')->take(5)->get()
+                    : collect();
+                    $otherEvents = \App\Models\Event::where('status','published')
+                    ->when($mySponsoredIds && $mySponsoredIds->count(), function($q) use ($mySponsoredIds){ $q->whereNotIn('id', $mySponsoredIds); })
+                    ->orderBy('date','desc')->take(5)->get();
+                    @endphp
+
+                    <!-- Events I already sponsor -->
+                    <h6 class="text-success fw-semibold mb-2"><i class="fas fa-handshake me-1"></i> Événements que je sponsorise</h6>
+                    @if($mySponsoredEvents->isEmpty())
+                    <p class="text-muted">Aucun sponsoring en cours.</p>
+                    @else
+                    <div class="list-group mb-3">
+                        @foreach($mySponsoredEvents as $event)
+                        @php
+                        $collected = \App\Models\Donation::where('event_id', $event->id)->where('status','confirmed')->sum('amount');
+                        @endphp
+                        <a href="{{ route('donations.create', $event) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">{{ $event->title }}</h6>
+                                <span class="badge bg-success">Sponsorisé</span>
                             </div>
-                            <i class="fas fa-chevron-right text-muted"></i>
+                            <div class="small text-muted mt-1">
+                                <span><i class="far fa-calendar me-1"></i>{{ $event->date->format('d/m/Y') }}</span>
+                                <span class="ms-2"><i class="fas fa-map-marker-alt me-1"></i>{{ $event->location?->name ?? 'Lieu' }}</span>
+                                <span class="ms-3"><i class="fas fa-donate me-1 text-success"></i>Collecté: {{ number_format($collected, 2, ',', ' ') }} €</span>
+                            </div>
                         </a>
-                        @empty
-                        <p class="text-center text-muted">No events available for donation at the moment.</p>
-                        @endforelse
+                        @endforeach
                     </div>
+                    @endif
+
+                    <!-- Other events I can support -->
+                    <h6 class="fw-semibold mb-2"><i class="fas fa-calendar-alt me-1 text-muted"></i> Autres événements à soutenir</h6>
+                    @if($otherEvents->isEmpty())
+                    <p class="text-muted mb-0">Aucun autre événement disponible pour le moment.</p>
+                    @else
+                    <div class="list-group">
+                        @foreach($otherEvents as $event)
+                        @php
+                        $collected = \App\Models\Donation::where('event_id', $event->id)->where('status','confirmed')->sum('amount');
+                        @endphp
+                        <a href="{{ route('donations.create', $event) }}" class="list-group-item list-group-item-action">
+                            <h6 class="mb-0">{{ $event->title }}</h6>
+                            <div class="small text-muted mt-1">
+                                <span><i class="far fa-calendar me-1"></i>{{ $event->date->format('d/m/Y') }}</span>
+                                <span class="ms-2"><i class="fas fa-map-marker-alt me-1"></i>{{ $event->location?->name ?? 'Lieu' }}</span>
+                                <span class="ms-3"><i class="fas fa-donate me-1 text-success"></i>Collecté: {{ number_format($collected, 2, ',', ' ') }} €</span>
+                            </div>
+                        </a>
+                        @endforeach
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
