@@ -125,6 +125,9 @@ pipeline {
                                     unzip -q sonar-scanner-cli-4.6.2.2472-linux.zip
                                 fi
                                 
+                                # Remove any existing sonar-scanner from PATH to ensure we use the downloaded version
+                                export PATH="./sonar-scanner-4.6.2.2472-linux/bin:$PATH"
+                                
                                 # Use the downloaded SonarScanner
                                 ./sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner \
                                     -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
