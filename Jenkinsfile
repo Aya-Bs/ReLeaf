@@ -54,8 +54,8 @@ pipeline {
                         echo "DB_HOST=127.0.0.1" >> .env
                         echo "DB_PORT=3306" >> .env
                         echo "DB_DATABASE=releaf_testing" >> .env
-                        echo "DB_USERNAME=root" >> .env
-                        echo "DB_PASSWORD=" >> .env
+                        echo "DB_USERNAME=jenkins" >> .env
+                        echo "DB_PASSWORD=jenkins" >> .env
                         echo "" >> .env
                         echo "CACHE_DRIVER=file" >> .env
                         echo "SESSION_DRIVER=file" >> .env
@@ -71,9 +71,9 @@ pipeline {
                     
                     # Setup MySQL test database
                     echo "Setting up MySQL test database..."
-                    mysql -u root -e "CREATE DATABASE IF NOT EXISTS releaf_testing;" || echo "MySQL not available, tests will use existing setup"
-                    mysql -u root -e "GRANT ALL PRIVILEGES ON releaf_testing.* TO 'root'@'localhost';" || echo "MySQL privileges setup skipped"
-                    mysql -u root -e "FLUSH PRIVILEGES;" || echo "MySQL privileges flush skipped"
+                    mysql -u jenkins -pjenkins -e "CREATE DATABASE IF NOT EXISTS releaf_testing;" || echo "MySQL not available, tests will use existing setup"
+                    mysql -u jenkins -pjenkins -e "GRANT ALL PRIVILEGES ON releaf_testing.* TO 'jenkins'@'localhost';" || echo "MySQL privileges setup skipped"
+                    mysql -u jenkins -pjenkins -e "FLUSH PRIVILEGES;" || echo "MySQL privileges flush skipped"
                     
                     echo "Environment setup completed"
                 """
@@ -188,10 +188,15 @@ RUN apk add --no-cache \\
     zip \\
     unzip \\
     nodejs \\
-    npm
+    npm \\
+    oniguruma-dev \\
+    freetype-dev \\
+    libjpeg-turbo-dev \\
+    libwebp-dev
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \\
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
