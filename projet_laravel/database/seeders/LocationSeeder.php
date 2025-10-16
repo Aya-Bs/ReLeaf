@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Location;
+use Illuminate\Database\Seeder;
 
 class LocationSeeder extends Seeder
 {
@@ -29,7 +29,7 @@ class LocationSeeder extends Seeder
                 'capacity' => 150,
                 'description' => 'Plage publique idéale pour les campagnes de nettoyage et les activités de sensibilisation marine. Équipements : Parking, Douches, Restaurants à proximité.',
                 'images' => ['plage-gammarth.jpg'],
-            ]
+            ],
         ];
 
         foreach ($locations as $locationData) {

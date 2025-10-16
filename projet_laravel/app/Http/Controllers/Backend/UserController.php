@@ -22,11 +22,11 @@ class UserController extends Controller
             $search = $request->get('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhereHas('profile', function ($profile) use ($search) {
-                      $profile->where('first_name', 'like', "%{$search}%")
-                             ->orWhere('last_name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhereHas('profile', function ($profile) use ($search) {
+                        $profile->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -48,6 +48,7 @@ class UserController extends Controller
     public function show(User $user): View
     {
         $user->load('profile');
+
         return view('backend.users.show', compact('user'));
     }
 
@@ -69,7 +70,7 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
             'is_eco_ambassador' => 'boolean',
         ]);
 
@@ -77,7 +78,7 @@ class UserController extends Controller
 
         if ($user->profile) {
             $user->profile->update([
-                'is_eco_ambassador' => $request->boolean('is_eco_ambassador')
+                'is_eco_ambassador' => $request->boolean('is_eco_ambassador'),
             ]);
         }
 
@@ -104,7 +105,7 @@ class UserController extends Controller
         $user->createProfileIfNotExists();
 
         $user->profile->update([
-            'is_eco_ambassador' => !$user->profile->is_eco_ambassador
+            'is_eco_ambassador' => ! $user->profile->is_eco_ambassador,
         ]);
 
         $status = $user->profile->is_eco_ambassador ? 'activé' : 'désactivé';

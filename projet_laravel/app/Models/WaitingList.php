@@ -20,7 +20,7 @@ class WaitingList extends Model
         'joined_at',
         'promoted_at',
         'promoted_by',
-        'notes'
+        'notes',
     ];
 
     protected $casts = [
@@ -88,21 +88,21 @@ class WaitingList extends Model
     public static function addToWaitingList(int $userId, int $eventId): self
     {
         $user = User::findOrFail($userId);
-        
+
         // Vérifier si l'utilisateur n'est pas déjà dans la liste d'attente
         $existing = self::where('user_id', $userId)
-                       ->where('event_id', $eventId)
-                       ->where('status', 'waiting')
-                       ->first();
-        
+            ->where('event_id', $eventId)
+            ->where('status', 'waiting')
+            ->first();
+
         if ($existing) {
             throw new \Exception('Vous êtes déjà dans la liste d\'attente pour cet événement.');
         }
 
         // Calculer la prochaine position
         $nextPosition = self::where('event_id', $eventId)
-                           ->where('status', 'waiting')
-                           ->max('position') + 1;
+            ->where('status', 'waiting')
+            ->max('position') + 1;
 
         return self::create([
             'user_id' => $userId,
@@ -121,11 +121,11 @@ class WaitingList extends Model
     public static function promoteFirst(int $eventId): ?self
     {
         $firstWaiting = self::where('event_id', $eventId)
-                           ->where('status', 'waiting')
-                           ->orderBy('position', 'asc')
-                           ->first();
+            ->where('status', 'waiting')
+            ->orderBy('position', 'asc')
+            ->first();
 
-        if (!$firstWaiting) {
+        if (! $firstWaiting) {
             return null;
         }
 
@@ -150,10 +150,10 @@ class WaitingList extends Model
     public static function getWaitingListForEvent(int $eventId): \Illuminate\Database\Eloquent\Collection
     {
         return self::where('event_id', $eventId)
-                   ->where('status', 'waiting')
-                   ->orderBy('position', 'asc')
-                   ->with('user')
-                   ->get();
+            ->where('status', 'waiting')
+            ->orderBy('position', 'asc')
+            ->with('user')
+            ->get();
     }
 
     /**
@@ -162,9 +162,9 @@ class WaitingList extends Model
     public static function getUserPosition(int $userId, int $eventId): ?int
     {
         $waitingList = self::where('user_id', $userId)
-                           ->where('event_id', $eventId)
-                           ->where('status', 'waiting')
-                           ->first();
+            ->where('event_id', $eventId)
+            ->where('status', 'waiting')
+            ->first();
 
         return $waitingList ? $waitingList->position : null;
     }
@@ -175,11 +175,11 @@ class WaitingList extends Model
     public static function removeFromWaitingList(int $userId, int $eventId): bool
     {
         $waitingList = self::where('user_id', $userId)
-                           ->where('event_id', $eventId)
-                           ->where('status', 'waiting')
-                           ->first();
+            ->where('event_id', $eventId)
+            ->where('status', 'waiting')
+            ->first();
 
-        if (!$waitingList) {
+        if (! $waitingList) {
             return false;
         }
 

@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
 use Illuminate\Database\Eloquent\Model;
 
 class Location extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'name',
         'address',
@@ -20,7 +20,7 @@ class Location extends Model
         'images',
         'reserved',
         'in_repair',
-        'price', 
+        'price',
     ];
 
     protected $casts = [

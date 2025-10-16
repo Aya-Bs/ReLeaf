@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Assignment;
-use App\Models\Volunteer;
-use App\Models\Event;
 use App\Models\Campaign;
+use App\Models\Event;
+use App\Models\Volunteer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -87,13 +87,13 @@ class AssignmentController extends Controller
 
         // Check if volunteer is available
         $volunteer = Volunteer::findOrFail($validated['volunteer_id']);
-        
-        if (!$volunteer->isAvailableFor($validated['start_date'], $validated['end_date'])) {
+
+        if (! $volunteer->isAvailableFor($validated['start_date'], $validated['end_date'])) {
             return redirect()->back()
                 ->with('error', 'Le volontaire n\'est pas disponible pour cette période.');
         }
 
-        if (!$volunteer->canTakeAssignment($validated['hours_committed'])) {
+        if (! $volunteer->canTakeAssignment($validated['hours_committed'])) {
             return redirect()->back()
                 ->with('error', 'Le volontaire a atteint sa limite d\'heures hebdomadaires.');
         }
@@ -122,7 +122,7 @@ class AssignmentController extends Controller
      */
     public function edit(Assignment $assignment)
     {
-        if (!$assignment->canBeEdited()) {
+        if (! $assignment->canBeEdited()) {
             return redirect()->route('assignments.show', $assignment)
                 ->with('error', 'Cette mission ne peut pas être modifiée.');
         }
@@ -137,7 +137,7 @@ class AssignmentController extends Controller
      */
     public function update(Request $request, Assignment $assignment)
     {
-        if (!$assignment->canBeEdited()) {
+        if (! $assignment->canBeEdited()) {
             return redirect()->route('assignments.show', $assignment)
                 ->with('error', 'Cette mission ne peut pas être modifiée.');
         }
@@ -162,7 +162,7 @@ class AssignmentController extends Controller
      */
     public function destroy(Assignment $assignment)
     {
-        if (!$assignment->canBeCancelled()) {
+        if (! $assignment->canBeCancelled()) {
             return redirect()->route('assignments.show', $assignment)
                 ->with('error', 'Cette mission ne peut pas être supprimée.');
         }
@@ -214,7 +214,7 @@ class AssignmentController extends Controller
      */
     public function complete(Request $request, Assignment $assignment)
     {
-        if (!$assignment->canBeCompleted()) {
+        if (! $assignment->canBeCompleted()) {
             return redirect()->back()
                 ->with('error', 'Cette mission ne peut pas être terminée.');
         }
@@ -240,7 +240,7 @@ class AssignmentController extends Controller
      */
     public function cancel(Request $request, Assignment $assignment)
     {
-        if (!$assignment->canBeCancelled()) {
+        if (! $assignment->canBeCancelled()) {
             return redirect()->back()
                 ->with('error', 'Cette mission ne peut pas être annulée.');
         }
@@ -295,4 +295,3 @@ class AssignmentController extends Controller
         return view('assignments.for-assignable', compact('assignments', 'assignable'));
     }
 }
-

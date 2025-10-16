@@ -22,7 +22,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true); // Session active
             $table->timestamp('last_activity')->nullable(); // Dernière activité
             $table->timestamps();
-            
+
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
             $table->index(['session_id', 'is_active']);
         });

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Sponsor;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class SponsorSeeder extends Seeder
 {
@@ -15,6 +15,7 @@ class SponsorSeeder extends Seeder
 
         if ($sponsorUsers->count() < 2) {
             echo "⚠️  Pas assez d'utilisateurs sponsor pour créer les sponsors.\n";
+
             return;
         }
 
@@ -46,7 +47,7 @@ class SponsorSeeder extends Seeder
                 'sponsorship_type' => 'materiel',
                 'additional_info' => 'ONG active dans la sensibilisation environnementale et le développement durable.',
                 'status' => 'approved',
-            ]
+            ],
         ];
 
         foreach ($sponsors as $sponsorData) {

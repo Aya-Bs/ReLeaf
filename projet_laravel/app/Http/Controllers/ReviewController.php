@@ -1,8 +1,9 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Models\Review;
 use App\Models\Blog;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,6 +18,7 @@ class ReviewController extends Controller
             abort(403);
         }
         $reviews = $blog->reviews()->latest()->get();
+
         return view('reviews.index', compact('blog', 'reviews'));
     }
 
@@ -24,6 +26,7 @@ class ReviewController extends Controller
     public function show($id)
     {
         $review = Review::findOrFail($id);
+
         return view('reviews.show', compact('review'));
     }
 
@@ -31,6 +34,7 @@ class ReviewController extends Controller
     public function create($blogId)
     {
         $blog = Blog::findOrFail($blogId);
+
         return view('backend.reviews.create', compact('blog'));
     }
 
@@ -51,6 +55,7 @@ class ReviewController extends Controller
             'blog_id' => $blog->id,
         ]);
         $review->save();
+
         // Rediriger vers la page du blog après ajout
         return redirect()->route('auteur.blogs.show', $blog->id)->with('success', 'Commentaire ajouté !');
     }
@@ -63,6 +68,7 @@ class ReviewController extends Controller
         if (Auth::id() !== $review->user_id) {
             abort(403);
         }
+
         return view('backend.reviews.edit', compact('review'));
     }
 
@@ -81,6 +87,7 @@ class ReviewController extends Controller
             'rating' => $request->rating,
             'comment' => $request->comment,
         ]);
+
         return redirect()->route('auteur.blogs.show', $review->blog_id)->with('success', 'Commentaire modifié !');
     }
 
@@ -93,6 +100,7 @@ class ReviewController extends Controller
             abort(403);
         }
         $review->delete();
+
         return back()->with('success', 'Commentaire supprimé !');
     }
 }

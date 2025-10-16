@@ -51,7 +51,7 @@ class Profile extends Model
      */
     public function getFullNameAttribute(): string
     {
-        return trim($this->first_name . ' ' . $this->last_name);
+        return trim($this->first_name.' '.$this->last_name);
     }
 
     /**
@@ -60,7 +60,7 @@ class Profile extends Model
     public function getAvatarUrlAttribute(): string
     {
         return $this->avatar
-            ? asset('storage/avatars/' . $this->avatar)
+            ? asset('storage/avatars/'.$this->avatar)
             : asset('images/default-avatar.png');
     }
 }

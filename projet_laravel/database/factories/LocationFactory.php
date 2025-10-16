@@ -12,7 +12,7 @@ class LocationFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->company . ' Park',
+            'name' => $this->faker->company.' Park',
             'address' => $this->faker->streetAddress,
             'city' => $this->faker->city,
             'capacity' => $this->faker->numberBetween(10, 200),
@@ -22,7 +22,7 @@ class LocationFactory extends Factory
             'images' => [],
             'reserved' => false,
             'in_repair' => false,
-            'price' => $this->faker->randomFloat(2, 50, 500), 
+            'price' => $this->faker->randomFloat(2, 50, 500),
         ];
     }
 }

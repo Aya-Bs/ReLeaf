@@ -16,11 +16,11 @@ class CampaignDeletionRequest extends Model
         'status',
         'processed_by',
         'admin_notes',
-        'processed_at'
+        'processed_at',
     ];
 
     protected $casts = [
-        'processed_at' => 'datetime'
+        'processed_at' => 'datetime',
     ];
 
     // Relations

@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Volunteer extends Model
 {
@@ -24,7 +23,7 @@ class Volunteer extends Model
         'status',
         'bio',
         'motivation',
-        'previous_volunteer_experience'
+        'previous_volunteer_experience',
     ];
 
     protected $casts = [
@@ -74,12 +73,12 @@ class Volunteer extends Model
     public function scopeAvailable($query, $startDate, $endDate)
     {
         return $query->where('status', 'active')
-                    ->where(function($q) use ($startDate, $endDate) {
-                        $q->whereJsonContains('availability', [
-                            'start_date' => $startDate,
-                            'end_date' => $endDate
-                        ]);
-                    });
+            ->where(function ($q) use ($startDate, $endDate) {
+                $q->whereJsonContains('availability', [
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                ]);
+            });
     }
 
     // Accessors
@@ -118,22 +117,23 @@ class Volunteer extends Model
         // Vérifier les conflits avec les assignments existants
         $conflictingAssignments = $this->assignments()
             ->whereIn('status', ['approved', 'pending'])
-            ->where(function($query) use ($startDate, $endDate) {
+            ->where(function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('start_date', [$startDate, $endDate])
-                      ->orWhereBetween('end_date', [$startDate, $endDate])
-                      ->orWhere(function($q) use ($startDate, $endDate) {
-                          $q->where('start_date', '<=', $startDate)
+                    ->orWhereBetween('end_date', [$startDate, $endDate])
+                    ->orWhere(function ($q) use ($startDate, $endDate) {
+                        $q->where('start_date', '<=', $startDate)
                             ->where('end_date', '>=', $endDate);
-                      });
+                    });
             })
             ->exists();
 
-        return !$conflictingAssignments;
+        return ! $conflictingAssignments;
     }
 
     public function canTakeAssignment($hoursRequired): bool
     {
         $currentWeeklyHours = $this->getCurrentWeeklyHours();
+
         return ($currentWeeklyHours + $hoursRequired) <= $this->max_hours_per_week;
     }
 
@@ -175,7 +175,7 @@ class Volunteer extends Model
     public function addSkill($skill): void
     {
         $skills = $this->skills ?? [];
-        if (!in_array($skill, $skills)) {
+        if (! in_array($skill, $skills)) {
             $skills[] = $skill;
             $this->update(['skills' => $skills]);
         }
@@ -184,9 +184,7 @@ class Volunteer extends Model
     public function removeSkill($skill): void
     {
         $skills = $this->skills ?? [];
-        $skills = array_filter($skills, fn($s) => $s !== $skill);
+        $skills = array_filter($skills, fn ($s) => $s !== $skill);
         $this->update(['skills' => array_values($skills)]);
     }
 }
-
-

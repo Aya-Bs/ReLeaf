@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Sponsor;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
 use App\Models\Donation;
 use App\Models\Sponsor;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
@@ -24,10 +24,10 @@ class ProfileController extends Controller
         }
 
         // PATH 1: Auto-create a minimal sponsor record if user role is sponsor but relation missing
-        if ($user && $user->role === 'sponsor' && !$user->sponsor) {
+        if ($user && $user->role === 'sponsor' && ! $user->sponsor) {
             $placeholderData = [
                 'user_id' => $user->id,
-                'company_name' => $user->name ?: ('Sponsor ' . $user->id),
+                'company_name' => $user->name ?: ('Sponsor '.$user->id),
                 'contact_email' => $user->email,
                 'motivation' => 'Profil généré automatiquement. Merci de compléter les informations.',
                 'sponsorship_type' => 'argent',

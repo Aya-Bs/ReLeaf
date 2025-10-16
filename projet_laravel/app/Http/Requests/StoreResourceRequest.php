@@ -24,7 +24,7 @@ class StoreResourceRequest extends FormRequest
             'priority' => 'required|in:low,medium,high,urgent',
             'notes' => 'nullable|string',
             'image_url' => 'nullable|url',
-            'campaign_id' => 'required|exists:campaigns,id'
+            'campaign_id' => 'required|exists:campaigns,id',
         ];
     }
 }

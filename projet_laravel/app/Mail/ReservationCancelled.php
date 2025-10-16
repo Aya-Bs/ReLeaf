@@ -21,13 +21,13 @@ class ReservationCancelled extends Mailable
     public function build()
     {
         return $this->subject('Annulation de votre réservation - EcoEvents')
-                    ->view('emails.reservation-cancelled')
-                    ->with([
-                        'userName' => $this->reservation->user_name,
-                        'eventTitle' => $this->reservation->event->title,
-                        'eventDate' => $this->reservation->event->date,
-                        'seatNumber' => $this->reservation->seat_number,
-                        'reason' => 'Décision administrative'
-                    ]);
+            ->view('emails.reservation-cancelled')
+            ->with([
+                'userName' => $this->reservation->user_name,
+                'eventTitle' => $this->reservation->event->title,
+                'eventDate' => $this->reservation->event->date,
+                'seatNumber' => $this->reservation->seat_number,
+                'reason' => 'Décision administrative',
+            ]);
     }
 }

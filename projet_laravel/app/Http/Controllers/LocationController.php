@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Location;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class LocationController extends Controller
@@ -17,8 +17,8 @@ class LocationController extends Controller
 
         // Apply search filter
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%')
+                ->orWhere('description', 'like', '%'.$request->search.'%');
         }
 
         // Apply status filter
@@ -78,10 +78,10 @@ class LocationController extends Controller
 
         ]);
 
-    $data['in_repair'] = $request->has('in_repair');
-    $data['latitude'] = $request->input('latitude');
-    $data['longitude'] = $request->input('longitude');
-    $data['price'] = $request->input('price'); 
+        $data['in_repair'] = $request->has('in_repair');
+        $data['latitude'] = $request->input('latitude');
+        $data['longitude'] = $request->input('longitude');
+        $data['price'] = $request->input('price');
 
         // Handle images upload
         $images = [];
@@ -93,6 +93,7 @@ class LocationController extends Controller
         $data['images'] = $images;
 
         Location::create($data);
+
         return redirect()->route('locations.index')->with('success', 'Lieu ajouté avec succès!');
     }
 
@@ -112,7 +113,7 @@ class LocationController extends Controller
                     'lat' => $location->latitude,
                     'lon' => $location->longitude,
                     'appid' => $apiKey,
-                    'units' => 'metric'
+                    'units' => 'metric',
                 ]);
 
                 if ($response->successful()) {
@@ -124,6 +125,7 @@ class LocationController extends Controller
                 }
             }
         }
+
         return view('frontend.location.show', compact('location', 'events', 'temperature', 'weather_icon'));
     }
 
@@ -133,13 +135,14 @@ class LocationController extends Controller
     public function edit($id)
     {
         $location = Location::findOrFail($id);
+
         return view('frontend.location.edit', compact('location'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-public function update(Request $request, Location $location)
+    public function update(Request $request, Location $location)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -155,19 +158,19 @@ public function update(Request $request, Location $location)
         ]);
 
         // Handle image deletion
-        if ($request->has('images_to_delete') && !empty($request->images_to_delete)) {
+        if ($request->has('images_to_delete') && ! empty($request->images_to_delete)) {
             $imagesToDelete = explode(',', $request->images_to_delete);
             $currentImages = $location->images ?? [];
-            
+
             // Remove deleted images from storage and array
             foreach ($imagesToDelete as $imageToDelete) {
                 if (($key = array_search($imageToDelete, $currentImages)) !== false) {
                     // Delete from storage
-                    Storage::delete('public/' . $imageToDelete);
+                    Storage::delete('public/'.$imageToDelete);
                     unset($currentImages[$key]);
                 }
             }
-            
+
             // Reindex array and update
             $validated['images'] = array_values($currentImages);
         }
@@ -175,12 +178,12 @@ public function update(Request $request, Location $location)
         // Handle new image uploads
         if ($request->hasFile('images')) {
             $currentImages = $validated['images'] ?? ($location->images ?? []);
-            
+
             foreach ($request->file('images') as $image) {
                 $path = $image->store('locations', 'public');
                 $currentImages[] = $path;
             }
-            
+
             $validated['images'] = $currentImages;
         }
 
@@ -197,6 +200,7 @@ public function update(Request $request, Location $location)
     {
         $location = Location::findOrFail($id);
         $location->delete();
+
         return redirect()->route('locations.index')->with('success', 'Lieu supprimé avec succès!');
     }
 }

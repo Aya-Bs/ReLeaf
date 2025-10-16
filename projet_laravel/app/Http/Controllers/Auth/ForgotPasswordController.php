@@ -56,7 +56,7 @@ class ForgotPasswordController extends Controller
         // Verify token exists and is valid
         $resetToken = PasswordResetToken::findValidToken($email, $token);
 
-        if (!$resetToken) {
+        if (! $resetToken) {
             abort(403, 'Code de vérification invalide ou expiré.');
         }
 
@@ -86,7 +86,7 @@ class ForgotPasswordController extends Controller
         // Verify token exists and is valid
         $resetToken = PasswordResetToken::findValidToken($request->email, $request->token);
 
-        if (!$resetToken) {
+        if (! $resetToken) {
             return redirect()->back()->withErrors(['token' => 'Code de vérification invalide ou expiré.']);
         }
 
@@ -119,15 +119,15 @@ class ForgotPasswordController extends Controller
 
         // Envoyer l'email avec le code de réinitialisation
         try {
-            Mail::send('emails.password-reset', $data, function($message) use ($email) {
+            Mail::send('emails.password-reset', $data, function ($message) use ($email) {
                 $message->to($email)
-                        ->subject('Code de vérification - Réinitialisation de mot de passe');
+                    ->subject('Code de vérification - Réinitialisation de mot de passe');
             });
 
             // Log pour le développement
-            \Log::info('Code de réinitialisation envoyé à ' . $email . ' : ' . $displayCode);
+            \Log::info('Code de réinitialisation envoyé à '.$email.' : '.$displayCode);
         } catch (\Exception $e) {
-            \Log::error('Erreur lors de l\'envoi du code de réinitialisation : ' . $e->getMessage());
+            \Log::error('Erreur lors de l\'envoi du code de réinitialisation : '.$e->getMessage());
             throw new \Exception('Impossible d\'envoyer le code de réinitialisation. Veuillez réessayer plus tard.');
         }
     }

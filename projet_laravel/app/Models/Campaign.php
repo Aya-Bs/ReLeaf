@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-use Illuminate\Support\Facades\Auth;
 class Campaign extends Model
 {
     use HasFactory;
@@ -25,7 +24,7 @@ class Campaign extends Model
         'visibility',
         'tags',
         'status',
-        'organizer_id'
+        'organizer_id',
     ];
 
     protected $casts = [
@@ -34,7 +33,7 @@ class Campaign extends Model
         'goal' => 'decimal:2',
         'funds_raised' => 'decimal:2',
         'visibility' => 'boolean',
-        'tags' => 'array'
+        'tags' => 'array',
     ];
 
     // Relation avec l'organisateur (User)
@@ -64,7 +63,10 @@ class Campaign extends Model
     // Accessor pour le pourcentage de progression financière
     public function getFundsProgressPercentageAttribute()
     {
-        if ($this->goal == 0 || $this->goal === null) return 0;
+        if ($this->goal == 0 || $this->goal === null) {
+            return 0;
+        }
+
         return round(($this->funds_raised / $this->goal) * 100, 2);
     }
 
@@ -73,9 +75,11 @@ class Campaign extends Model
     {
         $now = now();
         $end = $this->end_date;
-        
-        if ($end->lt($now)) return 0;
-        
+
+        if ($end->lt($now)) {
+            return 0;
+        }
+
         return $now->diffInDays($end);
     }
 
@@ -97,7 +101,8 @@ class Campaign extends Model
         $this->participants_count = $this->events->sum('max_participants');
         $this->save();
     }
-      /**
+
+    /**
      * Vérifier si la campagne peut être modifiée
      * ✅ AJOUTÉ : Même pattern que Event
      */
@@ -105,7 +110,7 @@ class Campaign extends Model
     {
         // Exemple de logique : les campagnes "completed" ou "cancelled" ne peuvent pas être modifiées
         // Ajustez cette logique selon vos besoins
-        return !in_array($this->status, ['completed', 'cancelled']);
+        return ! in_array($this->status, ['completed', 'cancelled']);
     }
 
     /**

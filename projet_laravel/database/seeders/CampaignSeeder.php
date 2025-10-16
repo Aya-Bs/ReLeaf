@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Campaign;
 use App\Models\Resource;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class CampaignSeeder extends Seeder
 {
@@ -26,7 +26,7 @@ class CampaignSeeder extends Seeder
             'visibility' => true,
             'tags' => ['arbres', 'ville', 'co2', 'verdure'],
             'status' => 'active',
-            'organizer_id' => 1
+            'organizer_id' => 1,
         ]);
 
         Resource::create([
@@ -41,7 +41,7 @@ class CampaignSeeder extends Seeder
             'category' => 'materiel',
             'priority' => 'high',
             'notes' => 'Essences adaptées au milieu urbain',
-            'campaign_id' => $campaign1->id
+            'campaign_id' => $campaign1->id,
         ]);
 
         // Campagne 2: Nettoyage
@@ -59,7 +59,7 @@ class CampaignSeeder extends Seeder
             'visibility' => true,
             'tags' => ['plage', 'déchets', 'méditerranée', 'sensation'],
             'status' => 'active',
-            'organizer_id' => 1
+            'organizer_id' => 1,
         ]);
 
         Resource::create([
@@ -73,7 +73,7 @@ class CampaignSeeder extends Seeder
             'resource_type' => 'equipment',
             'category' => 'materiel',
             'priority' => 'medium',
-            'campaign_id' => $campaign2->id
+            'campaign_id' => $campaign2->id,
         ]);
 
         Resource::create([
@@ -87,7 +87,7 @@ class CampaignSeeder extends Seeder
             'resource_type' => 'equipment',
             'category' => 'materiel',
             'priority' => 'urgent',
-            'campaign_id' => $campaign2->id
+            'campaign_id' => $campaign2->id,
         ]);
     }
 }

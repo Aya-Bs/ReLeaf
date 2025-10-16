@@ -24,7 +24,7 @@ class StoreCampaignRequest extends FormRequest
             'image_url' => 'nullable|url',
             'visibility' => 'boolean',
             'tags' => 'nullable|string|max:500',
-            'status' => 'required|in:active,inactive,completed,cancelled'
+            'status' => 'required|in:active,inactive,completed,cancelled',
         ];
     }
 

@@ -6,11 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UserProfileRequest;
 use App\Models\Profile;
 use App\Models\Sponsor;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -24,14 +23,14 @@ class ProfileController extends Controller
         $user = Auth::user();
         $user->createProfileIfNotExists();
         // Ensure sponsor placeholder exists if user has sponsor role but no relation yet
-        if ($user->role === 'sponsor' && !$user->sponsor) {
+        if ($user->role === 'sponsor' && ! $user->sponsor) {
             $placeholder = [
                 'user_id' => $user->id,
-                'company_name' => $user->name ?: ('Sponsor ' . $user->id),
+                'company_name' => $user->name ?: ('Sponsor '.$user->id),
                 'contact_email' => $user->email,
                 'motivation' => 'Profil sponsor à compléter.',
                 'sponsorship_type' => 'argent',
-                'status' => 'pending'
+                'status' => 'pending',
             ];
             try {
                 $s = Sponsor::create($placeholder);
@@ -46,9 +45,9 @@ class ProfileController extends Controller
         // Load user certifications (if relation exists) with related reservation.event & issuer
         $certifications = method_exists($user, 'certifications')
             ? $user->certifications()
-            ->with(['reservation.event', 'issuedBy'])
-            ->orderBy('date_awarded', 'desc')
-            ->get()
+                ->with(['reservation.event', 'issuedBy'])
+                ->orderBy('date_awarded', 'desc')
+                ->get()
             : collect();
 
         // Basic profile statistics
@@ -86,14 +85,14 @@ class ProfileController extends Controller
         $user->createProfileIfNotExists();
 
         // Guarantee sponsor relation (consistent update path)
-        if ($user->role === 'sponsor' && !$user->sponsor) {
+        if ($user->role === 'sponsor' && ! $user->sponsor) {
             try {
                 $user->sponsor()->create([
-                    'company_name' => $user->name ?: ('Sponsor ' . $user->id),
+                    'company_name' => $user->name ?: ('Sponsor '.$user->id),
                     'contact_email' => $user->email,
                     'motivation' => 'Profil sponsor à compléter.',
                     'sponsorship_type' => 'argent',
-                    'status' => 'pending'
+                    'status' => 'pending',
                 ]);
                 $user->refresh();
                 Log::info('Sponsor placeholder auto-created in update()', ['user_id' => $user->id]);
@@ -108,10 +107,10 @@ class ProfileController extends Controller
         if ($request->hasFile('avatar')) {
             // Delete old avatar if exists
             if ($user->profile->avatar) {
-                Storage::disk('public')->delete('avatars/' . $user->profile->avatar);
+                Storage::disk('public')->delete('avatars/'.$user->profile->avatar);
             }
 
-            $avatarName = time() . '_' . $user->id . '.' . $request->file('avatar')->getClientOriginalExtension();
+            $avatarName = time().'_'.$user->id.'.'.$request->file('avatar')->getClientOriginalExtension();
             $request->file('avatar')->storeAs('avatars', $avatarName, 'public');
             $data['avatar'] = $avatarName;
         }
@@ -129,7 +128,7 @@ class ProfileController extends Controller
                     $payload[$field] = ($val === '') ? null : $val;
                 }
             }
-            if (!empty($payload)) {
+            if (! empty($payload)) {
                 $before = $user->sponsor->only(array_keys($payload));
                 $user->sponsor->fill($payload);
                 if ($user->sponsor->isDirty()) {
@@ -137,7 +136,7 @@ class ProfileController extends Controller
                     Log::info('Sponsor fields updated from profile.update', [
                         'user_id' => $user->id,
                         'changes' => $user->sponsor->getChanges(),
-                        'before' => $before
+                        'before' => $before,
                     ]);
                 } else {
                     Log::info('Sponsor update called but no changes detected', ['user_id' => $user->id]);
@@ -146,6 +145,7 @@ class ProfileController extends Controller
         }
 
         $redirectRoute = $user->role === 'sponsor' ? 'sponsor.profile' : 'profile.show';
+
         return redirect()->route($redirectRoute)
             ->with('success', 'Profil mis à jour avec succès !');
     }
@@ -158,7 +158,7 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         if ($user->profile && $user->profile->avatar) {
-            Storage::disk('public')->delete('avatars/' . $user->profile->avatar);
+            Storage::disk('public')->delete('avatars/'.$user->profile->avatar);
             $user->profile->update(['avatar' => null]);
         }
 

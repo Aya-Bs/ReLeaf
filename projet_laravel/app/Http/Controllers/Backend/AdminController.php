@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\Event;
-use App\Models\Volunteer;
 use App\Models\Assignment;
-use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\Volunteer;
 use Illuminate\View\View;
 
 class AdminController extends Controller
@@ -22,7 +20,7 @@ class AdminController extends Controller
             'total_users' => User::where('role', 'user')->count(),
             'total_admins' => User::where('role', 'admin')->count(),
             'total_events' => 0, // À corriger après migration
-            'eco_ambassadors' => User::whereHas('profile', function($query) {
+            'eco_ambassadors' => User::whereHas('profile', function ($query) {
                 $query->where('is_eco_ambassador', true);
             })->count(),
             'total_volunteers' => Volunteer::count(),
@@ -44,12 +42,12 @@ class AdminController extends Controller
         $chartData = [
             'users_by_month' => [
                 'labels' => ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
-                'data' => [12, 19, 15, 25, 22, 30]
+                'data' => [12, 19, 15, 25, 22, 30],
             ],
             'events_by_category' => [
                 'labels' => ['Environnement', 'Recyclage', 'Énergie', 'Transport'],
-                'data' => [35, 25, 20, 20]
-            ]
+                'data' => [35, 25, 20, 20],
+            ],
         ];
 
         return view('backend.dashboard', compact('stats', 'chartData'));

@@ -17,11 +17,11 @@ class Certification extends Model
         'points_earned',
         'date_awarded',
         'issued_by',
-        'certificate_code'
+        'certificate_code',
     ];
 
     protected $casts = [
-        'date_awarded' => 'datetime'
+        'date_awarded' => 'datetime',
     ];
 
     /**
@@ -48,7 +48,7 @@ class Certification extends Model
             'points_earned' => self::calculatePoints($reservation->event),
             'date_awarded' => now(),
             'issued_by' => $admin->id,
-            'certificate_code' => self::generateUniqueCode()
+            'certificate_code' => self::generateUniqueCode(),
         ]);
     }
 
@@ -67,9 +67,9 @@ class Certification extends Model
     private static function generateUniqueCode(): string
     {
         do {
-            $code = 'ECO-' . strtoupper(Str::random(8));
+            $code = 'ECO-'.strtoupper(Str::random(8));
         } while (self::where('certificate_code', $code)->exists());
-        
+
         return $code;
     }
 

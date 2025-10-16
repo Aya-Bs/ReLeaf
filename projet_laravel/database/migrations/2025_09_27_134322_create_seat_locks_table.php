@@ -19,7 +19,7 @@ return new class extends Migration
             $table->timestamp('locked_at')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
-            
+
             // Index pour la performance et unicité
             $table->unique(['event_id', 'seat_number']);
             $table->index(['expires_at']);

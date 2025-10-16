@@ -2,10 +2,9 @@
 
 namespace App\Mail;
 
-use App\Models\WaitingList;
 use App\Models\Reservation;
+use App\Models\WaitingList;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -16,6 +15,7 @@ class WaitingListPromoted extends Mailable
     use Queueable, SerializesModels;
 
     public WaitingList $waitingList;
+
     public Reservation $reservation;
 
     /**

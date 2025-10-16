@@ -2,12 +2,12 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Sponsor;
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Sponsor;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 
 class EnsureSponsorProfile
 {
@@ -28,23 +28,24 @@ class EnsureSponsorProfile
             try {
                 $s = Sponsor::create([
                     'user_id' => $user->id,
-                    'company_name' => $user->name ?: ('Sponsor ' . $user->id),
+                    'company_name' => $user->name ?: ('Sponsor '.$user->id),
                     'contact_email' => $user->email,
                     'motivation' => 'Profil sponsor à compléter.',
                     'sponsorship_type' => 'argent',
-                    'status' => 'pending'
+                    'status' => 'pending',
                 ]);
                 Log::info('EnsureSponsorProfile middleware created placeholder sponsor', [
                     'user_id' => $user->id,
-                    'sponsor_id' => $s->id
+                    'sponsor_id' => $s->id,
                 ]);
             } catch (\Throwable $e) {
                 Log::error('EnsureSponsorProfile failed to create sponsor', [
                     'user_id' => $user->id,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
+
         return $next($request);
     }
 }

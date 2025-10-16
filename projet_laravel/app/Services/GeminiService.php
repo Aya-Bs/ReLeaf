@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 class GeminiService
 {
     private ?string $apiKey;
+
     private string $apiUrl;
 
     public function __construct()
@@ -28,14 +29,14 @@ class GeminiService
 
         try {
             $prompt = $this->buildPrompt($userMessage, $language, $context);
-            
-            $response = Http::timeout(30)->post($this->apiUrl . '?key=' . $this->apiKey, [
+
+            $response = Http::timeout(30)->post($this->apiUrl.'?key='.$this->apiKey, [
                 'contents' => [
                     [
                         'parts' => [
-                            ['text' => $prompt]
-                        ]
-                    ]
+                            ['text' => $prompt],
+                        ],
+                    ],
                 ],
                 'generationConfig' => [
                     'temperature' => 0.7,
@@ -46,21 +47,21 @@ class GeminiService
                 'safetySettings' => [
                     [
                         'category' => 'HARM_CATEGORY_HARASSMENT',
-                        'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'
+                        'threshold' => 'BLOCK_MEDIUM_AND_ABOVE',
                     ],
                     [
                         'category' => 'HARM_CATEGORY_HATE_SPEECH',
-                        'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'
+                        'threshold' => 'BLOCK_MEDIUM_AND_ABOVE',
                     ],
                     [
                         'category' => 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-                        'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'
+                        'threshold' => 'BLOCK_MEDIUM_AND_ABOVE',
                     ],
                     [
                         'category' => 'HARM_CATEGORY_DANGEROUS_CONTENT',
-                        'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'
-                    ]
-                ]
+                        'threshold' => 'BLOCK_MEDIUM_AND_ABOVE',
+                    ],
+                ],
             ]);
 
             if ($response->successful()) {
@@ -72,13 +73,14 @@ class GeminiService
 
             Log::warning('Gemini API response error', [
                 'status' => $response->status(),
-                'body' => $response->body()
+                'body' => $response->body(),
             ]);
 
             return $this->getFallbackResponse($userMessage, $language);
 
         } catch (\Exception $e) {
-            Log::error('Gemini API error: ' . $e->getMessage());
+            Log::error('Gemini API error: '.$e->getMessage());
+
             return $this->getFallbackResponse($userMessage, $language);
         }
     }
@@ -91,19 +93,19 @@ class GeminiService
         $languageInstructions = [
             'fr' => 'Réponds en français de manière professionnelle et amicale.',
             'en' => 'Respond in English in a professional and friendly manner.',
-            'ar' => 'أجب باللغة العربية بطريقة مهنية وودودة.'
+            'ar' => 'أجب باللغة العربية بطريقة مهنية وودودة.',
         ];
 
         $contextInfo = '';
-        if (!empty($context)) {
+        if (! empty($context)) {
             $contextInfo = "\n\nContexte de la conversation:\n";
             foreach ($context as $key => $value) {
                 $contextInfo .= "- {$key}: {$value}\n";
             }
         }
 
-        $languageInstruction = isset($languageInstructions[$language]) 
-            ? $languageInstructions[$language] 
+        $languageInstruction = isset($languageInstructions[$language])
+            ? $languageInstructions[$language]
             : $languageInstructions['fr'];
 
         return "Tu es l'assistant IA d'EcoEvents, une plateforme d'événements écologiques. 
@@ -139,7 +141,7 @@ Réponse:";
      */
     public function isConfigured(): bool
     {
-        return !empty($this->apiKey);
+        return ! empty($this->apiKey);
     }
 
     /**
@@ -147,7 +149,7 @@ Réponse:";
      */
     public function getSmartSuggestions(string $language = 'fr', array $context = []): array
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             return $this->getDefaultSuggestions($language);
         }
 
@@ -155,30 +157,31 @@ Réponse:";
             $prompt = "Génère 5 suggestions de questions que pourrait poser un utilisateur d'EcoEvents (plateforme d'événements écologiques) en {$language}. 
             Réponds uniquement avec les suggestions, une par ligne, sans numérotation.";
 
-            $response = Http::timeout(15)->post($this->apiUrl . '?key=' . $this->apiKey, [
+            $response = Http::timeout(15)->post($this->apiUrl.'?key='.$this->apiKey, [
                 'contents' => [
                     [
                         'parts' => [
-                            ['text' => $prompt]
-                        ]
-                    ]
+                            ['text' => $prompt],
+                        ],
+                    ],
                 ],
                 'generationConfig' => [
                     'temperature' => 0.8,
                     'maxOutputTokens' => 200,
-                ]
+                ],
             ]);
 
             if ($response->successful()) {
                 $data = $response->json();
                 if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
                     $suggestions = explode("\n", trim($data['candidates'][0]['content']['parts'][0]['text']));
+
                     return array_filter(array_map('trim', $suggestions));
                 }
             }
 
         } catch (\Exception $e) {
-            Log::error('Gemini suggestions error: ' . $e->getMessage());
+            Log::error('Gemini suggestions error: '.$e->getMessage());
         }
 
         return $this->getDefaultSuggestions($language);
@@ -195,26 +198,26 @@ Réponse:";
                 'Comment réserver un événement ?',
                 'Informations sur les certificats',
                 'Changer la langue en anglais',
-                'Mon profil utilisateur'
+                'Mon profil utilisateur',
             ],
             'en' => [
                 'View available events',
                 'How to book an event?',
                 'Certificate information',
                 'Change language to French',
-                'My user profile'
+                'My user profile',
             ],
             'ar' => [
                 'عرض الأحداث المتاحة',
                 'كيفية حجز حدث؟',
                 'معلومات الشهادات',
                 'تغيير اللغة إلى الفرنسية',
-                'ملفي الشخصي'
-            ]
+                'ملفي الشخصي',
+            ],
         ];
 
-        return isset($suggestions[$language]) 
-            ? $suggestions[$language] 
+        return isset($suggestions[$language])
+            ? $suggestions[$language]
             : $suggestions['fr'];
     }
 }

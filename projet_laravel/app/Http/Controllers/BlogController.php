@@ -19,8 +19,10 @@ class BlogController extends Controller
         } else {
             $blogs = Blog::where('author_id', Auth::id())->latest()->get();
         }
+
         return view('backend.blogs.cards', compact('blogs'));
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -35,6 +37,7 @@ class BlogController extends Controller
             $query->where('title', 'like', "%{$search}%");
         }
         $blogs = $query->get();
+
         return view('backend.blogs.index', compact('blogs'));
     }
 
@@ -43,8 +46,8 @@ class BlogController extends Controller
      */
     public function create()
     {
-    // Affiche le formulaire de création
-    return view('backend.blogs.create');
+        // Affiche le formulaire de création
+        return view('backend.blogs.create');
     }
 
     /**
@@ -69,16 +72,17 @@ class BlogController extends Controller
         ]);
 
         $data = $validated;
-    $data['author_id'] = Auth::id();
+        $data['author_id'] = Auth::id();
         $data['date_posted'] = now();
 
         // Gestion de l'upload d'image
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('blogs', 'public');
-            $data['image_url'] = '/storage/' . $imagePath;
+            $data['image_url'] = '/storage/'.$imagePath;
         }
 
         $blog = Blog::create($data);
+
         return redirect()->route('auteur.blogs.index')->with('success', 'Blog créé avec succès');
     }
 
@@ -96,8 +100,8 @@ class BlogController extends Controller
      */
     public function edit(Blog $blog)
     {
-    // Affiche le formulaire d'édition
-    return view('backend.blogs.edit', compact('blog'));
+        // Affiche le formulaire d'édition
+        return view('backend.blogs.edit', compact('blog'));
     }
 
     /**
@@ -107,6 +111,7 @@ class BlogController extends Controller
     {
         // Met à jour le blog
         $blog->update($request->all());
+
         return redirect()->route('auteur.blogs.index')->with('success', 'Blog mis à jour');
     }
 
@@ -115,9 +120,10 @@ class BlogController extends Controller
      */
     public function destroy(Blog $blog)
     {
-    // Supprime le blog
-    $blog->delete();
-    return redirect()->route('auteur.blogs.index')->with('success', 'Blog supprimé');
+        // Supprime le blog
+        $blog->delete();
+
+        return redirect()->route('auteur.blogs.index')->with('success', 'Blog supprimé');
     }
 
     // NbrBl : retourne le nombre total de blogs

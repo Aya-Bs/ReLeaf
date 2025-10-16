@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Carbon\Carbon;
 
 class Reservation extends Model
 {
@@ -24,14 +23,14 @@ class Reservation extends Model
         'confirmed_by',
         'num_guests',
         'comments',
-        'seat_details'
+        'seat_details',
     ];
 
     protected $casts = [
         'reserved_at' => 'datetime',
         'expires_at' => 'datetime',
         'confirmed_at' => 'datetime',
-        'seat_details' => 'array'
+        'seat_details' => 'array',
     ];
 
     /**
@@ -70,7 +69,6 @@ class Reservation extends Model
         return $query->where('status', 'confirmed');
     }
 
-
     /**
      * Méthodes utiles
      */
@@ -90,10 +88,12 @@ class Reservation extends Model
             $this->update([
                 'status' => 'confirmed',
                 'confirmed_at' => now(),
-                'confirmed_by' => $admin->id
+                'confirmed_by' => $admin->id,
             ]);
+
             return true;
         }
+
         return false;
     }
 
@@ -105,8 +105,7 @@ class Reservation extends Model
         $data['reserved_at'] = now();
         $data['expires_at'] = null; // Pas d'expiration automatique
         $data['status'] = 'pending';
-        
+
         return self::create($data);
     }
-
 }

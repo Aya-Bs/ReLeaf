@@ -46,12 +46,3 @@ class PasswordReset extends Mailable
         );
     }
 }
-
-
-
-
-
-
-
-
-

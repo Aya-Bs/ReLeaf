@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Event;
-use App\Models\Campaign;
 use App\Models\Assignment;
+use App\Models\Campaign;
+use App\Models\Event;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
 
 class VolunteerMissionController extends Controller
 {
@@ -19,10 +19,10 @@ class VolunteerMissionController extends Controller
         try {
             $user = auth()->user();
             $volunteer = $user->isVolunteer() ? $user->volunteer : null;
-            
+
             // Événements à venir (tous les statuts pour le test)
             $eventsQuery = Event::where('date', '>', now());
-                
+
             // Campagnes actives (tous les statuts pour le test)
             $campaignsQuery = Campaign::where('end_date', '>', now());
 
@@ -55,8 +55,8 @@ class VolunteerMissionController extends Controller
             }
 
             return view('volunteers.available-missions', compact(
-                'events', 
-                'campaigns', 
+                'events',
+                'campaigns',
                 'appliedAssignments'
             ));
         } catch (\Exception $e) {
@@ -70,8 +70,8 @@ class VolunteerMissionController extends Controller
     public function applyForMission(Request $request): RedirectResponse
     {
         $user = auth()->user();
-        
-        if (!$user->isVolunteer()) {
+
+        if (! $user->isVolunteer()) {
             return redirect()->back()
                 ->with('error', 'Vous devez être volontaire pour vous inscrire.');
         }
@@ -145,7 +145,7 @@ class VolunteerMissionController extends Controller
 
         $user = auth()->user();
         $hasApplied = false;
-        
+
         if ($user->isVolunteer()) {
             $hasApplied = Assignment::where('volunteer_id', $user->volunteer->id)
                 ->where('assignable_type', $type)

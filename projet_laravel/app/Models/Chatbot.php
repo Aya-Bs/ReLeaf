@@ -40,12 +40,12 @@ class Chatbot extends Model
     public static function getOrCreateSession(): self
     {
         $sessionId = Session::getId();
-        
-        $chatbot = self::where('session_id', $sessionId)
-                      ->where('is_active', true)
-                      ->first();
 
-        if (!$chatbot) {
+        $chatbot = self::where('session_id', $sessionId)
+            ->where('is_active', true)
+            ->first();
+
+        if (! $chatbot) {
             $chatbot = self::create([
                 'session_id' => $sessionId,
                 'user_id' => auth()->id(),
@@ -70,8 +70,8 @@ class Chatbot extends Model
     private static function detectLanguage(): string
     {
         $locale = app()->getLocale();
-        
-        return match($locale) {
+
+        return match ($locale) {
             'en' => 'en',
             'ar' => 'ar',
             default => 'fr'
@@ -84,7 +84,7 @@ class Chatbot extends Model
     public function addMessage(string $role, string $content, array $metadata = []): void
     {
         $history = $this->conversation_history ?? [];
-        
+
         $history[] = [
             'role' => $role, // 'user' ou 'assistant'
             'content' => $content,
@@ -109,6 +109,7 @@ class Chatbot extends Model
     public function getRecentMessages(int $limit = 10): array
     {
         $history = $this->conversation_history ?? [];
+
         return array_slice($history, -$limit);
     }
 
@@ -119,7 +120,7 @@ class Chatbot extends Model
     {
         $currentPreferences = $this->user_preferences ?? [];
         $updatedPreferences = array_merge($currentPreferences, $preferences);
-        
+
         $this->update(['user_preferences' => $updatedPreferences]);
     }
 

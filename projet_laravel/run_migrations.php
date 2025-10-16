@@ -33,13 +33,13 @@ try {
                 echo "  ❌ Table '$table' manquante\n";
             }
         } catch (Exception $e) {
-            echo "  ⚠️  Impossible de vérifier la table '$table': " . $e->getMessage() . "\n";
+            echo "  ⚠️  Impossible de vérifier la table '$table': ".$e->getMessage()."\n";
         }
     }
 
 } catch (Exception $e) {
-    echo "❌ Erreur lors de l'exécution des migrations: " . $e->getMessage() . "\n";
-    echo "📄 Détails:\n" . $e->getTraceAsString() . "\n";
+    echo "❌ Erreur lors de l'exécution des migrations: ".$e->getMessage()."\n";
+    echo "📄 Détails:\n".$e->getTraceAsString()."\n";
 }
 
 echo "\n✨ Migration terminée!\n";

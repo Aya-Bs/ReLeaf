@@ -41,7 +41,7 @@ return new class extends Migration
                 'is_email_verified',
                 'two_factor_secret',
                 'two_factor_recovery_codes',
-                'two_factor_enabled'
+                'two_factor_enabled',
             ]);
         });
 

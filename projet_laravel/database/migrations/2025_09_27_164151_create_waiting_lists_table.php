@@ -24,7 +24,7 @@ return new class extends Migration
             $table->foreignId('promoted_by')->nullable()->constrained('users');
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             // Un utilisateur ne peut être qu'une fois dans la liste d'attente pour un événement
             $table->unique(['user_id', 'event_id']);
             $table->index(['event_id', 'status', 'position']);

@@ -17,7 +17,7 @@ class LoginHistory extends Model
         'ip_address',
         'user_agent',
         'location',
-        'is_suspicious'
+        'is_suspicious',
     ];
 
     protected $casts = [

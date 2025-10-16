@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
+use App\Models\Campaign;
 use App\Models\Donation;
 use App\Models\User;
-use App\Models\Campaign;
+use Illuminate\Database\Seeder;
 
 class DonationSeeder extends Seeder
 {
@@ -17,6 +17,7 @@ class DonationSeeder extends Seeder
 
         if ($users->count() < 2 || $campaigns->count() < 2) {
             echo "⚠️  Pas assez d'utilisateurs ou de campagnes pour créer les donations.\n";
+
             return;
         }
 
@@ -42,7 +43,7 @@ class DonationSeeder extends Seeder
                 'status' => 'completed',
                 'payment_method' => 'especes',
                 'anonymous' => true,
-            ]
+            ],
         ];
 
         foreach ($donations as $donationData) {

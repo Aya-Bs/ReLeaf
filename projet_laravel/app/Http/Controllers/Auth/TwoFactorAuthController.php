@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use PragmaRX\Google2FA\Google2FA;
-use BaconQrCode\Renderer\ImageRenderer;
-use BaconQrCode\Renderer\Image\SvgImageBackEnd;
-use BaconQrCode\Renderer\RendererStyle\RendererStyle;
-use BaconQrCode\Writer;
 
 class TwoFactorAuthController extends Controller
 {
@@ -19,9 +19,9 @@ class TwoFactorAuthController extends Controller
     public function show()
     {
         $user = auth()->user();
-        
-        if (!$user->two_factor_secret) {
-            $google2fa = new Google2FA();
+
+        if (! $user->two_factor_secret) {
+            $google2fa = new Google2FA;
             $user->two_factor_secret = $google2fa->generateSecretKey();
             $user->save();
         }
@@ -32,7 +32,7 @@ class TwoFactorAuthController extends Controller
         return view('auth.2fa.setup', [
             'qrCodeSvg' => $qrCodeSvg,
             'secret' => $user->two_factor_secret,
-            'enabled' => $user->two_factor_enabled
+            'enabled' => $user->two_factor_enabled,
         ]);
     }
 
@@ -48,14 +48,14 @@ class TwoFactorAuthController extends Controller
 
         $user = auth()->user();
 
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             return back()->withErrors(['current_password' => 'Le mot de passe est incorrect.']);
         }
 
-        $google2fa = new Google2FA();
+        $google2fa = new Google2FA;
         $valid = $google2fa->verifyKey($user->two_factor_secret, $request->code);
 
-        if (!$valid) {
+        if (! $valid) {
             return back()->withErrors(['code' => 'Le code est invalide.']);
         }
 
@@ -78,7 +78,7 @@ class TwoFactorAuthController extends Controller
 
         $user = auth()->user();
 
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             return back()->withErrors(['current_password' => 'Le mot de passe est incorrect.']);
         }
 
@@ -96,7 +96,8 @@ class TwoFactorAuthController extends Controller
      */
     private function generateQrCodeUrl($user)
     {
-        $google2fa = new Google2FA();
+        $google2fa = new Google2FA;
+
         return $google2fa->getQRCodeUrl(
             config('app.name'),
             $user->email,
@@ -111,10 +112,11 @@ class TwoFactorAuthController extends Controller
     {
         $renderer = new ImageRenderer(
             new RendererStyle(200),
-            new SvgImageBackEnd()
+            new SvgImageBackEnd
         );
-        
+
         $writer = new Writer($renderer);
+
         return $writer->writeString($url);
     }
 
@@ -133,6 +135,7 @@ class TwoFactorAuthController extends Controller
                 substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 4)
             );
         }
+
         return json_encode($codes);
     }
 
@@ -154,10 +157,11 @@ class TwoFactorAuthController extends Controller
         ]);
 
         $user = auth()->user();
-        $google2fa = new Google2FA();
+        $google2fa = new Google2FA;
 
         if ($google2fa->verifyKey($user->two_factor_secret, $request->code)) {
             session(['2fa_verified' => true]);
+
             return redirect()->intended(route('home'));
         }
 
@@ -183,6 +187,7 @@ class TwoFactorAuthController extends Controller
             $user->save();
 
             session(['2fa_verified' => true]);
+
             return redirect()->intended(route('home'));
         }
 

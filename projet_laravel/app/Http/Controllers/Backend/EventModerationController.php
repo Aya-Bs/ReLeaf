@@ -4,14 +4,14 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
-use Illuminate\Http\Request;
 
 class EventModerationController extends Controller
 {
     public function approve(Event $event)
     {
-    $event->status = 'published';
+        $event->status = 'published';
         $event->save();
+
         return redirect()->back()->with('success', 'Événement approuvé.');
     }
 
@@ -19,6 +19,7 @@ class EventModerationController extends Controller
     {
         $event->status = 'rejected';
         $event->save();
+
         return redirect()->back()->with('success', 'Événement rejeté.');
     }
 }

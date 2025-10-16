@@ -18,7 +18,7 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URI'),
         'guzzle' => [
-            'verify' => false // Désactive la vérification SSL en développement
+            'verify' => false, // Désactive la vérification SSL en développement
         ],
     ],
 ];

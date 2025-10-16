@@ -21,12 +21,14 @@ class GoogleController extends Controller
             \Log::info('Début redirectToGoogle');
             $redirectUrl = Socialite::driver('google')->redirect();
             \Log::info('URL de redirection Google générée avec succès');
+
             return $redirectUrl;
         } catch (\Exception $e) {
-            \Log::error('Erreur redirectToGoogle: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            \Log::error('Erreur redirectToGoogle: '.$e->getMessage());
+            \Log::error('Stack trace: '.$e->getTraceAsString());
+
             return redirect()->route('login')
-                ->with('error', 'Erreur de configuration Google: ' . $e->getMessage());
+                ->with('error', 'Erreur de configuration Google: '.$e->getMessage());
         }
     }
 
@@ -91,10 +93,11 @@ class GoogleController extends Controller
                     ->with('success', 'Compte créé et connecté avec succès via Google !');
             }
         } catch (\Exception $e) {
-            \Log::error('Google OAuth error: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            \Log::error('Google OAuth error: '.$e->getMessage());
+            \Log::error('Stack trace: '.$e->getTraceAsString());
+
             return redirect()->route('login')
-                ->with('error', 'Erreur lors de la connexion avec Google: ' . $e->getMessage());
+                ->with('error', 'Erreur lors de la connexion avec Google: '.$e->getMessage());
         }
     }
 }

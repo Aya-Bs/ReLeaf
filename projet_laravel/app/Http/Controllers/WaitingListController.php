@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Event;
-use App\Models\WaitingList;
-use App\Models\Reservation;
-use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Mail;
 use App\Mail\WaitingListJoined;
 use App\Mail\WaitingListPromoted;
+use App\Models\Event;
+use App\Models\Reservation;
+use App\Models\WaitingList;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class WaitingListController extends Controller
 {
@@ -19,15 +19,15 @@ class WaitingListController extends Controller
     public function join(Request $request, Event $event): RedirectResponse
     {
         // Vérifier que l'événement est complet
-        if (!$event->isFull()) {
+        if (! $event->isFull()) {
             return redirect()->back()->with('error', 'Cet événement a encore des places disponibles.');
         }
 
         // Vérifier que l'utilisateur n'a pas déjà une réservation
         $existingReservation = Reservation::where('user_id', auth()->id())
-                                        ->where('event_id', $event->id)
-                                        ->whereIn('status', ['pending', 'confirmed'])
-                                        ->exists();
+            ->where('event_id', $event->id)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->exists();
 
         if ($existingReservation) {
             return redirect()->back()->with('error', 'Vous avez déjà une réservation pour cet événement.');
@@ -35,7 +35,7 @@ class WaitingListController extends Controller
 
         try {
             $waitingList = WaitingList::addToWaitingList(auth()->id(), $event->id);
-            
+
             // Envoyer un email de confirmation
             Mail::to(auth()->user()->email)->send(new WaitingListJoined($waitingList));
 
@@ -52,7 +52,7 @@ class WaitingListController extends Controller
     {
         try {
             $removed = WaitingList::removeFromWaitingList(auth()->id(), $event->id);
-            
+
             if ($removed) {
                 return redirect()->back()->with('success', 'Vous avez été retiré de la liste d\'attente.');
             } else {
@@ -111,8 +111,8 @@ class WaitingListController extends Controller
                 'seat_details' => [
                     'type' => 'standard',
                     'section' => 'A',
-                    'row' => '1'
-                ]
+                    'row' => '1',
+                ],
             ]);
 
             // Confirmer automatiquement la réservation
@@ -130,7 +130,7 @@ class WaitingListController extends Controller
 
             return redirect()->back()->with('success', 'L\'utilisateur a été promu et une réservation confirmée a été créée.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erreur lors de la promotion: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Erreur lors de la promotion: '.$e->getMessage());
         }
     }
 
@@ -140,14 +140,14 @@ class WaitingListController extends Controller
     private function getNextAvailableSeat(Event $event): string
     {
         $reservedSeats = Reservation::where('event_id', $event->id)
-                                  ->whereIn('status', ['pending', 'confirmed'])
-                                  ->pluck('seat_number')
-                                  ->toArray();
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->pluck('seat_number')
+            ->toArray();
 
         $allSeats = ['A1', 'A2', 'A3']; // Nos 3 places fixes
 
         foreach ($allSeats as $seat) {
-            if (!in_array($seat, $reservedSeats)) {
+            if (! in_array($seat, $reservedSeats)) {
                 return $seat;
             }
         }
@@ -161,8 +161,8 @@ class WaitingListController extends Controller
     public static function promoteFirstFromWaitingList(int $eventId): ?WaitingList
     {
         $waitingList = WaitingList::promoteFirst($eventId);
-        
-        if (!$waitingList) {
+
+        if (! $waitingList) {
             return null;
         }
 
@@ -178,8 +178,8 @@ class WaitingListController extends Controller
                 'seat_details' => [
                     'type' => 'standard',
                     'section' => 'A',
-                    'row' => '1'
-                ]
+                    'row' => '1',
+                ],
             ]);
 
             // Confirmer automatiquement
@@ -192,6 +192,7 @@ class WaitingListController extends Controller
         } catch (\Exception $e) {
             // En cas d'erreur, remettre l'utilisateur en liste d'attente
             $waitingList->update(['status' => 'waiting']);
+
             return null;
         }
     }

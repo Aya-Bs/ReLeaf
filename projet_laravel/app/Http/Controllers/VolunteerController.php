@@ -2,13 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Volunteer;
 use App\Models\Assignment;
-use App\Models\Event;
-use App\Models\Campaign;
+use App\Models\Volunteer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class VolunteerController extends Controller
 {
@@ -42,10 +39,10 @@ class VolunteerController extends Controller
         // Search by name
         if ($request->has('search') && $request->search !== '') {
             $searchTerm = $request->search;
-            $query->whereHas('user', function($q) use ($searchTerm) {
+            $query->whereHas('user', function ($q) use ($searchTerm) {
                 $q->where('name', 'LIKE', "%{$searchTerm}%")
-                  ->orWhere('first_name', 'LIKE', "%{$searchTerm}%")
-                  ->orWhere('last_name', 'LIKE', "%{$searchTerm}%");
+                    ->orWhere('first_name', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('last_name', 'LIKE', "%{$searchTerm}%");
             });
         }
 
@@ -109,7 +106,7 @@ class VolunteerController extends Controller
     public function show(Volunteer $volunteer)
     {
         $volunteer->load('user', 'assignments.assignable');
-        
+
         $recentAssignments = $volunteer->assignments()
             ->with('assignable')
             ->latest()
@@ -132,7 +129,7 @@ class VolunteerController extends Controller
     public function edit(Volunteer $volunteer)
     {
         // Check if user can edit this volunteer profile
-        if (Auth::id() !== $volunteer->user_id && !Auth::user()->isAdmin()) {
+        if (Auth::id() !== $volunteer->user_id && ! Auth::user()->isAdmin()) {
             abort(403, 'Vous n\'êtes pas autorisé à modifier ce profil.');
         }
 
@@ -145,7 +142,7 @@ class VolunteerController extends Controller
     public function update(Request $request, Volunteer $volunteer)
     {
         // Check if user can edit this volunteer profile
-        if (Auth::id() !== $volunteer->user_id && !Auth::user()->isAdmin()) {
+        if (Auth::id() !== $volunteer->user_id && ! Auth::user()->isAdmin()) {
             abort(403, 'Vous n\'êtes pas autorisé à modifier ce profil.');
         }
 
@@ -168,7 +165,7 @@ class VolunteerController extends Controller
     public function destroy(Volunteer $volunteer)
     {
         // Check if user can delete this volunteer profile
-        if (Auth::id() !== $volunteer->user_id && !Auth::user()->isAdmin()) {
+        if (Auth::id() !== $volunteer->user_id && ! Auth::user()->isAdmin()) {
             abort(403, 'Vous n\'êtes pas autorisé à supprimer ce profil.');
         }
 
@@ -177,7 +174,7 @@ class VolunteerController extends Controller
         foreach ($activeAssignments as $assignment) {
             $assignment->update([
                 'status' => 'cancelled',
-                'notes' => ($assignment->notes ?? '') . "\nMission annulée - Profil volontaire supprimé."
+                'notes' => ($assignment->notes ?? '')."\nMission annulée - Profil volontaire supprimé.",
             ]);
         }
 
@@ -203,20 +200,20 @@ class VolunteerController extends Controller
         ]);
 
         $volunteer = Auth::user()->volunteer;
-        
-        if (!$volunteer) {
+
+        if (! $volunteer) {
             return redirect()->route('volunteers.create')
                 ->with('error', 'Vous devez d\'abord créer un profil volontaire.');
         }
 
         // Check if volunteer is available
-        if (!$volunteer->isAvailableFor($validated['start_date'], $validated['end_date'])) {
+        if (! $volunteer->isAvailableFor($validated['start_date'], $validated['end_date'])) {
             return redirect()->back()
                 ->with('error', 'Vous n\'êtes pas disponible pour cette période.');
         }
 
         // Check if volunteer can take this assignment
-        if (!$volunteer->canTakeAssignment($validated['hours_committed'])) {
+        if (! $volunteer->canTakeAssignment($validated['hours_committed'])) {
             return redirect()->back()
                 ->with('error', 'Vous avez atteint votre limite d\'heures hebdomadaires.');
         }
@@ -236,8 +233,8 @@ class VolunteerController extends Controller
     public function availableAssignments(Request $request)
     {
         $volunteer = Auth::user()->volunteer;
-        
-        if (!$volunteer) {
+
+        if (! $volunteer) {
             return redirect()->route('volunteers.create')
                 ->with('error', 'Vous devez d\'abord créer un profil volontaire.');
         }
@@ -266,4 +263,3 @@ class VolunteerController extends Controller
         return view('volunteers.assignments', compact('assignments', 'volunteer'));
     }
 }
-

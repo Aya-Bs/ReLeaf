@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Campaign;
 use App\Models\Event;
 use App\Models\User;
-use App\Models\Campaign;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -20,12 +19,12 @@ class HomeController extends Controller
         $stats = [
             'total_users' => User::where('role', 'user')->count(),
             'total_events' => 0, // À corriger après migration
-            'eco_ambassadors' => User::whereHas('profile', function($query) {
+            'eco_ambassadors' => User::whereHas('profile', function ($query) {
                 $query->where('is_eco_ambassador', true);
             })->count(),
         ];
 
-       // Logique selon le rôle de l'utilisateur
+        // Logique selon le rôle de l'utilisateur
         $query = Event::where('status', 'published')
             ->where('date', '>=', now())
             ->orderBy('created_at', 'desc')
@@ -41,20 +40,19 @@ class HomeController extends Controller
 
         $recentEvents = $query->get();
 
-
         // Récupérer les ambassadeurs écologiques
-        $ecoAmbassadors = User::whereHas('profile', function($query) {
+        $ecoAmbassadors = User::whereHas('profile', function ($query) {
             $query->where('is_eco_ambassador', true);
         })->with('profile')->limit(6)->get();
 
         // ✅ NOUVEAU : Campagnes en vedette pour le hero
         $featuredCampaigns = Campaign::where('visibility', true)
-                                    ->where('status', 'active')
-                                    ->where('end_date', '>', now())
-                                    ->with('organizer')
-                                    ->orderBy('start_date', 'asc')
-                                    ->take(5)
-                                    ->get();
+            ->where('status', 'active')
+            ->where('end_date', '>', now())
+            ->with('organizer')
+            ->orderBy('start_date', 'asc')
+            ->take(5)
+            ->get();
 
         return view('frontend.home', compact('stats', 'recentEvents', 'ecoAmbassadors', 'featuredCampaigns'));
     }

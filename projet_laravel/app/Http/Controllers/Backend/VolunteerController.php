@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Volunteer;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -24,9 +23,9 @@ class VolunteerController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('user', function($q) use ($search) {
+            $query->whereHas('user', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -47,7 +46,7 @@ class VolunteerController extends Controller
     public function show(Volunteer $volunteer): View
     {
         $volunteer->load(['user', 'assignments.assignable']);
-        
+
         $recentAssignments = $volunteer->assignments()
             ->with('assignable')
             ->latest()
@@ -99,7 +98,7 @@ class VolunteerController extends Controller
         foreach ($activeAssignments as $assignment) {
             $assignment->update([
                 'status' => 'cancelled',
-                'notes' => ($assignment->notes ?? '') . "\nMission annulée - Profil volontaire supprimé par l'admin."
+                'notes' => ($assignment->notes ?? '')."\nMission annulée - Profil volontaire supprimé par l'admin.",
             ]);
         }
 

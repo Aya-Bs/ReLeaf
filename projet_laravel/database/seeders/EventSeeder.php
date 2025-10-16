@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Event;
-use App\Models\User;
-use App\Models\Location;
 use App\Models\Campaign;
+use App\Models\Event;
+use App\Models\Location;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class EventSeeder extends Seeder
 {
@@ -14,8 +14,8 @@ class EventSeeder extends Seeder
     {
         // Récupérer un utilisateur admin pour être l'organisateur
         $admin = User::where('role', 'admin')->first();
-        
-        if (!$admin) {
+
+        if (! $admin) {
             $admin = User::create([
                 'name' => 'Admin Organisateur',
                 'first_name' => 'Admin',
@@ -42,7 +42,7 @@ class EventSeeder extends Seeder
             'status' => 'published',
             'duration' => '3 heures',
             'campaign_id' => $campaigns->first()->id ?? null,
-            'images' => ['conference-climat.svg']
+            'images' => ['conference-climat.svg'],
         ]);
 
         // Événement 2 : Atelier pratique
@@ -56,9 +56,9 @@ class EventSeeder extends Seeder
             'status' => 'published',
             'duration' => '4 heures',
             'campaign_id' => $campaigns->count() > 1 ? $campaigns[1]->id : null,
-            'images' => ['jardin-urbain.svg']
+            'images' => ['jardin-urbain.svg'],
         ]);
-        
+
         echo "✅ 2 événements créés avec succès !\n";
     }
 }

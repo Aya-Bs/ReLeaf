@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
-use App\Models\Resource;
-use App\Models\Campaign;
 use App\Http\Requests\StoreResourceRequest;
-use App\Http\Requests\UpdateResourceRequest;
+use App\Models\Campaign;
+use App\Models\Resource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -18,7 +17,7 @@ class ResourceController extends Controller
 
         // Filtrage
         if ($request->has('search') && $request->search) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         if ($request->has('campaign_id') && $request->campaign_id) {
@@ -39,7 +38,7 @@ class ResourceController extends Controller
         $neededResources = Resource::where('status', 'needed')->count();
 
         return view('frontend.resources.index', compact(
-            'resources', 
+            'resources',
             'campaigns',
             'totalResources',
             'urgentResources',
@@ -51,6 +50,7 @@ class ResourceController extends Controller
     public function create()
     {
         $campaigns = Campaign::where('status', 'active')->get();
+
         return view('frontend.resources.create', compact('campaigns'));
     }
 
@@ -72,20 +72,22 @@ class ResourceController extends Controller
     public function show(Resource $resource)
     {
         $resource->load('campaign');
+
         return view('frontend.resources.show', compact('resource'));
     }
 
-/**
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(Resource $resource)
     {
         // ✅ CORRIGÉ : Même pattern que EventController et CampaignController
-        if (!$resource->canBeEdited()) {
+        if (! $resource->canBeEdited()) {
             return redirect()->route('resources.index')->with('error', 'Cette ressource ne peut pas être modifiée.');
         }
 
         $campaigns = Campaign::where('status', 'active')->get();
+
         return view('frontend.resources.edit', compact('resource', 'campaigns'));
     }
 
@@ -95,7 +97,7 @@ class ResourceController extends Controller
     public function update(Request $request, Resource $resource)
     {
         // ✅ CORRIGÉ : Même pattern que EventController et CampaignController
-        if (!$resource->canBeEdited()) {
+        if (! $resource->canBeEdited()) {
             return redirect()->route('resources.index')->with('error', 'Cette ressource ne peut pas être modifiée.');
         }
 
@@ -157,7 +159,7 @@ class ResourceController extends Controller
     public function destroy(Resource $resource)
     {
         // ✅ CORRIGÉ : Même pattern
-        if (!$resource->canBeEdited()) {
+        if (! $resource->canBeEdited()) {
             return redirect()->route('resources.index')->with('error', 'Cette ressource ne peut pas être supprimée.');
         }
 
@@ -175,7 +177,7 @@ class ResourceController extends Controller
     public function updateStatus(Request $request, Resource $resource)
     {
         $request->validate([
-            'status' => 'required|in:needed,pledged,received,in_use'
+            'status' => 'required|in:needed,pledged,received,in_use',
         ]);
 
         $resource->update(['status' => $request->status]);
@@ -187,7 +189,7 @@ class ResourceController extends Controller
     {
         $request->validate([
             'quantity' => 'required|integer|min:1',
-            'provider' => 'nullable|string|max:255'
+            'provider' => 'nullable|string|max:255',
         ]);
 
         $resource->increment('quantity_pledged', $request->quantity);
@@ -205,9 +207,9 @@ class ResourceController extends Controller
     public function highPriority()
     {
         $resources = Resource::whereIn('priority', ['high', 'urgent'])
-                            ->with('campaign')
-                            ->latest()
-                            ->paginate(15);
+            ->with('campaign')
+            ->latest()
+            ->paginate(15);
 
         return view('frontend.resources.high-priority', compact('resources'));
     }

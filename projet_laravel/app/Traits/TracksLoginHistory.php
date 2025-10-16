@@ -3,21 +3,21 @@
 namespace App\Traits;
 
 use App\Models\LoginHistory;
-use Illuminate\Http\Request;
 use App\Services\LocationService;
+use Illuminate\Http\Request;
 
 trait TracksLoginHistory
 {
     protected function logSuccessfulLogin(Request $request)
     {
-        $locationService = new LocationService();
+        $locationService = new LocationService;
         $location = $locationService->getLocation($request->ip());
-        
+
         $this->loginHistory()->create([
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
-            'location' => $location ? $location['city'] . ', ' . $location['country'] : null,
-            'is_suspicious' => $this->isSuspiciousLogin($request)
+            'location' => $location ? $location['city'].', '.$location['country'] : null,
+            'is_suspicious' => $this->isSuspiciousLogin($request),
         ]);
 
         if ($this->isSuspiciousLogin($request)) {
@@ -31,16 +31,16 @@ trait TracksLoginHistory
             ->latest()
             ->first();
 
-        if (!$lastLogin) {
+        if (! $lastLogin) {
             return false;
         }
 
         // Vérifier si la connexion vient d'un pays différent
-        $locationService = new LocationService();
+        $locationService = new LocationService;
         $currentLocation = $locationService->getLocation($request->ip());
         $lastLocation = $locationService->getLocation($lastLogin->ip_address);
 
-        if ($currentLocation && $lastLocation && 
+        if ($currentLocation && $lastLocation &&
             $currentLocation['countryCode'] !== $lastLocation['countryCode']) {
             return true;
         }
@@ -60,7 +60,7 @@ trait TracksLoginHistory
             'ip_address' => $request->ip(),
             'location' => $locationService->getLocation($request->ip())['city'] ?? 'Unknown',
             'user_agent' => $request->userAgent(),
-            'time' => now()->format('Y-m-d H:i:s')
+            'time' => now()->format('Y-m-d H:i:s'),
         ]));
     }
 

@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ReservationCancelled;
+use App\Mail\ReservationConfirmed;
 use App\Models\Event;
 use App\Models\Reservation;
-use App\Models\Certification;
 use App\Models\SeatLock;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\ReservationConfirmed;
-use App\Mail\ReservationCancelled;
 
 class ReservationController extends Controller
 {
@@ -21,43 +20,43 @@ class ReservationController extends Controller
     {
         // Charger les relations user et location
         $event->load(['user', 'location']);
-        
+
         // Vérifier si l'événement est complet
         $reservedCount = $event->reservations()->where('status', 'confirmed')->count();
         $availableSeats = $event->max_participants - $reservedCount;
-        
+
         if ($availableSeats <= 0) {
             return redirect()->route('events.index')
-                           ->with('error', 'Cet événement est complet. Vous pouvez rejoindre la liste d\'attente.');
+                ->with('error', 'Cet événement est complet. Vous pouvez rejoindre la liste d\'attente.');
         }
-        
+
         // Vérifier si l'utilisateur a déjà une réservation pour cet événement
         $userReservation = Reservation::where('user_id', auth()->id())
-                                    ->where('event_id', $event->id)
-                                    ->whereIn('status', ['pending', 'confirmed'])
-                                    ->first();
-        
+            ->where('event_id', $event->id)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->first();
+
         // Si l'utilisateur a déjà une réservation, le rediriger vers la page de confirmation
         if ($userReservation) {
             return redirect()->route('reservations.confirmation', $userReservation)
-                           ->with('info', 'Vous avez déjà une réservation pour cet événement.');
+                ->with('info', 'Vous avez déjà une réservation pour cet événement.');
         }
 
         // Récupérer toutes les réservations actives
         $reservedSeats = Reservation::where('event_id', $event->id)
-                                  ->whereIn('status', ['pending', 'confirmed'])
-                                  ->pluck('seat_number')
-                                  ->toArray();
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->pluck('seat_number')
+            ->toArray();
 
         // Récupérer les places bloquées temporairement
         $lockedSeats = SeatLock::getLockedSeats($event->id);
-        
+
         // Fusionner les places réservées et bloquées
         $unavailableSeats = array_merge($reservedSeats, $lockedSeats);
 
         // Générer la liste des places
         $availableSeats = $this->generateSeatMap($event, $unavailableSeats);
-        
+
         // Récupérer le verrou de l'utilisateur actuel s'il existe
         $userLock = SeatLock::getUserLock(auth()->id());
 
@@ -67,7 +66,7 @@ class ReservationController extends Controller
             'reservedSeats' => $reservedSeats,
             'lockedSeats' => $lockedSeats,
             'userReservation' => $userReservation,
-            'userLock' => $userLock
+            'userLock' => $userLock,
         ]);
     }
 
@@ -79,14 +78,14 @@ class ReservationController extends Controller
         $request->validate([
             'seat_number' => 'required|string',
             'num_guests' => 'integer|min:1|max:10',
-            'comments' => 'nullable|string|max:500'
+            'comments' => 'nullable|string|max:500',
         ]);
 
         // Vérifier si l'utilisateur a déjà une réservation
         $existingReservation = Reservation::where('user_id', auth()->id())
-                                        ->where('event_id', $event->id)
-                                        ->whereIn('status', ['pending', 'confirmed'])
-                                        ->first();
+            ->where('event_id', $event->id)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->first();
 
         if ($existingReservation) {
             return redirect()->back()->with('error', 'Vous avez déjà une réservation pour cet événement.');
@@ -94,9 +93,9 @@ class ReservationController extends Controller
 
         // Vérifier si la place est disponible
         $seatTaken = Reservation::where('event_id', $event->id)
-                               ->where('seat_number', $request->seat_number)
-                               ->whereIn('status', ['pending', 'confirmed'])
-                               ->exists();
+            ->where('seat_number', $request->seat_number)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->exists();
 
         if ($seatTaken) {
             return redirect()->back()->with('error', 'Cette place n\'est plus disponible.');
@@ -113,15 +112,15 @@ class ReservationController extends Controller
             'seat_details' => [
                 'type' => 'standard',
                 'section' => substr($request->seat_number, 0, 1),
-                'row' => substr($request->seat_number, 1)
-            ]
+                'row' => substr($request->seat_number, 1),
+            ],
         ]);
 
         // Libérer le verrou temporaire
         SeatLock::releaseSeat($event->id, $request->seat_number);
 
         return redirect()->route('reservations.confirmation', $reservation)
-                        ->with('success', 'Votre place a été réservée avec succès.');
+            ->with('success', 'Votre place a été réservée avec succès.');
     }
 
     /**
@@ -137,7 +136,6 @@ class ReservationController extends Controller
         return view('reservations.confirmation', compact('reservation'));
     }
 
-
     /**
      * Dashboard admin - Liste des réservations (inclut les listes d'attente)
      */
@@ -145,8 +143,8 @@ class ReservationController extends Controller
     {
         // Récupérer les réservations
         $reservationQuery = Reservation::with(['user', 'event', 'confirmedBy'])
-                           ->selectRaw('*, "reservation" as type, created_at as display_date')
-                           ->orderBy('created_at', 'desc');
+            ->selectRaw('*, "reservation" as type, created_at as display_date')
+            ->orderBy('created_at', 'desc');
 
         // Filtres pour les réservations
         if ($request->status && $request->status !== 'waiting') {
@@ -159,8 +157,8 @@ class ReservationController extends Controller
 
         // Récupérer les listes d'attente
         $waitingQuery = \App\Models\WaitingList::with(['user', 'event', 'promotedBy'])
-                           ->selectRaw('*, "waiting" as type, joined_at as display_date')
-                           ->orderBy('joined_at', 'desc');
+            ->selectRaw('*, "waiting" as type, joined_at as display_date')
+            ->orderBy('joined_at', 'desc');
 
         // Filtres pour les listes d'attente
         if ($request->status === 'waiting') {
@@ -175,16 +173,16 @@ class ReservationController extends Controller
 
         // Union des deux requêtes
         $allItems = $reservationQuery->get()->concat($waitingQuery->get());
-        
+
         // Trier par date d'affichage
         $allItems = $allItems->sortByDesc('display_date');
-        
+
         // Pagination manuelle
         $perPage = 15;
         $currentPage = $request->get('page', 1);
         $offset = ($currentPage - 1) * $perPage;
         $items = $allItems->slice($offset, $perPage)->values();
-        
+
         // Créer un paginateur manuel
         $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
             $items,
@@ -199,7 +197,7 @@ class ReservationController extends Controller
 
         return view('admin.reservations.index', [
             'reservations' => $paginator,
-            'events' => $events
+            'events' => $events,
         ]);
     }
 
@@ -208,7 +206,7 @@ class ReservationController extends Controller
      */
     public function confirm(Reservation $reservation)
     {
-        if (!$reservation->canBeConfirmed()) {
+        if (! $reservation->canBeConfirmed()) {
             return redirect()->back()->with('error', 'Cette réservation ne peut pas être confirmée.');
         }
 
@@ -260,7 +258,7 @@ class ReservationController extends Controller
         }
 
         // Vérifier que la réservation peut être annulée
-        if (!in_array($reservation->status, ['pending', 'confirmed'])) {
+        if (! in_array($reservation->status, ['pending', 'confirmed'])) {
             return redirect()->back()->with('error', 'Cette réservation ne peut pas être annulée.');
         }
 
@@ -280,7 +278,6 @@ class ReservationController extends Controller
         return redirect()->route('home')->with('success', 'Réservation annulée avec succès.');
     }
 
-
     /**
      * Générer le plan des places
      */
@@ -289,16 +286,16 @@ class ReservationController extends Controller
         // Configuration fixe : 3 places seulement pour tester la liste d'attente
         $seats = [];
         $seatNumbers = ['A1', 'A2', 'A3'];
-        
+
         foreach ($seatNumbers as $seatNumber) {
             $seats[] = [
                 'number' => $seatNumber,
-                'available' => !in_array($seatNumber, $reservedSeats),
+                'available' => ! in_array($seatNumber, $reservedSeats),
                 'row' => 'A',
-                'position' => substr($seatNumber, 1)
+                'position' => substr($seatNumber, 1),
             ];
         }
-        
+
         return $seats;
     }
 
@@ -309,7 +306,7 @@ class ReservationController extends Controller
     {
         $request->validate([
             'event_id' => 'required|exists:events,id',
-            'seat_number' => 'required|string'
+            'seat_number' => 'required|string',
         ]);
 
         $eventId = $request->event_id;
@@ -318,29 +315,29 @@ class ReservationController extends Controller
 
         // Vérifier si la place est déjà réservée
         $isReserved = Reservation::where('event_id', $eventId)
-                                ->where('seat_number', $seatNumber)
-                                ->whereIn('status', ['pending', 'confirmed'])
-                                ->exists();
+            ->where('seat_number', $seatNumber)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->exists();
 
         if ($isReserved) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cette place est déjà réservée.'
+                'message' => 'Cette place est déjà réservée.',
             ], 400);
         }
 
         // Vérifier si la place est déjà bloquée par un autre utilisateur
         $existingLock = SeatLock::where('event_id', $eventId)
-                              ->where('seat_number', $seatNumber)
-                              ->where('user_id', '!=', $userId)
-                              ->where('expires_at', '>', now())
-                              ->first();
+            ->where('seat_number', $seatNumber)
+            ->where('user_id', '!=', $userId)
+            ->where('expires_at', '>', now())
+            ->first();
 
         if ($existingLock) {
             return response()->json([
                 'success' => false,
                 'message' => 'Cette place est temporairement bloquée par un autre utilisateur.',
-                'remaining_seconds' => $existingLock->getRemainingSeconds()
+                'remaining_seconds' => $existingLock->getRemainingSeconds(),
             ], 400);
         }
 
@@ -351,7 +348,7 @@ class ReservationController extends Controller
             'success' => true,
             'message' => 'Place bloquée pendant 5 minutes.',
             'expires_at' => $lock->expires_at->toISOString(),
-            'remaining_seconds' => $lock->getRemainingSeconds()
+            'remaining_seconds' => $lock->getRemainingSeconds(),
         ]);
     }
 
@@ -362,7 +359,7 @@ class ReservationController extends Controller
     {
         $request->validate([
             'event_id' => 'required|exists:events,id',
-            'seat_number' => 'required|string'
+            'seat_number' => 'required|string',
         ]);
 
         $eventId = $request->event_id;
@@ -371,13 +368,13 @@ class ReservationController extends Controller
 
         // Supprimer le verrou de l'utilisateur
         SeatLock::where('event_id', $eventId)
-               ->where('seat_number', $seatNumber)
-               ->where('user_id', $userId)
-               ->delete();
+            ->where('seat_number', $seatNumber)
+            ->where('user_id', $userId)
+            ->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Place libérée.'
+            'message' => 'Place libérée.',
         ]);
     }
 
@@ -391,9 +388,9 @@ class ReservationController extends Controller
 
         // Récupérer les places réservées
         $reservedSeats = Reservation::where('event_id', $event->id)
-                                  ->whereIn('status', ['pending', 'confirmed'])
-                                  ->pluck('seat_number')
-                                  ->toArray();
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->pluck('seat_number')
+            ->toArray();
 
         // Récupérer les places bloquées
         $lockedSeats = SeatLock::getLockedSeats($event->id);
@@ -407,8 +404,8 @@ class ReservationController extends Controller
             'user_lock' => $userLock ? [
                 'seat_number' => $userLock->seat_number,
                 'expires_at' => $userLock->expires_at->toISOString(),
-                'remaining_seconds' => $userLock->getRemainingSeconds()
-            ] : null
+                'remaining_seconds' => $userLock->getRemainingSeconds(),
+            ] : null,
         ]);
     }
 }

@@ -30,6 +30,7 @@ class ListAdminsCommand extends Command
 
         if ($admins->isEmpty()) {
             $this->info('Aucun administrateur trouvé.');
+
             return 0;
         }
 

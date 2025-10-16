@@ -1,4 +1,5 @@
 <?php
+
 use App\Http\Controllers\BlogController;
 
 Route::middleware(['auth'])->group(function () {
@@ -6,7 +7,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/auteur/dashboard', function () {
         return view('backend.Auteurdashboard');
     })->name('auteur.dashboard');
-
 
     // AllBlogs (cards) - doit être avant /auteur/blogs/{blog}
     Route::get('/auteur/blogs/cards', [BlogController::class, 'cards'])->name('auteur.blogs.cards');

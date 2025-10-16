@@ -22,14 +22,14 @@ class SocialiteServiceProvider extends ServiceProvider
     {
         // Configuration de Google OAuth
         $googleConfig = config('services.google');
-        
+
         if ($googleConfig) {
             config([
                 'services.google' => [
                     'client_id' => $googleConfig['client_id'],
                     'client_secret' => $googleConfig['client_secret'],
                     'redirect' => $googleConfig['redirect'],
-                ]
+                ],
             ]);
         }
     }

@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Carbon\Carbon;
 
 class SeatLock extends Model
 {
@@ -16,12 +15,12 @@ class SeatLock extends Model
         'seat_number',
         'user_id',
         'locked_at',
-        'expires_at'
+        'expires_at',
     ];
 
     protected $casts = [
         'locked_at' => 'datetime',
-        'expires_at' => 'datetime'
+        'expires_at' => 'datetime',
     ];
 
     /**
@@ -50,7 +49,7 @@ class SeatLock extends Model
         if ($this->isExpired()) {
             return 0;
         }
-        
+
         return $this->expires_at->diffInSeconds(now());
     }
 
@@ -61,17 +60,17 @@ class SeatLock extends Model
     {
         // Supprimer les verrous expirés
         self::cleanExpiredLocks();
-        
+
         // Supprimer le verrou existant de l'utilisateur s'il existe
         self::where('user_id', $userId)->delete();
-        
+
         // Créer le nouveau verrou
         return self::create([
             'event_id' => $eventId,
             'seat_number' => $seatNumber,
             'user_id' => $userId,
             'locked_at' => now(),
-            'expires_at' => now()->addMinutes(5)
+            'expires_at' => now()->addMinutes(5),
         ]);
     }
 
@@ -79,29 +78,29 @@ class SeatLock extends Model
     {
         // Nettoyer les verrous expirés
         self::cleanExpiredLocks();
-        
+
         return self::where('event_id', $eventId)
-                  ->where('seat_number', $seatNumber)
-                  ->where('expires_at', '>', now())
-                  ->exists();
+            ->where('seat_number', $seatNumber)
+            ->where('expires_at', '>', now())
+            ->exists();
     }
 
     public static function getLockedSeats(int $eventId): array
     {
         // Nettoyer les verrous expirés
         self::cleanExpiredLocks();
-        
+
         return self::where('event_id', $eventId)
-                  ->where('expires_at', '>', now())
-                  ->pluck('seat_number')
-                  ->toArray();
+            ->where('expires_at', '>', now())
+            ->pluck('seat_number')
+            ->toArray();
     }
 
     public static function releaseSeat(int $eventId, string $seatNumber): void
     {
         self::where('event_id', $eventId)
-           ->where('seat_number', $seatNumber)
-           ->delete();
+            ->where('seat_number', $seatNumber)
+            ->delete();
     }
 
     public static function cleanExpiredLocks(): void
@@ -112,7 +111,7 @@ class SeatLock extends Model
     public static function getUserLock(int $userId): ?self
     {
         return self::where('user_id', $userId)
-                  ->where('expires_at', '>', now())
-                  ->first();
+            ->where('expires_at', '>', now())
+            ->first();
     }
 }

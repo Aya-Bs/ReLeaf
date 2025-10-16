@@ -23,7 +23,7 @@ class Resource extends Model
         'priority',
         'notes',
         'image_url',
-        'campaign_id'
+        'campaign_id',
     ];
 
     protected $casts = [
@@ -40,7 +40,10 @@ class Resource extends Model
     // Calcul du pourcentage de progression
     public function getProgressPercentageAttribute()
     {
-        if ($this->quantity_needed == 0) return 0;
+        if ($this->quantity_needed == 0) {
+            return 0;
+        }
+
         return round(($this->quantity_pledged / $this->quantity_needed) * 100, 2);
     }
 
@@ -79,11 +82,11 @@ class Resource extends Model
     public function pledgeQuantity($quantity, $provider = null)
     {
         $this->quantity_pledged += $quantity;
-        
+
         if ($provider) {
             $this->provider = $provider;
         }
-        
+
         $this->updateStatus();
     }
 
@@ -94,7 +97,7 @@ class Resource extends Model
     public function canBeEdited()
     {
         // Logique 1: Vérifier si l'utilisateur est connecté
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return false;
         }
 
@@ -107,7 +110,7 @@ class Resource extends Model
 
         // Logique 3: Vérifier le statut - certaines ressources ne peuvent pas être modifiées
         // Exemple: les ressources "received" ne peuvent plus être modifiées
-        return !in_array($this->status, ['received']);
+        return ! in_array($this->status, ['received']);
     }
 
     /**
@@ -119,5 +122,4 @@ class Resource extends Model
         // Exemple: les ressources avec des promesses ne peuvent pas être supprimées
         return $this->quantity_pledged == 0;
     }
-
 }

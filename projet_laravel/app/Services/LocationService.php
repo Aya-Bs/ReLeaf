@@ -10,7 +10,7 @@ class LocationService
             return [
                 'city' => 'Localhost',
                 'country' => 'Local',
-                'countryCode' => 'LOCAL'
+                'countryCode' => 'LOCAL',
             ];
         }
 
@@ -22,11 +22,11 @@ class LocationService
                 return [
                     'city' => $data['city'] ?? 'Unknown',
                     'country' => $data['country'] ?? 'Unknown',
-                    'countryCode' => $data['countryCode'] ?? 'UN'
+                    'countryCode' => $data['countryCode'] ?? 'UN',
                 ];
             }
         } catch (\Exception $e) {
-            \Log::error('Error getting location: ' . $e->getMessage());
+            \Log::error('Error getting location: '.$e->getMessage());
         }
 
         return null;

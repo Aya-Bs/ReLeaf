@@ -3,14 +3,14 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\TracksLoginHistory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
-use App\Traits\TracksLoginHistory;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -96,7 +96,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function createProfileIfNotExists(): void
     {
-        if (!$this->profile) {
+        if (! $this->profile) {
             $this->profile()->create([]);
         }
     }
@@ -118,7 +118,7 @@ class User extends Authenticatable implements MustVerifyEmail
             return Storage::url($this->profile->avatar);
         }
 
-        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
+        return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&color=7F9CF5&background=EBF4FF';
     }
 
     /**
@@ -137,7 +137,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role === 'user';
     }
 
-       /**
+    /**
      * Check if user is auteur.
      */
     public function isAuteur(): bool
@@ -146,9 +146,9 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     public function isCampaignOwner(Campaign $campaign)
-{
-    return $this->id === $campaign->organizer_id;
-}
+    {
+        return $this->id === $campaign->organizer_id;
+    }
 
     /**
      * Get user's full name from first_name and last_name.
@@ -156,7 +156,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getFullNameFromFieldsAttribute(): string
     {
         if ($this->first_name && $this->last_name) {
-            return $this->first_name . ' ' . $this->last_name;
+            return $this->first_name.' '.$this->last_name;
         }
 
         return $this->name;
@@ -221,7 +221,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Blog::class, 'author_id');
     }
-    
+
     /**
      * Relation avec les reviews postés par l'utilisateur
      */

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDonationRequest;
+use App\Mail\DonationReceivedMail;
 use App\Models\Donation;
 use App\Models\Event;
 use App\Models\Sponsor;
-use App\Mail\DonationReceivedMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -34,14 +34,16 @@ class DonationController extends Controller
         }
 
         $donations = $query->latest()->paginate(15);
+
         return view('donations.index', compact('donations'));
     }
+
     /**
      * Display the donation form for a specific event.
      */
     public function create(Event $event): View
     {
-        if (!$event->isPublished()) {
+        if (! $event->isPublished()) {
             abort(404);
         }
 
@@ -55,7 +57,7 @@ class DonationController extends Controller
      */
     public function store(StoreDonationRequest $request, Event $event)
     {
-        if (!$event->isPublished()) {
+        if (! $event->isPublished()) {
             return redirect()->back()->with('error', 'Cet événement n\'est pas disponible pour les dons.');
         }
 
@@ -67,7 +69,7 @@ class DonationController extends Controller
             if (Auth::check() && Auth::user()->role === 'sponsor') {
                 if (Auth::user()->sponsor) {
                     $sponsor = Auth::user()->sponsor;
-                    if (!$sponsor->isValidated()) {
+                    if (! $sponsor->isValidated()) {
                         return redirect()->back()->with('error', 'Votre compte sponsor n\'est pas encore validé.');
                     }
                     $sponsorId = $sponsor->id;
@@ -130,9 +132,10 @@ class DonationController extends Controller
     public function edit(Donation $donation)
     {
         $user = Auth::user();
-        if (!$user || !$donation->canBeModifiedBy($user)) {
+        if (! $user || ! $donation->canBeModifiedBy($user)) {
             return redirect()->back()->with('error', 'Ce don ne peut plus être modifié.');
         }
+
         return view('donations.edit', compact('donation'));
     }
 
@@ -142,7 +145,7 @@ class DonationController extends Controller
     public function update(Request $request, Donation $donation)
     {
         $user = Auth::user();
-        if (!$user || !$donation->canBeModifiedBy($user)) {
+        if (! $user || ! $donation->canBeModifiedBy($user)) {
             return redirect()->back()->with('error', 'Modification non autorisée.');
         }
 
@@ -154,6 +157,7 @@ class DonationController extends Controller
         ]);
 
         $donation->update($data);
+
         return redirect()->route('donations.success', $donation)->with('success', 'Don mis à jour.');
     }
 
@@ -163,10 +167,11 @@ class DonationController extends Controller
     public function destroy(Donation $donation)
     {
         $user = Auth::user();
-        if (!$user || !$donation->canBeDeletedBy($user)) {
+        if (! $user || ! $donation->canBeDeletedBy($user)) {
             return redirect()->back()->with('error', 'Suppression non autorisée.');
         }
         $donation->delete();
+
         return redirect()->route('donations.list')->with('success', 'Don supprimé.');
     }
 
@@ -175,7 +180,7 @@ class DonationController extends Controller
      */
     public function eventDonations(Event $event): View
     {
-        if ($event->user_id !== Auth::id() && (!Auth::user() || Auth::user()->role !== 'admin')) {
+        if ($event->user_id !== Auth::id() && (! Auth::user() || Auth::user()->role !== 'admin')) {
             abort(403);
         }
 
@@ -199,11 +204,11 @@ class DonationController extends Controller
      */
     public function confirm(Donation $donation)
     {
-        if (!Auth::user() || Auth::user()->role !== 'admin') {
+        if (! Auth::user() || Auth::user()->role !== 'admin') {
             abort(403);
         }
 
-        if (!$donation->isPending()) {
+        if (! $donation->isPending()) {
             return redirect()->back()->with('error', 'Ce don ne peut pas être confirmé.');
         }
 
@@ -217,7 +222,7 @@ class DonationController extends Controller
      */
     public function cancel(Request $request, Donation $donation)
     {
-        if (!Auth::user() || Auth::user()->role !== 'admin') {
+        if (! Auth::user() || Auth::user()->role !== 'admin') {
             abort(403);
         }
 
@@ -227,7 +232,7 @@ class DonationController extends Controller
 
         $donation->update([
             'status' => 'cancelled',
-            'notes' => $donation->notes . "\n\nRaison d'annulation: " . $request->cancellation_reason,
+            'notes' => $donation->notes."\n\nRaison d'annulation: ".$request->cancellation_reason,
         ]);
 
         return redirect()->back()->with('success', 'Don annulé avec succès.');
@@ -238,7 +243,7 @@ class DonationController extends Controller
      */
     public function adminIndex(): View
     {
-        if (!Auth::user() || Auth::user()->role !== 'admin') {
+        if (! Auth::user() || Auth::user()->role !== 'admin') {
             abort(403);
         }
 

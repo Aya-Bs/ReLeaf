@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
 
 class Donation extends Model
 {
@@ -146,7 +145,7 @@ class Donation extends Model
      */
     public function getFormattedAmountAttribute(): string
     {
-        return number_format($this->amount, 2) . ' €';
+        return number_format($this->amount, 2).' €';
     }
 
     /**
@@ -155,7 +154,10 @@ class Donation extends Model
     public function isWithinEditableWindow(): bool
     {
         $reference = $this->donated_at ?? $this->created_at;
-        if (!$reference) return false;
+        if (! $reference) {
+            return false;
+        }
+
         return now()->diffInHours($reference) < 24;
     }
 
@@ -164,12 +166,21 @@ class Donation extends Model
      */
     public function canBeModifiedBy(User $user): bool
     {
-        if (!$this->isPending()) return false; // only pending donations editable
-        if (!$this->isWithinEditableWindow()) return false; // 24h window
+        if (! $this->isPending()) {
+            return false;
+        } // only pending donations editable
+        if (! $this->isWithinEditableWindow()) {
+            return false;
+        } // 24h window
         // Owner by user_id
-        if ($this->user_id && $this->user_id === $user->id) return true;
+        if ($this->user_id && $this->user_id === $user->id) {
+            return true;
+        }
         // Sponsor owning the sponsor record
-        if ($user->role === 'sponsor' && $user->sponsor && $this->sponsor_id === $user->sponsor->id) return true;
+        if ($user->role === 'sponsor' && $user->sponsor && $this->sponsor_id === $user->sponsor->id) {
+            return true;
+        }
+
         return false;
     }
 
@@ -187,10 +198,13 @@ class Donation extends Model
     public function editableRemainingHours(): int
     {
         $reference = $this->donated_at ?? $this->created_at;
-        if (!$reference) return 0;
+        if (! $reference) {
+            return 0;
+        }
         $elapsed = now()->diffInMinutes($reference); // finer precision
         $total = 24 * 60;
         $remaining = $total - $elapsed;
+
         return $remaining > 0 ? (int) ceil($remaining / 60) : 0;
     }
 }

@@ -3,11 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Certification;
-use App\Models\Reservation;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\View;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 
 class CertificateController extends Controller
 {
@@ -17,7 +14,7 @@ class CertificateController extends Controller
     public function index()
     {
         $certifications = Certification::with(['reservation.event.location', 'issuedBy'])
-            ->whereHas('reservation', function($query) {
+            ->whereHas('reservation', function ($query) {
                 $query->where('user_id', auth()->id());
             })
             ->orderBy('date_awarded', 'desc')
@@ -33,7 +30,7 @@ class CertificateController extends Controller
     {
         $certification = Certification::with(['reservation.event.location', 'reservation.user', 'issuedBy'])
             ->where('certificate_code', $code)
-            ->whereHas('reservation', function($query) {
+            ->whereHas('reservation', function ($query) {
                 $query->where('user_id', auth()->id());
             })
             ->firstOrFail();
@@ -48,7 +45,7 @@ class CertificateController extends Controller
     {
         $certification = Certification::with(['reservation.event.location', 'reservation.user', 'issuedBy'])
             ->where('certificate_code', $code)
-            ->whereHas('reservation', function($query) {
+            ->whereHas('reservation', function ($query) {
                 $query->where('user_id', auth()->id());
             })
             ->firstOrFail();
@@ -93,8 +90,8 @@ class CertificateController extends Controller
                 'allowedRemoteHosts' => null,
                 'artifactPathValidation' => null,
             ]);
-        
-        $filename = 'Certificat_' . $certification->certificate_code . '_' . $certification->reservation->user->name . '.pdf';
+
+        $filename = 'Certificat_'.$certification->certificate_code.'_'.$certification->reservation->user->name.'.pdf';
         $filename = preg_replace('/[^A-Za-z0-9_\-]/', '_', $filename);
 
         return $pdf->download($filename);
@@ -107,7 +104,7 @@ class CertificateController extends Controller
     {
         $certification = Certification::with(['reservation.event.location', 'reservation.user', 'issuedBy'])
             ->where('certificate_code', $code)
-            ->whereHas('reservation', function($query) {
+            ->whereHas('reservation', function ($query) {
                 $query->where('user_id', auth()->id());
             })
             ->firstOrFail();
@@ -152,23 +149,23 @@ class CertificateController extends Controller
                 'allowedRemoteHosts' => null,
                 'artifactPathValidation' => null,
             ]);
-        
-        return $pdf->stream('Certificat_' . $certification->certificate_code . '.pdf');
+
+        return $pdf->stream('Certificat_'.$certification->certificate_code.'.pdf');
     }
 
     /**
      * Vérifier un certificat par code (accès public)
      */
-    public function verify(Request $request, string $code = null)
+    public function verify(Request $request, ?string $code = null)
     {
         // Si un code est fourni dans l'URL, l'utiliser directement
         $searchCode = $code ?? $request->get('code');
-        
-        if (!$searchCode) {
+
+        if (! $searchCode) {
             // Aucun code fourni, afficher le formulaire de recherche
             return view('certificates.verify', [
                 'certification' => null,
-                'message' => null
+                'message' => null,
             ]);
         }
 
@@ -176,16 +173,16 @@ class CertificateController extends Controller
             ->where('certificate_code', $searchCode)
             ->first();
 
-        if (!$certification) {
+        if (! $certification) {
             return view('certificates.verify', [
                 'certification' => null,
-                'message' => 'Certificat non trouvé ou code invalide.'
+                'message' => 'Certificat non trouvé ou code invalide.',
             ]);
         }
 
         return view('certificates.verify', [
             'certification' => $certification,
-            'message' => null
+            'message' => null,
         ]);
     }
 
@@ -207,7 +204,7 @@ class CertificateController extends Controller
 
         // Filtres
         if ($request->filled('event_id')) {
-            $query->whereHas('reservation.event', function($q) use ($request) {
+            $query->whereHas('reservation.event', function ($q) use ($request) {
                 $q->where('id', $request->event_id);
             });
         }
@@ -217,7 +214,7 @@ class CertificateController extends Controller
         }
 
         if ($request->filled('user_id')) {
-            $query->whereHas('reservation', function($q) use ($request) {
+            $query->whereHas('reservation', function ($q) use ($request) {
                 $q->where('user_id', $request->user_id);
             });
         }
@@ -235,7 +232,7 @@ class CertificateController extends Controller
     public function grantCertificate(\App\Models\Reservation $reservation)
     {
         // Vérifier que la réservation est confirmée et n'a pas déjà de certificat
-        if (!$reservation->isConfirmed() || $reservation->certification) {
+        if (! $reservation->isConfirmed() || $reservation->certification) {
             return redirect()->back()->with('error', 'Cette réservation ne peut pas recevoir de certificat.');
         }
 

@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSponsorRequest;
 use App\Models\Sponsor;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class SponsorController extends Controller
@@ -67,7 +65,7 @@ class SponsorController extends Controller
      */
     public function show(Sponsor $sponsor): View
     {
-        if (!$sponsor->isValidated()) {
+        if (! $sponsor->isValidated()) {
             abort(404);
         }
 

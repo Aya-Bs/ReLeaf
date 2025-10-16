@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Event;
-use App\Models\User;
 use App\Models\Location;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class EventFactory extends Factory
@@ -22,7 +22,7 @@ class EventFactory extends Factory
             'status' => 'draft',
             'images' => [],
             'user_id' => User::factory(),
-            'duration' => $this->faker->randomElement(['1 heure','2 heures','3 heures','Demi-journée','Journée entière','Week-end']),
+            'duration' => $this->faker->randomElement(['1 heure', '2 heures', '3 heures', 'Demi-journée', 'Journée entière', 'Week-end']),
             'campaign_id' => null,
         ];
     }

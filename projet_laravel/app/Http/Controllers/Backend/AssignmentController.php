@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use App\Models\Assignment;
 use App\Models\Volunteer;
-use App\Models\Event;
-use App\Models\Campaign;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -30,9 +28,9 @@ class AssignmentController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('volunteer.user', function($q) use ($search) {
+            $query->whereHas('volunteer.user', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -55,6 +53,7 @@ class AssignmentController extends Controller
     public function show(Assignment $assignment): View
     {
         $assignment->load(['volunteer.user', 'assignable']);
+
         return view('backend.assignments.show', compact('assignment'));
     }
 
@@ -64,6 +63,7 @@ class AssignmentController extends Controller
     public function edit(Assignment $assignment): View
     {
         $volunteers = Volunteer::with('user')->get();
+
         return view('backend.assignments.edit', compact('assignment', 'volunteers'));
     }
 

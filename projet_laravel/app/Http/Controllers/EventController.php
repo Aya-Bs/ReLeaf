@@ -10,12 +10,12 @@ class EventController extends Controller
     /**
      * Afficher la liste des événements selon le rôle de l'utilisateur
      */
- public function index(Request $request)
+    public function index(Request $request)
     {
-        
-              $query = Event::whereIn('status', ['published', 'cancelled'])
-                 ->with(['user', 'reservations', 'location'])
-                 ->orderBy('date', 'asc');
+
+        $query = Event::whereIn('status', ['published', 'cancelled'])
+            ->with(['user', 'reservations', 'location'])
+            ->orderBy('date', 'asc');
 
         // Logique selon le rôle de l'utilisateur
         if (auth()->check()) {
@@ -42,14 +42,14 @@ class EventController extends Controller
         }
 
         // Recherche textuelle
-       // Search by title/description/location
+        // Search by title/description/location
         if ($request->filled('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%')
-                  ->orWhereHas('location', function($q) use ($request) {
-                      $q->where('name', 'like', '%' . $request->search . '%')
-                        ->orWhere('city', 'like', '%' . $request->search . '%');
-                  });
+            $query->where('title', 'like', '%'.$request->search.'%')
+                ->orWhere('description', 'like', '%'.$request->search.'%')
+                ->orWhereHas('location', function ($q) use ($request) {
+                    $q->where('name', 'like', '%'.$request->search.'%')
+                        ->orWhere('city', 'like', '%'.$request->search.'%');
+                });
         }
 
         // Filter by location
@@ -74,13 +74,13 @@ class EventController extends Controller
             $reservedCount = $event->reservations()->where('status', 'confirmed')->count();
             $availableSeats = $event->max_participants - $reservedCount;
             $isFull = $availableSeats <= 0;
-            
-            $userReservation = auth()->check() 
-                ? $event->reservations()->where('user_id', auth()->id())->whereIn('status', ['pending', 'confirmed'])->first() 
+
+            $userReservation = auth()->check()
+                ? $event->reservations()->where('user_id', auth()->id())->whereIn('status', ['pending', 'confirmed'])->first()
                 : null;
-                
-            $userInWaitingList = auth()->check() 
-                ? $event->waitingList()->where('user_id', auth()->id())->exists() 
+
+            $userInWaitingList = auth()->check()
+                ? $event->waitingList()->where('user_id', auth()->id())->exists()
                 : false;
 
             $event->availableSeats = $availableSeats;
@@ -104,19 +104,18 @@ class EventController extends Controller
         return view('events.index', compact('events', 'allEventDates'));
     }
 
-
     /**
      * Afficher un événement spécifique
      */
     public function show(Event $event)
     {
         $event->load(['user', 'reservations']);
-        
+
         $reservedCount = $event->reservations()->whereIn('status', ['pending', 'confirmed'])->count();
         $availableSeats = $event->max_participants - $reservedCount;
-        
-        $userReservation = auth()->check() 
-            ? $event->reservations()->where('user_id', auth()->id())->whereIn('status', ['pending', 'confirmed'])->first() 
+
+        $userReservation = auth()->check()
+            ? $event->reservations()->where('user_id', auth()->id())->whereIn('status', ['pending', 'confirmed'])->first()
             : null;
 
         return view('frontend.events.show', compact('event', 'availableSeats', 'userReservation'));

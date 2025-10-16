@@ -3,18 +3,17 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
-use App\Models\Sponsor;
-use App\Models\Donation;
-use App\Models\User;
 use App\Mail\SponsorValidatedMail;
+use App\Models\Sponsor;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Log;
 
 class SponsorController extends Controller
 {
@@ -64,7 +63,7 @@ class SponsorController extends Controller
      */
     public function validate(Sponsor $sponsor)
     {
-        if (!$sponsor->isPending()) {
+        if (! $sponsor->isPending()) {
             return redirect()->back()->with('error', 'Ce sponsor ne peut pas être validé.');
         }
 
@@ -97,7 +96,7 @@ class SponsorController extends Controller
      */
     public function reject(Request $request, Sponsor $sponsor)
     {
-        if (!$sponsor->isPending()) {
+        if (! $sponsor->isPending()) {
             return redirect()->back()->with('error', 'Ce sponsor ne peut pas être rejeté.');
         }
 
@@ -107,7 +106,7 @@ class SponsorController extends Controller
 
         $sponsor->update([
             'status' => 'rejected',
-            'additional_info' => $sponsor->additional_info . "\n\nRaison du rejet: " . $request->rejection_reason,
+            'additional_info' => $sponsor->additional_info."\n\nRaison du rejet: ".$request->rejection_reason,
         ]);
 
         return redirect()->route('backend.sponsors.index')
@@ -134,7 +133,7 @@ class SponsorController extends Controller
      */
     public function restore(Sponsor $sponsor)
     {
-        if (!$sponsor->trashed()) {
+        if (! $sponsor->trashed()) {
             return redirect()->back()->with('error', 'Ce sponsor n\'est pas supprimé.');
         }
 
@@ -169,6 +168,7 @@ class SponsorController extends Controller
         $sponsors = Sponsor::deletionRequested()
             ->orderByDesc('updated_at')
             ->paginate(15);
+
         return view('backend.sponsors.deletion_requested', compact('sponsors'));
     }
 
@@ -182,25 +182,27 @@ class SponsorController extends Controller
     public function requestDeletion(Request $request)
     {
         $user = Auth::user();
-        if (!$user || $user->role !== 'sponsor') {
+        if (! $user || $user->role !== 'sponsor') {
             abort(403);
         }
         Log::info('Sponsor requestDeletion initiated', [
             'user_id' => $user?->id,
-            'has_sponsor' => (bool)$user?->sponsor,
+            'has_sponsor' => (bool) $user?->sponsor,
             'sponsor_status' => $user?->sponsor?->status,
         ]);
         $data = $request->validate([
-            'reason' => 'required|string|min:10|max:500'
+            'reason' => 'required|string|min:10|max:500',
         ]);
         $sponsor = $user->sponsor;
-        if (!$sponsor) {
+        if (! $sponsor) {
             // No sponsor record yet -> nothing to flag; suggest immediate downgrade instead
             Log::warning('Sponsor deletion request without sponsor relation', ['user_id' => $user->id]);
-            return redirect()->back()->with('error', "Aucun profil sponsor associé. Utilisez la suppression immédiate pour abandonner le statut.");
+
+            return redirect()->back()->with('error', 'Aucun profil sponsor associé. Utilisez la suppression immédiate pour abandonner le statut.');
         }
         if ($sponsor->isDeletionRequested()) {
             Log::notice('Duplicate deletion request attempt', ['sponsor_id' => $sponsor->id]);
+
             return redirect()->back()->with('error', 'Une demande de suppression est déjà en attente.');
         }
         $sponsor->update([
@@ -208,6 +210,7 @@ class SponsorController extends Controller
             'deletion_reason' => $data['reason'],
         ]);
         Log::info('Sponsor deletion request flagged', ['sponsor_id' => $sponsor->id]);
+
         return redirect()->route('sponsor.dashboard')->with('success', 'Demande de suppression envoyée à l\'administration.');
     }
 
@@ -217,25 +220,25 @@ class SponsorController extends Controller
     public function selfDeleteNow(Request $request)
     {
         $user = Auth::user();
-        if (!$user || $user->role !== 'sponsor') {
+        if (! $user || $user->role !== 'sponsor') {
             abort(403);
         }
         Log::info('Sponsor selfDeleteNow initiated', [
             'user_id' => $user?->id,
-            'has_sponsor' => (bool)$user?->sponsor,
+            'has_sponsor' => (bool) $user?->sponsor,
             'sponsor_status' => $user?->sponsor?->status,
         ]);
         $request->validate([
-            'confirm' => 'required|in:DELETE'
+            'confirm' => 'required|in:DELETE',
         ], [
-            'confirm.in' => 'Vous devez taper DELETE pour confirmer.'
+            'confirm.in' => 'Vous devez taper DELETE pour confirmer.',
         ]);
         $sponsor = $user->sponsor;
         if ($sponsor) {
             // Soft delete sponsor record and downgrade
             $sponsor->update([
                 'deletion_reason' => $sponsor->deletion_reason ?: 'Suppression immédiate par le sponsor.',
-                'status' => $sponsor->status === 'deletion_requested' ? $sponsor->status : 'deletion_requested'
+                'status' => $sponsor->status === 'deletion_requested' ? $sponsor->status : 'deletion_requested',
             ]);
             $sponsor->delete();
             Log::info('Sponsor soft deleted via selfDeleteNow', ['sponsor_id' => $sponsor->id]);
@@ -264,6 +267,7 @@ class SponsorController extends Controller
             return redirect()->back()->with('error', 'Ce sponsor n\'a pas demandé de suppression.');
         }
         $sponsor->delete();
+
         return redirect()->route('backend.sponsors.index')->with('success', 'Sponsor supprimé suite à la demande.');
     }
 }

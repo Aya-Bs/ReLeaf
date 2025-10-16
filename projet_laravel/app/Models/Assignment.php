@@ -27,7 +27,7 @@ class Assignment extends Model
         'feedback',
         'assigned_by',
         'approved_at',
-        'completed_at'
+        'completed_at',
     ];
 
     protected $casts = [
@@ -90,13 +90,13 @@ class Assignment extends Model
 
     public function scopeByDateRange($query, $startDate, $endDate)
     {
-        return $query->where(function($q) use ($startDate, $endDate) {
+        return $query->where(function ($q) use ($startDate, $endDate) {
             $q->whereBetween('start_date', [$startDate, $endDate])
-              ->orWhereBetween('end_date', [$startDate, $endDate])
-              ->orWhere(function($subQ) use ($startDate, $endDate) {
-                  $subQ->where('start_date', '<=', $startDate)
-                       ->where('end_date', '>=', $endDate);
-              });
+                ->orWhereBetween('end_date', [$startDate, $endDate])
+                ->orWhere(function ($subQ) use ($startDate, $endDate) {
+                    $subQ->where('start_date', '<=', $startDate)
+                        ->where('end_date', '>=', $endDate);
+                });
         });
     }
 
@@ -113,9 +113,10 @@ class Assignment extends Model
 
     public function getDurationInDaysAttribute(): int
     {
-        if (!$this->start_date || !$this->end_date) {
+        if (! $this->start_date || ! $this->end_date) {
             return 0;
         }
+
         return $this->start_date->diffInDays($this->end_date) + 1;
     }
 
@@ -124,6 +125,7 @@ class Assignment extends Model
         if ($this->hours_committed == 0) {
             return 0;
         }
+
         return round(($this->hours_worked / $this->hours_committed) * 100, 2);
     }
 
@@ -147,11 +149,11 @@ class Assignment extends Model
         return $this->update([
             'status' => 'approved',
             'assigned_by' => $approver->id,
-            'approved_at' => now()
+            'approved_at' => now(),
         ]);
     }
 
-    public function reject(User $rejector, string $reason = null): bool
+    public function reject(User $rejector, ?string $reason = null): bool
     {
         if ($this->status !== 'pending') {
             return false;
@@ -160,11 +162,11 @@ class Assignment extends Model
         return $this->update([
             'status' => 'rejected',
             'assigned_by' => $rejector->id,
-            'notes' => $reason ? ($this->notes . "\nRejection reason: " . $reason) : $this->notes
+            'notes' => $reason ? ($this->notes."\nRejection reason: ".$reason) : $this->notes,
         ]);
     }
 
-    public function complete(int $hoursWorked = null, float $rating = null, string $feedback = null): bool
+    public function complete(?int $hoursWorked = null, ?float $rating = null, ?string $feedback = null): bool
     {
         if ($this->status !== 'approved') {
             return false;
@@ -172,7 +174,7 @@ class Assignment extends Model
 
         $updateData = [
             'status' => 'completed',
-            'completed_at' => now()
+            'completed_at' => now(),
         ];
 
         if ($hoursWorked !== null) {
@@ -190,15 +192,15 @@ class Assignment extends Model
         return $this->update($updateData);
     }
 
-    public function cancel(string $reason = null): bool
+    public function cancel(?string $reason = null): bool
     {
-        if (!in_array($this->status, ['pending', 'approved'])) {
+        if (! in_array($this->status, ['pending', 'approved'])) {
             return false;
         }
 
         return $this->update([
             'status' => 'cancelled',
-            'notes' => $reason ? ($this->notes . "\nCancellation reason: " . $reason) : $this->notes
+            'notes' => $reason ? ($this->notes."\nCancellation reason: ".$reason) : $this->notes,
         ]);
     }
 
@@ -228,7 +230,7 @@ class Assignment extends Model
 
     public function getStatusBadgeClass(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'warning',
             'approved' => 'success',
             'completed' => 'info',
@@ -240,7 +242,7 @@ class Assignment extends Model
 
     public function getStatusLabel(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'En attente',
             'approved' => 'Approuvé',
             'completed' => 'Terminé',
@@ -252,7 +254,7 @@ class Assignment extends Model
 
     public function getRoleLabel(): string
     {
-        return match($this->role) {
+        return match ($this->role) {
             'coordinator' => 'Coordinateur',
             'helper' => 'Aide',
             'specialist' => 'Spécialiste',
@@ -262,5 +264,3 @@ class Assignment extends Model
         };
     }
 }
-
-

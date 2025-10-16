@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Resource;
 use App\Models\Campaign;
+use App\Models\Resource;
+use Illuminate\Database\Seeder;
 
 class ResourceSeeder extends Seeder
 {
@@ -15,6 +15,7 @@ class ResourceSeeder extends Seeder
 
         if ($campaigns->count() < 2) {
             echo "⚠️  Pas assez de campagnes pour créer les ressources supplémentaires.\n";
+
             return;
         }
 
@@ -31,7 +32,7 @@ class ResourceSeeder extends Seeder
                 'category' => 'materiel',
                 'priority' => 'medium',
                 'notes' => 'Contenu en français et arabe',
-                'campaign_id' => $campaigns[0]->id
+                'campaign_id' => $campaigns[0]->id,
             ],
             [
                 'name' => 'Transport en commun',
@@ -45,8 +46,8 @@ class ResourceSeeder extends Seeder
                 'category' => 'technique',
                 'priority' => 'high',
                 'notes' => 'Pour les événements dans des lieux éloignés',
-                'campaign_id' => $campaigns[1]->id
-            ]
+                'campaign_id' => $campaigns[1]->id,
+            ],
         ];
 
         foreach ($resources as $resourceData) {
