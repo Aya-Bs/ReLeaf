@@ -113,7 +113,7 @@ pipeline {
                 script {
                     try {
                         withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                            sh """
+                            sh '''#!/bin/bash
                                 cd projet_laravel
                                 
                                 echo "=== SONARQUBE ANALYSIS DEBUG ==="
@@ -179,7 +179,7 @@ EOF
                                 
                                 echo "=== SONARQUBE ANALYSIS COMPLETED ==="
                                 echo "Project should now be visible in SonarQube at: \${SONAR_HOST_URL}/projects"
-                            """
+                            '''
                         }
                     } catch (Exception e) {
                         echo "SonarQube analysis failed: ${e.getMessage()}"
