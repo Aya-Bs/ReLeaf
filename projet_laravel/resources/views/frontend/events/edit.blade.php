@@ -21,7 +21,7 @@
                     </nav>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('events.update', $event) }}" method="POST" enctype="multipart/form-data" id="eventForm">
+                    <form action="{{ route('events.update', $event) }}" method="POST" enctype="multipart/form-data" id="eventForm" novalidate >
                         @csrf
                         @method('PUT')
 
@@ -144,7 +144,7 @@
 
 <div class="col-md-6">
     <label for="campaign_id" class="form-label">
-        <i class="fas fa-bullhorn me-2" style="color: #2d5a27;"></i>Campagne    
+        <i class="fas fa-bullhorn me-2" style="color: #2d5a27;"></i>Campagne <span class="text-danger">*</span>
     </label>
     @php
         $campaigns = \App\Models\Campaign::all();
@@ -479,32 +479,6 @@ function showAlert(message, type = 'info') {
     }, 5000);
 }
 
-// Form validation
-document.getElementById('eventForm').addEventListener('submit', function(e) {
-    @if($event->canBeEdited())
-    const title = document.getElementById('title').value;
-    const description = document.getElementById('description').value;
-    const date = document.getElementById('date').value;
-    const location = document.getElementById('location').value;
-    const duration = document.getElementById('duration').value;
-
-    if (!title || !description || !date || !location || !duration) {
-        e.preventDefault();
-        alert('Veuillez remplir tous les champs obligatoires.');
-        return;
-    }
-
-    const selectedDate = new Date(date);
-    if (selectedDate <= new Date()) {
-        e.preventDefault();
-        alert('La date de l\'événement doit être dans le futur.');
-        return;
-    }
-    @else
-    e.preventDefault();
-    alert('Cet événement ne peut pas être modifié.');
-    @endif
-});
 
 // Set min datetime for date field
 document.addEventListener('DOMContentLoaded', function() {
