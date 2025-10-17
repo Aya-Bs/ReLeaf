@@ -117,17 +117,17 @@ pipeline {
                                 cd projet_laravel
                                 
                                 echo "=== SONARQUBE ANALYSIS DEBUG ==="
-                                echo "Project Key: \${SONAR_PROJECT_KEY}"
-                                echo "Host URL: \${SONAR_HOST_URL}"
-                                echo "Build Number: \${env.BUILD_NUMBER}"
-                                echo "Current directory: \$(pwd)"
-                                echo "PHP version: \$(php --version | head -1)"
+                                echo "Project Key: ''' + SONAR_PROJECT_KEY + '''"
+                                echo "Host URL: ''' + SONAR_HOST_URL + '''"
+                                echo "Build Number: ''' + env.BUILD_NUMBER + '''"
+                                echo "Current directory: $(pwd)"
+                                echo "PHP version: $(php --version | head -1)"
                                 echo "================================"
                                 
                                 # Check if SonarQube server is reachable
                                 echo "Testing SonarQube server connectivity..."
-                                curl -f -s \${SONAR_HOST_URL}/api/system/status || {
-                                    echo "ERROR: Cannot reach SonarQube server at \${SONAR_HOST_URL}"
+                                curl -f -s ''' + SONAR_HOST_URL + '''/api/system/status || {
+                                    echo "ERROR: Cannot reach SonarQube server at ''' + SONAR_HOST_URL + '''"
                                     exit 1
                                 }
                                 
@@ -150,11 +150,11 @@ pipeline {
                                 
                                 # Create sonar-project.properties file
                                 cat > sonar-project.properties << 'EOF'
-sonar.projectKey=SONAR_PROJECT_KEY_PLACEHOLDER
+sonar.projectKey=''' + SONAR_PROJECT_KEY + '''
 sonar.projectName=ReLeaf
-sonar.projectVersion=BUILD_NUMBER_PLACEHOLDER
-sonar.host.url=SONAR_HOST_URL_PLACEHOLDER
-sonar.login=SONAR_TOKEN_PLACEHOLDER
+sonar.projectVersion=''' + env.BUILD_NUMBER + '''
+sonar.host.url=''' + SONAR_HOST_URL + '''
+sonar.login=''' + SONAR_TOKEN + '''
 sonar.sources=app,routes,config,database/migrations
 sonar.tests=tests
 sonar.exclusions=vendor/**,storage/**,bootstrap/cache/**,node_modules/**,public/build/**
@@ -164,12 +164,6 @@ sonar.php.coverage.reportPaths=coverage.xml
 sonar.qualitygate.wait=true
 EOF
                                 
-                                # Replace placeholders with actual values
-                                sed -i "s/SONAR_PROJECT_KEY_PLACEHOLDER/\${SONAR_PROJECT_KEY}/g" sonar-project.properties
-                                sed -i "s/BUILD_NUMBER_PLACEHOLDER/\${env.BUILD_NUMBER}/g" sonar-project.properties
-                                sed -i "s/SONAR_HOST_URL_PLACEHOLDER/\${SONAR_HOST_URL}/g" sonar-project.properties
-                                sed -i "s/SONAR_TOKEN_PLACEHOLDER/$SONAR_TOKEN/g" sonar-project.properties
-                                
                                 echo "SonarQube configuration file created"
                                 cat sonar-project.properties
                                 
@@ -178,7 +172,7 @@ EOF
                                 ./sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner -X
                                 
                                 echo "=== SONARQUBE ANALYSIS COMPLETED ==="
-                                echo "Project should now be visible in SonarQube at: \${SONAR_HOST_URL}/projects"
+                                echo "Project should now be visible in SonarQube at: ''' + SONAR_HOST_URL + '''/projects"
                             '''
                         }
                     } catch (Exception e) {
@@ -193,36 +187,36 @@ EOF
         stage('Nexus Deploy') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
-                    sh """
+                    sh '''
                         # Create project structure for Nexus (PHP/Laravel project)
                         mkdir -p nexus-artifacts
                         
                         # Create versioned directory structure
-                        mkdir -p nexus-artifacts/releaf/${env.BUILD_NUMBER}
+                        mkdir -p nexus-artifacts/releaf/''' + env.BUILD_NUMBER + '''
                         mkdir -p nexus-artifacts/releaf/latest
                         
                         # Copy application files
-                        cp -r projet_laravel nexus-artifacts/releaf/${env.BUILD_NUMBER}/
+                        cp -r projet_laravel nexus-artifacts/releaf/''' + env.BUILD_NUMBER + '''/
                         cp -r projet_laravel nexus-artifacts/releaf/latest/
                         
                         # Copy root configuration files
-                        cp composer.json nexus-artifacts/releaf/${env.BUILD_NUMBER}/
+                        cp composer.json nexus-artifacts/releaf/''' + env.BUILD_NUMBER + '''/
                         cp composer.json nexus-artifacts/releaf/latest/
                         
                         # Copy Dockerfile if it exists
                         if [ -f Dockerfile ]; then
-                            cp Dockerfile nexus-artifacts/releaf/${env.BUILD_NUMBER}/
+                            cp Dockerfile nexus-artifacts/releaf/''' + env.BUILD_NUMBER + '''/
                             cp Dockerfile nexus-artifacts/releaf/latest/
                         fi
                         
                         # Copy sonar-project.properties if it exists
                         if [ -f sonar-project.properties ]; then
-                            cp sonar-project.properties nexus-artifacts/releaf/${env.BUILD_NUMBER}/
+                            cp sonar-project.properties nexus-artifacts/releaf/''' + env.BUILD_NUMBER + '''/
                             cp sonar-project.properties nexus-artifacts/releaf/latest/
                         fi
                         
                         # Create project metadata files
-                        cat > nexus-artifacts/releaf/\${env.BUILD_NUMBER}/project-info.json << 'EOF'
+                        cat > nexus-artifacts/releaf/''' + env.BUILD_NUMBER + '''/project-info.json << 'EOF'
 {
     "projectName": "ReLeaf",
     "projectType": "Laravel/PHP",
@@ -246,50 +240,50 @@ EOF
 EOF
                         
                         # Replace placeholders with actual values
-                        sed -i "s/BUILD_NUMBER_PLACEHOLDER/\${env.BUILD_NUMBER}/g" nexus-artifacts/releaf/\${env.BUILD_NUMBER}/project-info.json
-                        sed -i "s/BUILD_DATE_PLACEHOLDER/\$(date -u +%Y-%m-%dT%H:%M:%SZ)/g" nexus-artifacts/releaf/\${env.BUILD_NUMBER}/project-info.json
+                        sed -i "s/BUILD_NUMBER_PLACEHOLDER/''' + env.BUILD_NUMBER + '''/g" nexus-artifacts/releaf/''' + env.BUILD_NUMBER + '''/project-info.json
+                        sed -i "s/BUILD_DATE_PLACEHOLDER/$(date -u +%Y-%m-%dT%H:%M:%SZ)/g" nexus-artifacts/releaf/''' + env.BUILD_NUMBER + '''/project-info.json
                         
-                        cp nexus-artifacts/releaf/${env.BUILD_NUMBER}/project-info.json nexus-artifacts/releaf/latest/
+                        cp nexus-artifacts/releaf/''' + env.BUILD_NUMBER + '''/project-info.json nexus-artifacts/releaf/latest/
                         
                         # Create tarballs for different deployment scenarios
                         cd nexus-artifacts
-                        tar -czf releaf-application-${env.BUILD_NUMBER}.tar.gz releaf/${env.BUILD_NUMBER}/projet_laravel/
-                        tar -czf releaf-complete-${env.BUILD_NUMBER}.tar.gz releaf/${env.BUILD_NUMBER}/
+                        tar -czf releaf-application-''' + env.BUILD_NUMBER + '''.tar.gz releaf/''' + env.BUILD_NUMBER + '''/projet_laravel/
+                        tar -czf releaf-complete-''' + env.BUILD_NUMBER + '''.tar.gz releaf/''' + env.BUILD_NUMBER + '''/
                         
                         # Upload to Nexus with proper PHP project structure
                         echo "Uploading to Nexus with PHP/Laravel project structure..."
                         
                         # Upload application package
-                        curl -u ${NEXUS_USER}:${NEXUS_PASS} \
-                            --upload-file releaf-application-${env.BUILD_NUMBER}.tar.gz \
-                            ${NEXUS_URL}/repository/raw-releases/com/example/releaf/application/${env.BUILD_NUMBER}/releaf-application-${env.BUILD_NUMBER}.tar.gz
+                        curl -u ''' + NEXUS_USER + ''':''' + NEXUS_PASS + ''' \
+                            --upload-file releaf-application-''' + env.BUILD_NUMBER + '''.tar.gz \
+                            ''' + NEXUS_URL + '''/repository/raw-releases/com/example/releaf/application/''' + env.BUILD_NUMBER + '''/releaf-application-''' + env.BUILD_NUMBER + '''.tar.gz
                         
                         # Upload complete package
-                        curl -u ${NEXUS_USER}:${NEXUS_PASS} \
-                            --upload-file releaf-complete-${env.BUILD_NUMBER}.tar.gz \
-                            ${NEXUS_URL}/repository/raw-releases/com/example/releaf/complete/${env.BUILD_NUMBER}/releaf-complete-${env.BUILD_NUMBER}.tar.gz
+                        curl -u ''' + NEXUS_USER + ''':''' + NEXUS_PASS + ''' \
+                            --upload-file releaf-complete-''' + env.BUILD_NUMBER + '''.tar.gz \
+                            ''' + NEXUS_URL + '''/repository/raw-releases/com/example/releaf/complete/''' + env.BUILD_NUMBER + '''/releaf-complete-''' + env.BUILD_NUMBER + '''.tar.gz
                         
                         # Upload metadata
-                        curl -u ${NEXUS_USER}:${NEXUS_PASS} \
-                            --upload-file releaf/${env.BUILD_NUMBER}/project-info.json \
-                            ${NEXUS_URL}/repository/raw-releases/com/example/releaf/metadata/${env.BUILD_NUMBER}/project-info.json
+                        curl -u ''' + NEXUS_USER + ''':''' + NEXUS_PASS + ''' \
+                            --upload-file releaf/''' + env.BUILD_NUMBER + '''/project-info.json \
+                            ''' + NEXUS_URL + '''/repository/raw-releases/com/example/releaf/metadata/''' + env.BUILD_NUMBER + '''/project-info.json
                         
                         # Upload latest versions
-                        curl -u ${NEXUS_USER}:${NEXUS_PASS} \
-                            --upload-file releaf-application-${env.BUILD_NUMBER}.tar.gz \
-                            ${NEXUS_URL}/repository/raw-releases/com/example/releaf/application/latest/releaf-application-latest.tar.gz
+                        curl -u ''' + NEXUS_USER + ''':''' + NEXUS_PASS + ''' \
+                            --upload-file releaf-application-''' + env.BUILD_NUMBER + '''.tar.gz \
+                            ''' + NEXUS_URL + '''/repository/raw-releases/com/example/releaf/application/latest/releaf-application-latest.tar.gz
                         
-                        curl -u ${NEXUS_USER}:${NEXUS_PASS} \
-                            --upload-file releaf-complete-${env.BUILD_NUMBER}.tar.gz \
-                            ${NEXUS_URL}/repository/raw-releases/com/example/releaf/complete/latest/releaf-complete-latest.tar.gz
+                        curl -u ''' + NEXUS_USER + ''':''' + NEXUS_PASS + ''' \
+                            --upload-file releaf-complete-''' + env.BUILD_NUMBER + '''.tar.gz \
+                            ''' + NEXUS_URL + '''/repository/raw-releases/com/example/releaf/complete/latest/releaf-complete-latest.tar.gz
                         
-                        curl -u ${NEXUS_USER}:${NEXUS_PASS} \
+                        curl -u ''' + NEXUS_USER + ''':''' + NEXUS_PASS + ''' \
                             --upload-file releaf/latest/project-info.json \
-                            ${NEXUS_URL}/repository/raw-releases/com/example/releaf/metadata/latest/project-info.json
+                            ''' + NEXUS_URL + '''/repository/raw-releases/com/example/releaf/metadata/latest/project-info.json
                         
                         echo "Artifacts uploaded successfully to Nexus!"
                         echo "Structure: com/example/releaf/[type]/[version]/[artifact]"
-                    """
+                    '''
                 }
             }
         }
