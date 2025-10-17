@@ -10,7 +10,7 @@
             @forelse($featuredCampaigns as $index => $campaign)
             <div class="carousel-item {{ $index === 0 ? 'active' : '' }} position-relative">
                 <!-- Image de fond -->
-                <img src="{{ $campaign->image_url ? asset('storage/' . $campaign->image_url) : 'https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80' }}" 
+                <img src="{{ $campaign->image_url ? Storage::url($campaign->image_url) : 'https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80' }}"
                      alt="{{ $campaign->name }}"
                      class="d-block w-100 hero-carousel-image">
                 
@@ -97,12 +97,22 @@
                                     </p>
                                     
                                     <div class="hero-buttons d-flex gap-3 flex-wrap">
-                                        <a href="{{ route('campaigns.create') }}" class="btn btn-success btn-lg">
-                                            <i class="fas fa-plus me-2"></i>Créer une campagne
-                                        </a>
-                                        <a href="{{ route('campaigns.index') }}" class="btn btn-outline-light btn-lg">
-                                            <i class="fas fa-list me-2"></i>Explorer les campagnes
-                                        </a>
+                                        @guest
+                                            <a href="{{ route('campaigns.index') }}" class="btn btn-outline-light btn-lg">
+                                                <i class="fas fa-list me-2"></i>Explorer les campagnes
+                                            </a>
+                                        @else
+                                            @php $role = optional(auth()->user())->role; @endphp
+                                            @if(in_array($role, ['admin', 'organizer']))
+                                                <a href="{{ route('campaigns.create') }}" class="btn btn-success btn-lg">
+                                                    <i class="fas fa-plus me-2"></i>Créer une campagne
+                                                </a>
+                                            @endif
+
+                                            <a href="{{ route('campaigns.index') }}" class="btn btn-outline-light btn-lg">
+                                                <i class="fas fa-list me-2"></i>Explorer les campagnes
+                                            </a>
+                                        @endguest
                                     </div>
                                 </div>
                             </div>
@@ -232,6 +242,8 @@
     </div>
 </section>
 
+
+
 <!-- Recent Events Section -->
 <section class="recent-events-section py-5 bg-light">
     <div class="container">
@@ -264,41 +276,6 @@
                             <div class="carousel-item {{ $chunkIndex === 0 ? 'active' : '' }}">
                                 <div class="row" >
                                     @foreach($eventsChunk as $event)
-<<<<<<< HEAD
-                                    <div class="col-lg-3 col-md-6 mb-4">
-                                        <div class="event-card-wrapper">
-                                            <div class="event-card-rectangle position-relative overflow-hidden rounded shadow-sm">
-                                                <!-- Image de fond -->
-                                                @if($event->images && is_array($event->images) && count($event->images) > 0 && !empty($event->images[0]))
-                                                    <img src="{{ asset('storage/' . $event->images[0]) }}" 
-                                                         class="event-bg-image"
-                                                         onerror="this.src='https://via.placeholder.com/300x250/28a745/ffffff?text=Événement+Éco'">
-                                                @else
-                                                    <img src="https://via.placeholder.com/300x250/28a745/ffffff?text=Événement+Éco" 
-                                                         class="event-bg-image">
-                                                @endif
-                                                
-                                                <!-- Overlay sombre -->
-                                                <div class="event-overlay"></div>
-                                                
-                                                <!-- Badge de statut -->
-                                                <div class="event-badge">
-                                                    @if($event->isPublished())
-                                                        <span class="badge bg-success">Publié</span>
-                                                    @elseif($event->isPending())
-                                                        <span class="badge bg-warning">En attente</span>
-                                                    @endif
-                                                </div>
-
-                                                <!-- Contenu superposé sur l'image -->
-                                                <div class="event-content position-absolute w-100 h-100 d-flex flex-column justify-content-between p-3">
-                                                    <!-- En-tête -->
-                                                    <div class="event-header">
-                                                        <div class="event-date">
-                                                            <small class="text-white fw-bold bg-success px-2 py-1 rounded">
-                                                                <i class="fas fa-calendar me-1"></i>
-                                                                {{ $event->date->format('d/m/Y') }}
-=======
                                     <div class="col-lg-3 col-md-6 mb-4" data-event-id="{{ $event->id }}">
                                         <div class="card event-card h-100 shadow-sm border-0">
                                             <!-- Event Image -->
@@ -308,10 +285,6 @@
          style="height: 200px; object-fit: cover;" 
          onerror="this.src='https://via.placeholder.com/300x200?text=Image+Not+Found'">
 @endif
-
-
-
-
                                            
                                             <div class="card-body d-flex flex-column" >
                                                 <!-- Event Date -->
@@ -349,59 +322,12 @@
                                                             <small class="text-muted">
                                                                 <i class="fas fa-map-marker-alt me-1"></i>
                                                                 {{ Str::limit($event->location->name, 10) }}
->>>>>>> b8512a4eef8437741b4c78cc050ef4b68f278093
                                                             </small>
                                                         </div>
                                                     </div>
-
-<<<<<<< HEAD
-                                                    <!-- Contenu principal -->
-                                                    <div class="event-main text-center flex-grow-1 d-flex flex-column justify-content-center">
-                                                        <h5 class="event-title text-white mb-2">
-                                                            {{ Str::limit($event->title, 40) }}
-                                                        </h5>
-                                                        <p class="event-description text-light mb-3">
-                                                            {{ Str::limit($event->description, 60) }}
-                                                        </p>
-                                                    </div>
-
-                                                    <!-- Pied de carte -->
-                                                    <div class="event-footer">
-                                                        <!-- Métadonnées -->
-                                                        <div class="event-meta mb-3">
-                                                            <div class="row text-center g-2">
-                                                                <div class="col-4">
-                                                                    <small class="text-light">
-                                                                        <i class="fas fa-money-bill-wave me-1"></i>
-                                                                        {{ $event->price ? $event->price . 'TND' : '100TND' }}
-                                                                    </small>
-                                                                </div>
-                                                                <div class="col-4">
-                                                                    <small class="text-light">
-                                                                        <i class="fas fa-users me-1"></i>
-                                                                        {{ $event->max_participants ?? 0 }}
-                                                                    </small>
-                                                                </div>
-                                                                <div class="col-4">
-                                                                    <small class="text-light">
-                                                                        <i class="fas fa-map-marker-alt me-1"></i>
-                                                                        {{ Str::limit($event->location, 8) }}
-                                                                    </small>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- Bouton d'action -->
-                                                        <div class="event-actions">
-                                                            <a href="{{ route('events.show', $event) }}" class="btn btn-success btn-sm w-100">
-                                                                <i class="fas fa-eye me-1"></i>Voir l'événement
-                                                            </a>
-                                                        </div>
-                                                    </div>
                                                 </div>
-=======
+
                                                
->>>>>>> b8512a4eef8437741b4c78cc050ef4b68f278093
                                             </div>
                                         </div>
                                     </div>
@@ -435,6 +361,8 @@
             </div>
         </div>
         @endif
+
+  
     </div>
 </section>
 
@@ -467,9 +395,10 @@
 }
 
 .hero-carousel-image {
-    height: 600px; /* Hauteur augmentée */
-    object-fit: cover;
+    height: 420px; /* Fixed header image height (reduced for consistent header) */
     width: 100%;
+    object-fit: cover !important;
+    object-position: center center;
 }
 
 .carousel-item {

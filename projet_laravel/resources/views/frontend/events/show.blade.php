@@ -2,11 +2,30 @@
 @section('title', $event->title . ' | Événements')
 
 @section('content')
+
+
 <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
   
     <!-- Hero Section -->
     <div class="relative overflow-hidden bg-white">
         <!-- Breadcrumb Path Top Right -->
+
+        <div class="d-flex justify-content-between align-items-center " style="margin-left: 1200px;">
+                <div class="breadcrumb-nav">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="javascript:void(0);" onclick="history.back();" class="text-eco">
+                                Événements
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                {{ $event->title ?? 'Événement' }}
+                            </li>
+                        </ol>
+                    </nav>
+            </div>
+        </div>
         
         <div class="container mx-auto px-4 py-12">
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch">
@@ -145,10 +164,19 @@
                     <div class="relative flex flex-col items-center justify-center">
                         <!-- Framed Photo -->
                         <div class="photo-card relative w-[340px] h-[340px] sm:w-[380px] sm:h-[380px] md:w-[420px] md:h-[420px] flex items-center justify-center">
-                            <div class="photo-frame bg-white rounded-2xl shadow-lg flex items-center justify-center" style="width:100%;height:100%;border-radius:18px;padding:18px;box-shadow:0 12px 30px rgba(0,0,0,0.08);">
-                                <div style="width:100%;height:100%;background:linear-gradient(180deg,#fff,#fbfffb);border-radius:12px;padding:6px;box-shadow:inset 0 0 0 6px rgba(243,250,246,0.9);overflow:hidden;">
-                                    @if($event->images && count($event->images) > 0)
-                                        <img src="{{ asset('storage/' . $event->images[0]) }}" alt="{{ $event->title }}" class="w-full h-full object-cover rounded-xl" />
+                            <div id="photo-frame" class="photo-frame bg-white rounded-2xl shadow-lg flex items-center justify-center" style="width:100%;height:100%;border-radius:18px;padding:18px;box-shadow:0 12px 30px rgba(0,0,0,0.08);">
+                                <div id="photo-inner" style="width:100%;height:100%;background:linear-gradient(180deg,#fff,#fbfffb);border-radius:12px;padding:6px;box-shadow:inset 0 0 0 6px rgba(243,250,246,0.9);overflow:hidden;position:relative;">
+                                    @php
+                                        // Prepare JS-friendly image array
+                                        $eventImageUrls = [];
+                                        if($event->images && count($event->images) > 0){
+                                            foreach($event->images as $img){
+                                                $eventImageUrls[] = asset('storage/' . $img);
+                                            }
+                                        }
+                                    @endphp
+                                    @if(!empty($eventImageUrls))
+                                        <img id="main-event-image" src="{{ $eventImageUrls[0] }}" alt="{{ $event->title }}" class="w-full h-full object-cover rounded-xl" />
                                     @else
                                         <div class="w-full h-full flex items-center justify-center bg-[#f3faf6] rounded-xl">
                                             <svg class="w-28 h-28 text-[#2d5a27] opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,18 +187,11 @@
                                 </div>
                             </div>
 
-                            <!-- small top-right profile-style photo (organizer avatar) -->
-                            <div class="absolute top-6 right-6 bg-white rounded-full p-1 shadow-md" style="width:64px;height:64px;border-radius:9999px;">
-                                @php
-                                    $avatar = optional($event->user)->avatar ?? null; 
-                                    $avatarUrl = $avatar ? asset('storage/' . $avatar) : asset('images/avatar-placeholder.png');
-                                @endphp
-                                <img src="{{ $avatarUrl }}" alt="{{ optional($event->user)->name ?? 'Organisateur' }}" class="w-full h-full object-cover rounded-full" />
-                            </div>
+                            
 
-                            <!-- Date Badge (keeps left top) -->
-                            <div class="absolute top-4 left-4 bg-[#2d5a27] text-white rounded-lg shadow-xl overflow-hidden">
-                                <div class="px-4 py-2 text-center bg-[#2d5a27]">
+                            <!-- Date Badge (moved to top-right) -->
+                            <div id="date-badge" class="absolute bg-[#2d5a27] text-white rounded-lg shadow-xl overflow-hidden z-30" style="min-width:60px; top:16px; right:16px;">
+                                <div class="px-3 py-2 text-center bg-[#2d5a27]">
                                     <div class="text-3xl font-bold leading-none">{{ \Carbon\Carbon::parse($event->date)->format('d') }}</div>
                                     <div class="text-xs font-medium uppercase mt-1">{{ \Carbon\Carbon::parse($event->date)->format('M') }}</div>
                                 </div>
@@ -178,11 +199,10 @@
                         </div>
 
                         <!-- Optional carousel dots (kept small) -->
-                        @if($event->images && count($event->images) > 1)
-                            <div class="flex items-center gap-2 mt-4">
-                                @foreach($event->images as $idx => $image)
-                                    <button class="carousel-dot w-3 h-3 rounded-full bg-gray-300 transition-all duration-300 {{ $idx === 0 ? 'bg-[#2d5a27] w-6' : '' }}"
-                                            data-carousel-index="{{ $idx }}">
+                        @if(!empty($eventImageUrls) && count($eventImageUrls) > 1)
+                            <div id="carousel-dots" class="flex items-center gap-2 mt-4" role="tablist" aria-label="Event images">
+                                @foreach($eventImageUrls as $idx => $url)
+                                    <button class="carousel-dot w-3 h-3 rounded-full bg-gray-300 transition-all duration-300 {{ $idx === 0 ? 'active-dot' : '' }}" aria-controls="main-event-image" aria-selected="{{ $idx === 0 ? 'true' : 'false' }}" data-carousel-index="{{ $idx }}" data-img-src="{{ $url }}" title="Voir l'image {{ $idx + 1 }}">
                                     </button>
                                 @endforeach
                             </div>
@@ -378,6 +398,26 @@
     font-size: 0.875rem;
     line-height: 1.25rem;
 }
+
+/* Event image carousel small additions */
+.carousel-dot {
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+.carousel-dot.active-dot {
+    background: #2d5a27;
+    width: 24px !important;
+    height: 6px !important;
+    border-radius: 999px !important;
+}
+.carousel-dot:focus {
+    outline: 2px solid rgba(45,90,39,0.25);
+}
+
+/* Ensure date badge floats above image */
+#date-badge { z-index: 30; }
+
 
 .uppercase {
     text-transform: uppercase;
@@ -889,6 +929,10 @@ nav {
     border-radius:10px;
 }
 
+/* Force badge and avatar to be positioned above the photo and anchored */
+.photo-card .date-badge{ position: absolute; top: 16px; right: 16px; z-index: 40; }
+.photo-card .organizer-avatar{ position: absolute; top: 24px; left: 24px; z-index: 35; }
+
 .event-meta-row .prose{ margin-top:0; }
 
 /* Small cards strip */
@@ -952,6 +996,67 @@ nav {
 }
 
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dotsContainer = document.getElementById('carousel-dots');
+        const mainImage = document.getElementById('main-event-image');
+        if(!mainImage) return; // nothing to do
+
+        // Image URLs embedded server-side
+        const imageUrls = @json($eventImageUrls ?? []);
+        let currentIndex = 0;
+
+        function setActiveDot(idx) {
+            const dots = dotsContainer ? dotsContainer.querySelectorAll('.carousel-dot') : [];
+            dots.forEach((d, i) => {
+                d.classList.toggle('active-dot', i === idx);
+                d.setAttribute('aria-selected', i === idx ? 'true' : 'false');
+            });
+        }
+
+        if(dotsContainer) {
+            dotsContainer.addEventListener('click', function(e) {
+                const btn = e.target.closest('.carousel-dot');
+                if(!btn) return;
+                const idx = parseInt(btn.dataset.carouselIndex, 10);
+                const src = btn.dataset.imgSrc;
+                if(typeof idx === 'number' && src) {
+                    mainImage.src = src;
+                    currentIndex = idx;
+                    setActiveDot(currentIndex);
+                }
+            });
+
+            // Keyboard navigation for dots container
+            dotsContainer.addEventListener('keydown', function(e) {
+                if(e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    currentIndex = (currentIndex + 1) % imageUrls.length;
+                    mainImage.src = imageUrls[currentIndex];
+                    setActiveDot(currentIndex);
+                } else if(e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    currentIndex = (currentIndex - 1 + imageUrls.length) % imageUrls.length;
+                    mainImage.src = imageUrls[currentIndex];
+                    setActiveDot(currentIndex);
+                }
+            });
+        }
+
+        // Allow clicking on main image to advance
+        mainImage.style.cursor = 'pointer';
+        mainImage.addEventListener('click', function() {
+            if(!imageUrls || imageUrls.length <= 1) return;
+            currentIndex = (currentIndex + 1) % imageUrls.length;
+            mainImage.src = imageUrls[currentIndex];
+            setActiveDot(currentIndex);
+        });
+
+        // Initialize active dot
+        setActiveDot(0);
+    });
+</script>
 
 @push('scripts')
 <script>

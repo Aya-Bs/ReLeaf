@@ -80,7 +80,7 @@
                                                     id="campaign_id" name="campaign_id" required>
                                                 <option value="">🌱 Sélectionnez une campagne</option>
                                                 @foreach($campaigns as $campaign)
-                                                    <option value="{{ $campaign->id }}" {{ old('campaign_id') == $campaign->id ? 'selected' : '' }}>
+                                                    <option value="{{ $campaign->id }}" {{ old('campaign_id', request('campaign_id')) == $campaign->id ? 'selected' : '' }}>
                                                         {{ $campaign->name }} ({{ $campaign->category }})
                                                     </option>
                                                 @endforeach

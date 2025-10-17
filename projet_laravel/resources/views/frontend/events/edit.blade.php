@@ -15,7 +15,6 @@
                     <!-- Breadcrumb path on top right -->
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-4" style="background: transparent; padding: 0; margin: 0;">
-                            <li class="breadcrumb-item"><a href="{{ route('home') }}" style="color: #2d5a27;">Accueil</a></li>
                             <li class="breadcrumb-item"><a href="{{ route('events.my-events') }}" style="color: #2d5a27;">Événements</a></li>
                             <li class="breadcrumb-item active" aria-current="page" style="color: #2d5a27;"><strong>Modifier</strong></li>
                         </ol>

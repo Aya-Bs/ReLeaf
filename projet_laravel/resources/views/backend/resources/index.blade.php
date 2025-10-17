@@ -12,6 +12,92 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
+
+            <!-- Statistiques & Graphiques des Ressources -->
+            @php
+               $allResources = \App\Models\Resource::select('status','resource_type','quantity_needed','quantity_pledged','created_at')->get();
+
+               $totalResources = $allResources->count();
+               $needed = $allResources->where('status','needed')->count();
+               $pledged = $allResources->where('status','pledged')->count();
+               $received = $allResources->where('status','received')->count();
+
+               $byStatusR = $allResources->groupBy('status')->map->count();
+               $byTypeR = $allResources->groupBy('resource_type')->map->count();
+
+               $monthsR = collect(range(5,0))->map(fn($i)=>now()->subMonths($i)->format('Y-m'));
+               $byMonthR = $monthsR->mapWithKeys(fn($m)=>[
+                   $m => $allResources->filter(fn($r)=>optional($r->created_at)->format('Y-m') === $m)->count()
+               ]);
+
+               $totalNeededUnits = $allResources->sum('quantity_needed');
+               $totalPledgedUnits = $allResources->sum('quantity_pledged');
+            @endphp
+
+            <div class="card mb-4">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0">
+                  <i class="fas fa-boxes me-2" style="color: var(--eco-green, #2d5a27)"></i>
+                  Statistiques des Ressources
+                </h3>
+              </div>
+              <div class="card-body">
+                <div class="row g-2 mb-2">
+                  <div class="col-md-2">
+                    <div class="p-2 rounded-3 border text-center kpi-box" style="border-color:#e9ecef;">
+                      <div class="text-eco fw-bold">Total</div>
+                      <div class="fs-4 fw-bold">{{ number_format($totalResources) }}</div>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="p-2 rounded-3 border text-center kpi-box" style="border-color:#e9ecef;">
+                      <div class="text-eco fw-bold">Nécessaires</div>
+                      <div class="fs-4 fw-bold">{{ number_format($needed) }}</div>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="p-2 rounded-3 border text-center kpi-box" style="border-color:#e9ecef;">
+                      <div class="text-eco fw-bold">Promises</div>
+                      <div class="fs-4 fw-bold">{{ number_format($pledged) }}</div>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="p-2 rounded-3 border text-center kpi-box" style="border-color:#e9ecef;">
+                      <div class="text-eco fw-bold">Reçues</div>
+                      <div class="fs-4 fw-bold">{{ number_format($received) }}</div>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="p-2 rounded-3 border text-center kpi-box" style="border-color:#e9ecef;">
+                      <div class="text-eco fw-bold">Besoin total</div>
+                      <div class="fs-6 fw-bold">{{ number_format($totalNeededUnits, 0, ',', ' ') }}</div>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="p-2 rounded-3 border text-center kpi-box" style="border-color:#e9ecef;">
+                      <div class="text-eco fw-bold">Promis total</div>
+                      <div class="fs-6 fw-bold">{{ number_format($totalPledgedUnits, 0, ',', ' ') }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-lg-4">
+                    <h6 class="text-eco fw-bold mb-2">Par Statut</h6>
+                    <div class="chart-wrap"><canvas id="resStatusChart" height="120"></canvas></div>
+                  </div>
+                  <div class="col-lg-4">
+                    <h6 class="text-eco fw-bold mb-2">Par Type</h6>
+                    <div class="chart-wrap"><canvas id="resTypeChart" height="120"></canvas></div>
+                  </div>
+                  <div class="col-lg-4">
+                    <h6 class="text-eco fw-bold mb-2">Créations (6 mois)</h6>
+                    <div class="chart-wrap"><canvas id="resMonthlyChart" height="120"></canvas></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="card card-eco">
                 <div class="card-header">
                     <h3 class="card-title">Liste des ressources</h3>
@@ -20,7 +106,7 @@
                 <div class="card-body">
                     @if($resources->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover">
+                        <table class="table table-modern">
                             <thead class="thead-light">
                                 <tr>
                                     <th>Nom</th>
@@ -154,4 +240,95 @@
         </div>
     </div>
 </div>
+
+@push('styles')
+<style>
+    .text-eco { color: var(--eco-green, #2d5a27) !important; }
+    .kpi-box .text-eco { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; }
+    .kpi-box .fs-4 { font-size: 1.25rem !important; }
+
+    /* Charts compacts */
+    .chart-wrap { height: 160px; }
+    .chart-wrap canvas { max-height: 160px !important; width: 100% !important; }
+
+    /* Table moderne (aligné sur campagnes) */
+    .table-modern {
+        margin: 0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .table-modern thead th {
+        background: #f8f9fa;
+        border: none;
+        padding: 0.75rem 1.2rem;
+        font-weight: 500;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #2d5a27;
+    }
+    .table-modern tbody tr {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f0f0f0;
+        background: #fff;
+    }
+    .table-modern tbody tr:hover {
+        background: #f4f8f4;
+        transform: scale(1.01);
+    }
+    .table-modern tbody td {
+        padding: 0.85rem 1.2rem;
+        vertical-align: middle;
+        border: none;
+        font-size: 13px;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(function(){
+  const byStatus = @json($byStatusR ?? []);
+  const byType = @json($byTypeR ?? []);
+  const months = @json($monthsR ?? collect());
+  const byMonth = @json($byMonthR ?? []);
+  const eco = getComputedStyle(document.documentElement).getPropertyValue('--eco-green') || '#2d5a27';
+  const ecoLight = getComputedStyle(document.documentElement).getPropertyValue('--eco-light-green') || '#4a7c59';
+  const palette = ['#2d5a27','#4a7c59','#6c757d','#17a2b8','#ffc107','#dc3545','#20c997'];
+
+  const sCtx = document.getElementById('resStatusChart');
+  if(sCtx){
+    new Chart(sCtx,{
+      type:'doughnut',
+      data:{ labels:Object.keys(byStatus), datasets:[{ data:Object.values(byStatus), backgroundColor:palette.slice(0,Object.keys(byStatus).length), borderWidth:0 }] },
+      options:{ plugins:{ legend:{ position:'bottom' } }, responsive:true, maintainAspectRatio:false }
+    });
+  }
+
+  const tCtx = document.getElementById('resTypeChart');
+  if(tCtx){
+    new Chart(tCtx,{
+      type:'bar',
+      data:{ labels:Object.keys(byType).map(x=>titleCase(x)), datasets:[{ label:'Ressources', data:Object.values(byType), backgroundColor:eco }] },
+      options:{ plugins:{ legend:{ display:false } }, scales:{ x:{ grid:{ display:false } }, y:{ beginAtZero:true, ticks:{ precision:0 } } }, responsive:true, maintainAspectRatio:false }
+    });
+  }
+
+  const mCtx = document.getElementById('resMonthlyChart');
+  if(mCtx){
+    new Chart(mCtx,{
+      type:'line',
+      data:{ labels:Object.keys(byMonth).map(m=>m), datasets:[{ label:'Créations', data:Object.values(byMonth), borderColor:eco, backgroundColor:ecoLight, tension:.25, fill:true, pointRadius:3, pointBackgroundColor:eco }] },
+      options:{ plugins:{ legend:{ display:false } }, scales:{ x:{ grid:{ display:false } }, y:{ beginAtZero:true, ticks:{ precision:0 } } }, responsive:true, maintainAspectRatio:false }
+    });
+  }
+
+  function titleCase(s){return (s||'').toString().replace(/_/g,' ').replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1).toLowerCase());}
+})();
+</script>
+@endpush
+
 @endsection

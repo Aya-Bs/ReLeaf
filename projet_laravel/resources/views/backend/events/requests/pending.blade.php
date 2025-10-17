@@ -1,6 +1,6 @@
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('backend.dashboard') }}">Tableau de bord</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('backend.events.index') }}">Gestion des Événements</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('backend.events.index') }}">Événements</a></li>
     <li class="breadcrumb-item active">Demandes en attente</li>
 @endsection
 @extends('backend.layouts.app')

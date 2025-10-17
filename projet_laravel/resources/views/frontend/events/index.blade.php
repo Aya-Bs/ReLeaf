@@ -3,7 +3,7 @@
 @section('title', 'Mes Événements')
 
 @section('content')
-<div class="container">
+<div class="container mt-6">
 
     <div class="row">
         <div class="col-12">
@@ -146,30 +146,7 @@
                                                     <i class="fas fa-eye"></i>
                                                 </a>
 
-                                                <!-- Reserve Button - Only show for published events -->
-                                                @if($event->isPublished())
-                                                    @php
-                                                        // Vérifier si l'utilisateur a une réservation pour cet événement
-                                                        $userReservation = $event->reservations->first();
-                                                    @endphp
-                                                    
-                                                    @if($userReservation)
-                                                        <!-- Bouton "Voir réservation" si l'utilisateur a déjà réservé -->
-                                                        <a href="{{ route('reservations.confirmation', $userReservation) }}" 
-                                                           class="btn btn-outline-primary" 
-                                                           title="Voir ma réservation">
-                                                            <i class="fas fa-ticket-alt"></i>
-                                                        </a>
-                                                    @else
-                                                        <!-- Bouton "Réserver" si l'utilisateur n'a pas encore réservé -->
-                                                        <a href="/events/{{ $event->id }}/seats" 
-                                                           class="btn btn-outline-success" 
-                                                           title="Réserver">
-                                                            <i class="fas fa-calendar-check"></i>
-                                                        </a>
-                                                    @endif
-                                                @endif
-
+                           
                                                 <!-- Edit Button - Only show for draft and pending status -->
                                                 @if($event->isDraft() || $event->isPending())
                                                 <a href="{{ route('events.edit', $event) }}" class="btn btn-sm btn-action btn-edit" title="Modifier">

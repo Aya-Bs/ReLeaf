@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -7,30 +6,27 @@ use Illuminate\Database\Eloquent\Model;
 class Blog extends Model
 {
     protected $fillable = [
+        'user_id',
         'title',
         'content',
-        'author_id',
         'date_posted',
         'image_url',
         'tags',
     ];
+    
 
-    /**
-     * Casts
-     */
     protected $casts = [
         'date_posted' => 'datetime',
     ];
 
-    // Relation avec l'auteur
-    public function author()
+    // Relation avec l'utilisateur
+    public function user()
     {
-        return $this->belongsTo(User::class, 'author_id');
+        return $this->belongsTo(User::class);
     }
-
-    // Relation avec les reviews
     public function reviews()
-    {
-        return $this->hasMany(Review::class, 'blog_id');
-    }
+{
+    return $this->hasMany(Review::class);
+}
+
 }

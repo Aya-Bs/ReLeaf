@@ -8,10 +8,10 @@
     <div class="container">
         <div class="row align-items-center">
             <div class="col-12 text-center">
-                <h1 class="display-5 fw-bold mb-3">
-                    <i class="fas fa-edit me-2"></i>Modifier la <span class="text-success">Ressource</span>
+                <h1 class="display-5 fw-bold mb-3" style="color: #2d5a27 !important;">
+                    <i class="fas fa-edit me-2" style="color: #2d5a27 !important;"></i>Modifier la <span class="text-success" style="color: #4a7c59 !important;">Ressource</span>
                 </h1>
-                <p class="lead">{{ $resource->name }}</p>
+                <p class="lead" style="color: #2d5a27 !important; font-weight: 600;">{{ $resource->name }}</p>
             </div>
         </div>
     </div>
@@ -38,8 +38,8 @@
                             <li class="breadcrumb-item active" aria-current="page">Modifier</li>
                         </ol>
                     </nav>
-                    </div>
                 </div>
+            </div>
 
             <!-- Main Form Card -->
             <div class="resource-form-card">
@@ -52,7 +52,7 @@
                             <div class="col-md-8">
                                 <div class="mb-3">
                                     <label for="name" class="form-label">Nom de la ressource *</label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                                    <input type="text" class="form-control form-control-sm @error('name') is-invalid @enderror" 
                                            id="name" name="name" value="{{ old('name', $resource->name) }}" required>
                                     @error('name')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -61,7 +61,7 @@
 
                                 <div class="mb-3">
                                     <label for="description" class="form-label">Description</label>
-                                    <textarea class="form-control @error('description') is-invalid @enderror" 
+                                    <textarea class="form-control form-control-sm @error('description') is-invalid @enderror" 
                                               id="description" name="description" rows="3">{{ old('description', $resource->description) }}</textarea>
                                     @error('description')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -72,7 +72,7 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="campaign_id" class="form-label">Campagne associée *</label>
-                                            <select class="form-control @error('campaign_id') is-invalid @enderror" 
+                                            <select class="form-control form-control-sm @error('campaign_id') is-invalid @enderror" 
                                                     id="campaign_id" name="campaign_id" required>
                                                 <option value="">Sélectionnez une campagne</option>
                                                 @foreach($campaigns as $campaign)
@@ -89,7 +89,7 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="provider" class="form-label">Fournisseur</label>
-                                            <input type="text" class="form-control @error('provider') is-invalid @enderror" 
+                                            <input type="text" class="form-control form-control-sm @error('provider') is-invalid @enderror" 
                                                    id="provider" name="provider" value="{{ old('provider', $resource->provider) }}">
                                             @error('provider')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -102,7 +102,7 @@
                                     <div class="col-md-4">
                                         <div class="mb-3">
                                             <label for="quantity_needed" class="form-label">Quantité nécessaire *</label>
-                                            <input type="number" class="form-control @error('quantity_needed') is-invalid @enderror" 
+                                            <input type="number" class="form-control form-control-sm @error('quantity_needed') is-invalid @enderror" 
                                                    id="quantity_needed" name="quantity_needed" 
                                                    value="{{ old('quantity_needed', $resource->quantity_needed) }}" min="1" required>
                                             @error('quantity_needed')
@@ -113,7 +113,7 @@
                                     <div class="col-md-4">
                                         <div class="mb-3">
                                             <label for="quantity_pledged" class="form-label">Quantité promise</label>
-                                            <input type="number" class="form-control @error('quantity_pledged') is-invalid @enderror" 
+                                            <input type="number" class="form-control form-control-sm @error('quantity_pledged') is-invalid @enderror" 
                                                    id="quantity_pledged" name="quantity_pledged" 
                                                    value="{{ old('quantity_pledged', $resource->quantity_pledged) }}" min="0">
                                             @error('quantity_pledged')
@@ -124,7 +124,7 @@
                                     <div class="col-md-4">
                                         <div class="mb-3">
                                             <label for="unit" class="form-label">Unité *</label>
-                                            <input type="text" class="form-control @error('unit') is-invalid @enderror" 
+                                            <input type="text" class="form-control form-control-sm @error('unit') is-invalid @enderror" 
                                                    id="unit" name="unit" value="{{ old('unit', $resource->unit) }}" required>
                                             @error('unit')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -137,7 +137,7 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="resource_type" class="form-label">Type de ressource *</label>
-                                            <select class="form-control @error('resource_type') is-invalid @enderror" 
+                                            <select class="form-control form-control-sm @error('resource_type') is-invalid @enderror" 
                                                     id="resource_type" name="resource_type" required>
                                                 @foreach(['money' => 'Argent', 'food' => 'Nourriture', 'clothing' => 'Vêtements', 'medical' => 'Médical', 'equipment' => 'Équipement', 'human' => 'Main d\'œuvre', 'other' => 'Autre'] as $value => $label)
                                                     <option value="{{ $value }}" {{ old('resource_type', $resource->resource_type) == $value ? 'selected' : '' }}>
@@ -153,7 +153,7 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="category" class="form-label">Catégorie *</label>
-                                            <select class="form-control @error('category') is-invalid @enderror" 
+                                            <select class="form-control form-control-sm @error('category') is-invalid @enderror" 
                                                     id="category" name="category" required>
                                                 @foreach(['materiel' => 'Matériel', 'financier' => 'Financier', 'humain' => 'Humain', 'technique' => 'Technique'] as $value => $label)
                                                     <option value="{{ $value }}" {{ old('category', $resource->category) == $value ? 'selected' : '' }}>
@@ -172,7 +172,7 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="priority" class="form-label">Priorité *</label>
-                                    <select class="form-control @error('priority') is-invalid @enderror" 
+                                    <select class="form-control form-control-sm @error('priority') is-invalid @enderror" 
                                             id="priority" name="priority" required>
                                         @foreach(['low' => 'Basse', 'medium' => 'Moyenne', 'high' => 'Haute', 'urgent' => 'Urgente'] as $value => $label)
                                             <option value="{{ $value }}" {{ old('priority', $resource->priority) == $value ? 'selected' : '' }}>
@@ -187,7 +187,7 @@
 
                                 <div class="mb-3">
                                     <label for="status" class="form-label">Statut *</label>
-                                    <select class="form-control @error('status') is-invalid @enderror" 
+                                    <select class="form-control form-control-sm @error('status') is-invalid @enderror" 
                                             id="status" name="status" required>
                                         @foreach(['needed' => 'Nécessaire', 'pledged' => 'Promis', 'received' => 'Reçu', 'in_use' => 'En utilisation'] as $value => $label)
                                             <option value="{{ $value }}" {{ old('status', $resource->status) == $value ? 'selected' : '' }}>
@@ -224,7 +224,7 @@
                                     @endif
                                     
                                     <label for="image" class="form-label">Changer l'image</label>
-                                    <input type="file" class="form-control @error('image') is-invalid @enderror" 
+                                    <input type="file" class="form-control form-control-sm @error('image') is-invalid @enderror" 
                                            id="image" name="image" accept="image/*">
                                     @error('image')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -233,7 +233,7 @@
 
                                 <div class="card bg-light">
                                     <div class="card-body">
-                                        <h6 class="card-title">Statistiques</h6>
+                                        <h6 class="card-title" style="color: #2d5a27 !important;">Statistiques</h6>
                                         <ul class="small text-muted mb-0">
                                             <li>Progression: {{ $resource->progress_percentage }}%</li>
                                             <li>Manquant: {{ $resource->missing_quantity }} {{ $resource->unit }}</li>
@@ -246,7 +246,7 @@
 
                         <div class="mb-3">
                             <label for="notes" class="form-label">Notes supplémentaires</label>
-                            <textarea class="form-control @error('notes') is-invalid @enderror" 
+                            <textarea class="form-control form-control-sm @error('notes') is-invalid @enderror" 
                                       id="notes" name="notes" rows="2">{{ old('notes', $resource->notes) }}</textarea>
                             @error('notes')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -255,12 +255,12 @@
 
                         <div class="form-actions">
                             <div class="d-flex justify-content-between align-items-center">
-                                <a href="{{ route('resources.index') }}" class="btn btn-outline-secondary btn-lg">
+                                <a href="{{ route('resources.index') }}" class="btn btn-outline-secondary btn-sm">
                                     <i class="fas fa-times me-2"></i>Annuler
                                 </a>
-                                <button type="submit" class="btn btn-eco btn-lg">
+                                <button type="submit" class="btn btn-eco btn-sm">
                                     <i class="fas fa-save me-2"></i>Mettre à jour
-                            </button>
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -275,10 +275,19 @@
 <style>
     /* Hero Section */
     .hero-section {
-        background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%);
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%) !important;
         min-height: 50vh;
         display: flex;
         align-items: center;
+        border-bottom: 3px solid #2d5a27;
+    }
+    
+    /* Forcer la couleur verte sur tous les éléments du hero */
+    .hero-section h1,
+    .hero-section h1 i,
+    .hero-section .lead,
+    .hero-section .text-success {
+        color: #2d5a27 !important;
     }
     
     /* Breadcrumb Navigation */
@@ -342,8 +351,13 @@
         border-radius: 0.75rem;
         border: 2px solid #e9ecef;
         transition: all 0.3s ease;
-        font-size: 1rem;
-        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .form-control-sm {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.75rem;
     }
     
     .form-control:focus {
@@ -355,8 +369,8 @@
     .form-label {
         font-weight: 600;
         color: var(--eco-green);
-        margin-bottom: 0.75rem;
-        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
     }
     
     /* Form Groups */
@@ -380,6 +394,7 @@
         color: var(--eco-green);
         font-weight: 600;
         margin-bottom: 1rem;
+        font-size: 0.9rem;
     }
     
     /* Form Switch */
@@ -395,6 +410,7 @@
     .form-check-label {
         font-weight: 600;
         color: var(--eco-green);
+        font-size: 0.85rem;
     }
     
     /* Form Actions */
@@ -409,9 +425,10 @@
         border: none;
         color: white;
         font-weight: 600;
-        padding: 0.75rem 2rem;
+        padding: 0.5rem 1.5rem;
         border-radius: 0.75rem;
         transition: all 0.3s ease;
+        font-size: 0.875rem;
     }
     
     .btn-eco:hover {
@@ -420,46 +437,15 @@
         color: white;
     }
     
-    .btn-outline-eco {
-        border: 2px solid var(--eco-green);
-        color: var(--eco-green);
-        background: transparent;
-        font-weight: 600;
-        padding: 0.75rem 2rem;
-        border-radius: 0.75rem;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-outline-eco:hover {
-        background: var(--eco-green);
-        color: white;
-        transform: translateY(-2px);
-    }
-    
-    .btn-outline-info {
-        border: 2px solid #17a2b8;
-        color: #17a2b8;
-        background: transparent;
-        font-weight: 600;
-        padding: 0.75rem 2rem;
-        border-radius: 0.75rem;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-outline-info:hover {
-        background: #17a2b8;
-        color: white;
-        transform: translateY(-2px);
-    }
-    
     .btn-outline-secondary {
         border: 2px solid #6c757d;
         color: #6c757d;
         background: transparent;
         font-weight: 600;
-        padding: 0.75rem 2rem;
+        padding: 0.5rem 1.5rem;
         border-radius: 0.75rem;
         transition: all 0.3s ease;
+        font-size: 0.875rem;
     }
     
     .btn-outline-secondary:hover {
@@ -512,6 +498,21 @@
     /* Smooth scrolling */
     html {
         scroll-behavior: smooth;
+    }
+    
+    /* Styles spécifiques pour forcer la couleur verte */
+    .force-green {
+        color: #2d5a27 !important;
+    }
+    
+    .hero-title {
+        color: #2d5a27 !important;
+        text-shadow: none !important;
+    }
+    
+    .hero-subtitle {
+        color: #4a7c59 !important;
+        font-weight: 600 !important;
     }
 </style>
 @endpush

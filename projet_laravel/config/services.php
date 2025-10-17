@@ -21,4 +21,22 @@ return [
             'verify' => false // Désactive la vérification SSL en développement
         ],
     ],
+    'climatiq' => [
+        'api_key' => env('CLIMATIQ_API_KEY'),
+        'base_url' => 'https://beta3.api.climatiq.io/',
+        'version' => 'v1',
+    ],
+
+    'carbon_interface' => [
+        'api_key' => env('CARBON_INTERFACE_API_KEY'),
+        'base_url' => 'https://www.carboninterface.com/api/v1/',
+    ],
+    'http_client' => [
+        'global_verify' => false, // Désactive SSL globalement pour le développement
+        'timeout' => 30,
+        'retry' => [
+            'times' => 3,
+            'sleep' => 100,
+        ],
+    ],
 ];

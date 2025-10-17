@@ -79,10 +79,13 @@
                             <i class="fas fa-times me-1"></i>Effacer
                         </button>
                         
-                        <!-- Create Campaign Button -->
+                        <!-- Create Campaign Button (only for admin and organizer) -->
+                        @php $role = optional(auth()->user())->role; @endphp
+                        @if(in_array($role, ['admin', 'organizer']))
                         <a href="{{ route('campaigns.create') }}" class="btn btn-eco btn-sm">
                             <i class="fas fa-plus me-2"></i>Créer une campagne
                         </a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -109,19 +112,51 @@
         <div class="carousel-wrapper">
             <button id="prevButton" class="carousel-nav left">&#8249;</button>
             <div id="campaignsCarousel" class="carousel-container">
+                @php $lastCampaign = $userCampaigns->last(); $firstCampaign = $userCampaigns->first(); @endphp
+                @if($lastCampaign)
+                <div class="campaign-card clone">
+                    <div class="card">
+                        <img src="{{ $lastCampaign->image_url ? Storage::url($lastCampaign->image_url) : asset('images/events/jardin-urbain.svg') }}" class="card-img-top" alt="{{ $lastCampaign->name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ $lastCampaign->name }}</h5>
+                            <p class="card-text">{{ ucfirst($lastCampaign->category) }}</p>
+                            <p class="card-text text-muted">{{ $lastCampaign->start_date->format('d/m/Y') }} - {{ $lastCampaign->end_date->format('d/m/Y') }}</p>
+                            <a href="{{ route('campaigns.show', $lastCampaign) }}" class="btn btn-eco">Voir plus</a>
+                        </div>
+                    </div>
+                </div>
+                @endif
                 @foreach($userCampaigns as $campaign)
                 <div class="campaign-card">
                     <div class="card">
-                        <img src="{{ $campaign->image_url ? Storage::url($campaign->image_url) : 'placeholder.jpg' }}" class="card-img-top" alt="{{ $campaign->name }}">
+                        <img src="{{ $campaign->image_url ? Storage::url($campaign->image_url) : asset('images/events/jardin-urbain.svg') }}" class="card-img-top" alt="{{ $campaign->name }}">
                         <div class="card-body">
                             <h5 class="card-title">{{ $campaign->name }}</h5>
                             <p class="card-text">{{ ucfirst($campaign->category) }}</p>
                             <p class="card-text text-muted">{{ $campaign->start_date->format('d/m/Y') }} - {{ $campaign->end_date->format('d/m/Y') }}</p>
-                            <a href="{{ route('campaigns.show', $campaign) }}" class="btn btn-primary">Voir plus</a>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a href="{{ route('campaigns.show', $campaign) }}" class="btn btn-eco">Voir plus</a>
+                                <a href="{{ route('campaigns.carbon-report', $campaign) }}" class="btn btn-outline-eco">
+                                    <i class="fas fa-leaf me-1"></i>Bilan carbone
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
                 @endforeach
+                @if($firstCampaign)
+                <div class="campaign-card clone">
+                    <div class="card">
+                        <img src="{{ $firstCampaign->image_url ? Storage::url($firstCampaign->image_url) : asset('images/events/jardin-urbain.svg') }}" class="card-img-top" alt="{{ $firstCampaign->name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ $firstCampaign->name }}</h5>
+                            <p class="card-text">{{ ucfirst($firstCampaign->category) }}</p>
+                            <p class="card-text text-muted">{{ $firstCampaign->start_date->format('d/m/Y') }} - {{ $firstCampaign->end_date->format('d/m/Y') }}</p>
+                            <a href="{{ route('campaigns.show', $firstCampaign) }}" class="btn btn-eco">Voir plus</a>
+                        </div>
+                    </div>
+                </div>
+                @endif
             </div>
             <button id="nextButton" class="carousel-nav right">&#8250;</button>
         </div>
@@ -131,14 +166,32 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const carousel = document.getElementById('campaignsCarousel');
-            const cards = document.querySelectorAll('.campaign-card');
-            const cardWidth = cards[0].offsetWidth;
+            const cards = Array.from(document.querySelectorAll('.campaign-card'));
+            let cardWidth = cards[0] ? cards[0].offsetWidth : 0;
             let scrollAmount = 0;
 
+            function setCenterPadding() {
+                cardWidth = cards[0] ? cards[0].offsetWidth : 0;
+                carousel.style.paddingLeft = '0px';
+                carousel.style.paddingRight = '0px';
+            }
+
             function highlightCenterCard() {
-                const centerIndex = Math.round((carousel.scrollLeft + carousel.offsetWidth / 2) / cardWidth) - 1;
-                cards.forEach((card, index) => {
-                    if (index === centerIndex) {
+                const viewportCenter = carousel.scrollLeft + carousel.offsetWidth / 2;
+                let closestIndex = 0;
+                let closestDist = Infinity;
+
+                cards.forEach((card, idx) => {
+                    const cardCenter = card.offsetLeft + (card.offsetWidth / 2);
+                    const dist = Math.abs(cardCenter - viewportCenter);
+                    if (dist < closestDist) {
+                        closestDist = dist;
+                        closestIndex = idx;
+                    }
+                });
+
+                cards.forEach((card, idx) => {
+                    if (idx === closestIndex) {
                         card.classList.add('highlight');
                     } else {
                         card.classList.remove('highlight');
@@ -146,41 +199,33 @@
                 });
             }
 
-            // Auto-Swipe (commented out)
-            /*
-            setInterval(() => {
-                scrollAmount += cardWidth;
-                if (scrollAmount >= carousel.scrollWidth - carousel.offsetWidth) {
-                    scrollAmount = 0;
-                }
-                carousel.scrollTo({ left: scrollAmount, behavior: 'smooth' });
-                highlightCenterCard();
-            }, 3000);
-            */
+            // Init padding so the first card is centered on load
+            setCenterPadding();
 
             // Manual Navigation
             document.getElementById('prevButton').addEventListener('click', () => {
-                scrollAmount -= cardWidth;
-                if (scrollAmount < 0) {
-                    scrollAmount = 0;
-                }
+                scrollAmount = Math.max(0, carousel.scrollLeft - cardWidth);
                 carousel.scrollTo({ left: scrollAmount, behavior: 'smooth' });
-                highlightCenterCard();
+                setTimeout(highlightCenterCard, 300);
             });
 
             document.getElementById('nextButton').addEventListener('click', () => {
-                scrollAmount += cardWidth;
-                if (scrollAmount >= carousel.scrollWidth - carousel.offsetWidth) {
-                    scrollAmount = carousel.scrollWidth - carousel.offsetWidth;
-                }
+                const maxScrollLeft = carousel.scrollWidth - carousel.offsetWidth;
+                scrollAmount = Math.min(maxScrollLeft, carousel.scrollLeft + cardWidth);
                 carousel.scrollTo({ left: scrollAmount, behavior: 'smooth' });
-                highlightCenterCard();
+                setTimeout(highlightCenterCard, 300);
             });
 
-            // Initial Highlight
+            // Initial alignment: with padding-left applied, left=0 centers first card
+            // Avec le clone de fin au début, défiler d'une carte pour avoir la 1ère réelle au centre
+            carousel.scrollTo({ left: cardWidth, behavior: 'auto' });
             highlightCenterCard();
 
-            // Update highlight on scroll
+            // Update on resize and scroll
+            window.addEventListener('resize', () => {
+                setCenterPadding();
+                highlightCenterCard();
+            });
             carousel.addEventListener('scroll', highlightCenterCard);
         });
     </script>
@@ -593,9 +638,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Align the first card at the start
+        // Align the first real card at center (using left clone)
         function alignFirstCard() {
-            carousel.scrollTo({ left: 0, behavior: 'smooth' });
+            carousel.scrollTo({ left: cardWidth, behavior: 'smooth' });
         }
 
         // Initial check

@@ -9,12 +9,13 @@ use App\Http\Requests\StoreResourceRequest;
 use App\Http\Requests\UpdateResourceRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class ResourceController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Resource::with('campaign')->latest();
+        $query = Resource::with('campaign');
 
         // Filtrage
         if ($request->has('search') && $request->search) {
@@ -29,6 +30,29 @@ class ResourceController extends Controller
             $query->where('status', $request->status);
         }
 
+        if ($request->has('resource_type') && $request->resource_type) {
+            $query->where('resource_type', $request->resource_type);
+        }
+
+        // Tri
+        $sort = $request->get('sort', 'latest');
+        switch ($sort) {
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'name':
+                $query->orderBy('name', 'asc');
+                break;
+            case 'priority':
+                $query->orderByRaw("FIELD(priority, 'urgent','high','medium','low')");
+                $query->orderBy('created_at', 'desc');
+                break;
+            case 'latest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
         $resources = $query->paginate(15);
         $campaigns = Campaign::where('status', 'active')->get();
 
@@ -39,7 +63,7 @@ class ResourceController extends Controller
         $neededResources = Resource::where('status', 'needed')->count();
 
         return view('frontend.resources.index', compact(
-            'resources', 
+            'resources',
             'campaigns',
             'totalResources',
             'urgentResources',
@@ -48,9 +72,62 @@ class ResourceController extends Controller
         ));
     }
 
+    /**
+     * Display all resources for browsing (similar UI as index, but not filtered by owner).
+     */
+    public function all(Request $request)
+    {
+        $query = Resource::with('campaign');
+
+        // Optional filters (mirror index)
+        if ($request->has('search') && $request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->has('campaign_id') && $request->campaign_id) {
+            $query->where('campaign_id', $request->campaign_id);
+        }
+
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('resource_type') && $request->resource_type) {
+            $query->where('resource_type', $request->resource_type);
+        }
+
+        // Sorting
+        $sort = $request->get('sort', 'latest');
+        switch ($sort) {
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'name':
+                $query->orderBy('name', 'asc');
+                break;
+            case 'priority':
+                // urgent > high > medium > low
+                $query->orderByRaw("FIELD(priority, 'urgent','high','medium','low')");
+                $query->orderBy('created_at', 'desc');
+                break;
+            case 'latest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $resources = $query->paginate(16);
+        $campaigns = Campaign::where('status', 'active')->get();
+
+        return view('frontend.resources.all', compact('resources', 'campaigns'));
+    }
+
     public function create()
     {
-        $campaigns = Campaign::where('status', 'active')->get();
+        $campaigns = Campaign::where('status', 'active')
+            ->where('organizer_id', auth()->id())
+            ->get();
+
         return view('frontend.resources.create', compact('campaigns'));
     }
 
@@ -75,7 +152,7 @@ class ResourceController extends Controller
         return view('frontend.resources.show', compact('resource'));
     }
 
-/**
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(Resource $resource)
@@ -85,7 +162,10 @@ class ResourceController extends Controller
             return redirect()->route('resources.index')->with('error', 'Cette ressource ne peut pas être modifiée.');
         }
 
-        $campaigns = Campaign::where('status', 'active')->get();
+        $campaigns = Campaign::where('status', 'active')
+            ->where('organizer_id', auth()->id())
+            ->get();
+
         return view('frontend.resources.edit', compact('resource', 'campaigns'));
     }
 
@@ -102,7 +182,7 @@ class ResourceController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'campaign_id' => 'required|exists:campaigns,id',
+            'campaign_id' => ['required', Rule::exists('campaigns', 'id')->where(fn($q) => $q->where('organizer_id', auth()->id()))],
             'provider' => 'nullable|string|max:255',
             'quantity_needed' => 'required|integer|min:1',
             'quantity_pledged' => 'nullable|integer|min:0',
@@ -112,7 +192,7 @@ class ResourceController extends Controller
             'priority' => 'required|in:low,medium,high,urgent',
             'status' => 'required|in:needed,pledged,received,in_use',
             'notes' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
         ]);
 
         // Préparer les données pour la mise à jour
@@ -205,9 +285,9 @@ class ResourceController extends Controller
     public function highPriority()
     {
         $resources = Resource::whereIn('priority', ['high', 'urgent'])
-                            ->with('campaign')
-                            ->latest()
-                            ->paginate(15);
+            ->with('campaign')
+            ->latest()
+            ->paginate(15);
 
         return view('frontend.resources.high-priority', compact('resources'));
     }

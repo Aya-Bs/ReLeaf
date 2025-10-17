@@ -52,7 +52,7 @@ class ReviewController extends Controller
         ]);
         $review->save();
         // Rediriger vers la page du blog après ajout
-        return redirect()->route('auteur.blogs.show', $blog->id)->with('success', 'Commentaire ajouté !');
+return redirect()->route('blogs.show', $blog->id)->with('success', 'Commentaire ajouté !');
     }
 
     // Formulaire d'édition
@@ -68,31 +68,39 @@ class ReviewController extends Controller
 
     // Mettre à jour un commentaire
     public function update(Request $request, $id)
-    {
-        $review = Review::findOrFail($id);
-        if (Auth::id() !== $review->user_id) {
-            abort(403);
-        }
-        $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'required|string|max:1000',
-        ]);
-        $review->update([
-            'rating' => $request->rating,
-            'comment' => $request->comment,
-        ]);
-        return redirect()->route('auteur.blogs.show', $review->blog_id)->with('success', 'Commentaire modifié !');
+{
+    $review = Review::findOrFail($id);
+
+    if (auth()->user()->name !== $review->user_name) {
+        abort(403, 'Action non autorisée');
     }
 
-    // Supprimer un commentaire (par l'auteur du commentaire ou l'auteur du blog)
-    public function destroy($id)
-    {
-        $review = Review::findOrFail($id);
-        $blog = Blog::find($review->blog_id);
-        if (Auth::id() !== $review->user_id && Auth::id() !== ($blog ? $blog->author_id : null)) {
-            abort(403);
-        }
-        $review->delete();
-        return back()->with('success', 'Commentaire supprimé !');
+    $request->validate([
+        'comment' => 'required|string|max:500',
+        'rating' => 'required|integer|min:1|max:5',
+    ]);
+
+    $review->update([
+        'comment' => $request->comment,
+        'rating' => $request->rating,
+    ]);
+
+    return redirect()->back()->with('success', 'Commentaire modifié avec succès.');
+}
+
+public function destroy($id)
+{
+    $review = Review::findOrFail($id);
+
+    if (auth()->user()->name !== $review->user_name) {
+        abort(403, 'Action non autorisée');
     }
+
+    $review->delete();
+
+    return redirect()->back()->with('success', 'Commentaire supprimé avec succès.');
+}
+
+
+
 }
