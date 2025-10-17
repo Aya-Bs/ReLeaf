@@ -117,17 +117,17 @@ pipeline {
                                 cd projet_laravel
                                 
                                 echo "=== SONARQUBE ANALYSIS DEBUG ==="
-                                echo "Project Key: ${SONAR_PROJECT_KEY}"
-                                echo "Host URL: ${SONAR_HOST_URL}"
-                                echo "Build Number: ${env.BUILD_NUMBER}"
-                                echo "Current directory: $(pwd)"
-                                echo "PHP version: $(php --version | head -1)"
+                                echo "Project Key: \${SONAR_PROJECT_KEY}"
+                                echo "Host URL: \${SONAR_HOST_URL}"
+                                echo "Build Number: \${env.BUILD_NUMBER}"
+                                echo "Current directory: \$(pwd)"
+                                echo "PHP version: \$(php --version | head -1)"
                                 echo "================================"
                                 
                                 # Check if SonarQube server is reachable
                                 echo "Testing SonarQube server connectivity..."
-                                curl -f -s ${SONAR_HOST_URL}/api/system/status || {
-                                    echo "ERROR: Cannot reach SonarQube server at ${SONAR_HOST_URL}"
+                                curl -f -s \${SONAR_HOST_URL}/api/system/status || {
+                                    echo "ERROR: Cannot reach SonarQube server at \${SONAR_HOST_URL}"
                                     exit 1
                                 }
                                 
@@ -149,12 +149,12 @@ pipeline {
                                 echo "Java version: $(java -version 2>&1 | head -1)"
                                 
                                 # Create sonar-project.properties file
-                                cat > sonar-project.properties << EOF
-sonar.projectKey=${SONAR_PROJECT_KEY}
+                                cat > sonar-project.properties << 'EOF'
+sonar.projectKey=SONAR_PROJECT_KEY_PLACEHOLDER
 sonar.projectName=ReLeaf
-sonar.projectVersion=${env.BUILD_NUMBER}
-sonar.host.url=${SONAR_HOST_URL}
-sonar.login=$SONAR_TOKEN
+sonar.projectVersion=BUILD_NUMBER_PLACEHOLDER
+sonar.host.url=SONAR_HOST_URL_PLACEHOLDER
+sonar.login=SONAR_TOKEN_PLACEHOLDER
 sonar.sources=app,routes,config,database/migrations
 sonar.tests=tests
 sonar.exclusions=vendor/**,storage/**,bootstrap/cache/**,node_modules/**,public/build/**
@@ -164,6 +164,12 @@ sonar.php.coverage.reportPaths=coverage.xml
 sonar.qualitygate.wait=true
 EOF
                                 
+                                # Replace placeholders with actual values
+                                sed -i "s/SONAR_PROJECT_KEY_PLACEHOLDER/\${SONAR_PROJECT_KEY}/g" sonar-project.properties
+                                sed -i "s/BUILD_NUMBER_PLACEHOLDER/\${env.BUILD_NUMBER}/g" sonar-project.properties
+                                sed -i "s/SONAR_HOST_URL_PLACEHOLDER/\${SONAR_HOST_URL}/g" sonar-project.properties
+                                sed -i "s/SONAR_TOKEN_PLACEHOLDER/$SONAR_TOKEN/g" sonar-project.properties
+                                
                                 echo "SonarQube configuration file created"
                                 cat sonar-project.properties
                                 
@@ -172,7 +178,7 @@ EOF
                                 ./sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner -X
                                 
                                 echo "=== SONARQUBE ANALYSIS COMPLETED ==="
-                                echo "Project should now be visible in SonarQube at: ${SONAR_HOST_URL}/projects"
+                                echo "Project should now be visible in SonarQube at: \${SONAR_HOST_URL}/projects"
                             """
                         }
                     } catch (Exception e) {
