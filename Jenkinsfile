@@ -154,14 +154,89 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
                     sh """
-                        cd projet_laravel
-                        # Create a tarball of the project for Nexus
-                        tar -czf ../releaf-${env.BUILD_NUMBER}.tar.gz .
+                        # Create project structure for Nexus (PHP/Laravel project)
+                        mkdir -p nexus-artifacts
                         
-                        # Upload to Nexus (assuming raw repository)
+                        # Create versioned directory structure
+                        mkdir -p nexus-artifacts/releaf/${env.BUILD_NUMBER}
+                        mkdir -p nexus-artifacts/releaf/latest
+                        
+                        # Copy application files
+                        cp -r projet_laravel nexus-artifacts/releaf/${env.BUILD_NUMBER}/
+                        cp -r projet_laravel nexus-artifacts/releaf/latest/
+                        
+                        # Copy root configuration files
+                        cp composer.json nexus-artifacts/releaf/${env.BUILD_NUMBER}/
+                        cp composer.json nexus-artifacts/releaf/latest/
+                        cp Dockerfile nexus-artifacts/releaf/${env.BUILD_NUMBER}/
+                        cp Dockerfile nexus-artifacts/releaf/latest/
+                        cp sonar-project.properties nexus-artifacts/releaf/${env.BUILD_NUMBER}/
+                        cp sonar-project.properties nexus-artifacts/releaf/latest/
+                        
+                        # Create project metadata files
+                        cat > nexus-artifacts/releaf/${env.BUILD_NUMBER}/project-info.json << EOF
+{
+    "projectName": "ReLeaf",
+    "projectType": "Laravel/PHP",
+    "version": "${env.BUILD_NUMBER}",
+    "buildDate": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+    "framework": "Laravel 12.x",
+    "phpVersion": "8.2+",
+    "description": "ReLeaf - Event Management Platform",
+    "dependencies": {
+        "php": "^8.2",
+        "laravel/framework": "^12.0",
+        "laravel/socialite": "^5.23"
+    },
+    "structure": {
+        "application": "projet_laravel/",
+        "config": "composer.json",
+        "docker": "Dockerfile",
+        "quality": "sonar-project.properties"
+    }
+}
+EOF
+                        
+                        cp nexus-artifacts/releaf/${env.BUILD_NUMBER}/project-info.json nexus-artifacts/releaf/latest/
+                        
+                        # Create tarballs for different deployment scenarios
+                        cd nexus-artifacts
+                        tar -czf releaf-application-${env.BUILD_NUMBER}.tar.gz releaf/${env.BUILD_NUMBER}/projet_laravel/
+                        tar -czf releaf-complete-${env.BUILD_NUMBER}.tar.gz releaf/${env.BUILD_NUMBER}/
+                        
+                        # Upload to Nexus with proper PHP project structure
+                        echo "Uploading to Nexus with PHP/Laravel project structure..."
+                        
+                        # Upload application package
                         curl -u ${NEXUS_USER}:${NEXUS_PASS} \
-                            --upload-file ../releaf-${env.BUILD_NUMBER}.tar.gz \
-                            ${NEXUS_URL}/repository/raw-releases/releaf/releaf-${env.BUILD_NUMBER}.tar.gz
+                            --upload-file releaf-application-${env.BUILD_NUMBER}.tar.gz \
+                            ${NEXUS_URL}/repository/raw-releases/com/example/releaf/application/${env.BUILD_NUMBER}/releaf-application-${env.BUILD_NUMBER}.tar.gz
+                        
+                        # Upload complete package
+                        curl -u ${NEXUS_USER}:${NEXUS_PASS} \
+                            --upload-file releaf-complete-${env.BUILD_NUMBER}.tar.gz \
+                            ${NEXUS_URL}/repository/raw-releases/com/example/releaf/complete/${env.BUILD_NUMBER}/releaf-complete-${env.BUILD_NUMBER}.tar.gz
+                        
+                        # Upload metadata
+                        curl -u ${NEXUS_USER}:${NEXUS_PASS} \
+                            --upload-file releaf/${env.BUILD_NUMBER}/project-info.json \
+                            ${NEXUS_URL}/repository/raw-releases/com/example/releaf/metadata/${env.BUILD_NUMBER}/project-info.json
+                        
+                        # Upload latest versions
+                        curl -u ${NEXUS_USER}:${NEXUS_PASS} \
+                            --upload-file releaf-application-${env.BUILD_NUMBER}.tar.gz \
+                            ${NEXUS_URL}/repository/raw-releases/com/example/releaf/application/latest/releaf-application-latest.tar.gz
+                        
+                        curl -u ${NEXUS_USER}:${NEXUS_PASS} \
+                            --upload-file releaf-complete-${env.BUILD_NUMBER}.tar.gz \
+                            ${NEXUS_URL}/repository/raw-releases/com/example/releaf/complete/latest/releaf-complete-latest.tar.gz
+                        
+                        curl -u ${NEXUS_USER}:${NEXUS_PASS} \
+                            --upload-file releaf/latest/project-info.json \
+                            ${NEXUS_URL}/repository/raw-releases/com/example/releaf/metadata/latest/project-info.json
+                        
+                        echo "Artifacts uploaded successfully to Nexus!"
+                        echo "Structure: com/example/releaf/[type]/[version]/[artifact]"
                     """
                 }
             }
