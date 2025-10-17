@@ -116,29 +116,63 @@ pipeline {
                             sh """
                                 cd projet_laravel
                                 
-                                echo "Attempting SonarQube analysis..."
+                                echo "=== SONARQUBE ANALYSIS DEBUG ==="
+                                echo "Project Key: ${SONAR_PROJECT_KEY}"
+                                echo "Host URL: ${SONAR_HOST_URL}"
+                                echo "Build Number: ${env.BUILD_NUMBER}"
+                                echo "Current directory: $(pwd)"
+                                echo "PHP version: $(php --version | head -1)"
+                                echo "================================"
                                 
-                                # Download and use SonarScanner compatible with Java 11
-                                if [ ! -f sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner ]; then
-                                    echo "Downloading SonarScanner compatible with Java 11..."
-                                    wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
-                                    unzip -q sonar-scanner-cli-4.6.2.2472-linux.zip
+                                # Check if SonarQube server is reachable
+                                echo "Testing SonarQube server connectivity..."
+                                curl -f -s ${SONAR_HOST_URL}/api/system/status || {
+                                    echo "ERROR: Cannot reach SonarQube server at ${SONAR_HOST_URL}"
+                                    exit 1
+                                }
+                                
+                                # Download and use SonarScanner compatible with Java 17
+                                if [ ! -f sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner ]; then
+                                    echo "Downloading SonarScanner compatible with Java 17..."
+                                    wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+                                    unzip -q sonar-scanner-cli-5.0.1.3006-linux.zip
+                                    echo "SonarScanner downloaded successfully"
                                 fi
                                 
-                                # Remove any existing sonar-scanner from PATH to ensure we use the downloaded version
-                                export PATH="./sonar-scanner-4.6.2.2472-linux/bin:$PATH"
+                                # Verify scanner exists
+                                if [ ! -f sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner ]; then
+                                    echo "ERROR: SonarScanner not found after download"
+                                    exit 1
+                                fi
                                 
-                                # Use the downloaded SonarScanner
-                                ./sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner \
-                                    -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                                    -Dsonar.host.url=${SONAR_HOST_URL} \
-                                    -Dsonar.login=$SONAR_TOKEN \
-                                    -Dsonar.sources=app,routes,config \
-                                    -Dsonar.tests=tests \
-                                    -Dsonar.exclusions=vendor/**,storage/**,bootstrap/cache/**,node_modules/** \
-                                    -Dsonar.sourceEncoding=UTF-8 \
-                                    -Dsonar.projectName=ReLeaf \
-                                    -Dsonar.projectVersion=${env.BUILD_NUMBER}
+                                # Check Java version
+                                echo "Java version: $(java -version 2>&1 | head -1)"
+                                
+                                # Create sonar-project.properties file
+                                cat > sonar-project.properties << EOF
+sonar.projectKey=${SONAR_PROJECT_KEY}
+sonar.projectName=ReLeaf
+sonar.projectVersion=${env.BUILD_NUMBER}
+sonar.host.url=${SONAR_HOST_URL}
+sonar.login=$SONAR_TOKEN
+sonar.sources=app,routes,config,database/migrations
+sonar.tests=tests
+sonar.exclusions=vendor/**,storage/**,bootstrap/cache/**,node_modules/**,public/build/**
+sonar.sourceEncoding=UTF-8
+sonar.php.file.suffixes=php
+sonar.php.coverage.reportPaths=coverage.xml
+sonar.qualitygate.wait=true
+EOF
+                                
+                                echo "SonarQube configuration file created"
+                                cat sonar-project.properties
+                                
+                                # Run SonarScanner with verbose output
+                                echo "Starting SonarQube analysis..."
+                                ./sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner -X
+                                
+                                echo "=== SONARQUBE ANALYSIS COMPLETED ==="
+                                echo "Project should now be visible in SonarQube at: ${SONAR_HOST_URL}/projects"
                             """
                         }
                     } catch (Exception e) {
@@ -168,18 +202,26 @@ pipeline {
                         # Copy root configuration files
                         cp composer.json nexus-artifacts/releaf/${env.BUILD_NUMBER}/
                         cp composer.json nexus-artifacts/releaf/latest/
-                        cp Dockerfile nexus-artifacts/releaf/${env.BUILD_NUMBER}/
-                        cp Dockerfile nexus-artifacts/releaf/latest/
-                        cp sonar-project.properties nexus-artifacts/releaf/${env.BUILD_NUMBER}/
-                        cp sonar-project.properties nexus-artifacts/releaf/latest/
+                        
+                        # Copy Dockerfile if it exists
+                        if [ -f Dockerfile ]; then
+                            cp Dockerfile nexus-artifacts/releaf/${env.BUILD_NUMBER}/
+                            cp Dockerfile nexus-artifacts/releaf/latest/
+                        fi
+                        
+                        # Copy sonar-project.properties if it exists
+                        if [ -f sonar-project.properties ]; then
+                            cp sonar-project.properties nexus-artifacts/releaf/${env.BUILD_NUMBER}/
+                            cp sonar-project.properties nexus-artifacts/releaf/latest/
+                        fi
                         
                         # Create project metadata files
-                        cat > nexus-artifacts/releaf/${env.BUILD_NUMBER}/project-info.json << EOF
+                        cat > nexus-artifacts/releaf/\${env.BUILD_NUMBER}/project-info.json << 'EOF'
 {
     "projectName": "ReLeaf",
     "projectType": "Laravel/PHP",
-    "version": "${env.BUILD_NUMBER}",
-    "buildDate": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+    "version": "BUILD_NUMBER_PLACEHOLDER",
+    "buildDate": "BUILD_DATE_PLACEHOLDER",
     "framework": "Laravel 12.x",
     "phpVersion": "8.2+",
     "description": "ReLeaf - Event Management Platform",
@@ -196,6 +238,10 @@ pipeline {
     }
 }
 EOF
+                        
+                        # Replace placeholders with actual values
+                        sed -i "s/BUILD_NUMBER_PLACEHOLDER/\${env.BUILD_NUMBER}/g" nexus-artifacts/releaf/\${env.BUILD_NUMBER}/project-info.json
+                        sed -i "s/BUILD_DATE_PLACEHOLDER/\$(date -u +%Y-%m-%dT%H:%M:%SZ)/g" nexus-artifacts/releaf/\${env.BUILD_NUMBER}/project-info.json
                         
                         cp nexus-artifacts/releaf/${env.BUILD_NUMBER}/project-info.json nexus-artifacts/releaf/latest/
                         
