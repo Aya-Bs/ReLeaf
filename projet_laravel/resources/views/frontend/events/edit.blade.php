@@ -21,7 +21,7 @@
                     </nav>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('events.update', $event) }}" method="POST" enctype="multipart/form-data" id="eventForm">
+                    <form action="{{ route('events.update', $event) }}" method="POST" enctype="multipart/form-data" id="eventForm" novalidate >
                         @csrf
                         @method('PUT')
 
@@ -145,6 +145,8 @@
 <div class="col-md-6">
     <label for="campaign_id" class="form-label">
         <i class="fas fa-bullhorn me-2" style="color: #2d5a27;"></i>Campagne    
+
+        <i class="fas fa-bullhorn me-2" style="color: #2d5a27;"></i>Campagne <span class="text-danger">*</span>
     </label>
     @php
         $campaigns = \App\Models\Campaign::all();
@@ -158,6 +160,9 @@
     @error('campaign_id')
         <div class="invalid-feedback">{{ $message }}</div>
     @enderror                                    
+</div>
+</div>
+
 </div>
 </div>
                                 <!-- Max Participants -->
@@ -181,6 +186,49 @@
 
                                
                             </div>
+
+                            <!-- Right Column - Images and Actions -->
+                            <div class="col-md-4">
+                                <!-- Current Images -->
+                                @if($event->images && is_array($event->images) && count($event->images) > 0)
+                                <div class="mb-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-images me-2" style="color: #2d5a27;"></i>Images actuelles
+                                    </label>
+                                    <div class="row">
+                                        @foreach($event->images as $image)
+                                            @if(!empty($image))
+                                            <div class="col-md-6 col-lg-4 mb-3">
+                                                <div class="card position-relative">
+                                                    <img src="{{ asset('storage/' . $image) }}" 
+                                                         class="card-img-top" 
+                                                         style="height: 120px; object-fit: cover;"
+                                                         alt="Event image"
+                                                         onerror="this.src='https://via.placeholder.com/150x100?text=Image+Non+Trouvée'">
+                                                    @if($event->canBeEdited())
+                                                    <div class="card-body p-2 text-center">
+                                                        <button type="button" 
+                                                                class="btn btn-sm btn-outline-danger remove-image-btn" 
+                                                                data-image-path="{{ $image }}">
+                                                            <i class="fas fa-trash"></i> Supprimer
+                                                        </button>
+                                                    </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                </div>
+                                @else
+                                <div class="mb-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-images me-2" style="color: #2d5a27;"></i>Images actuelles
+                                    </label>
+                                    <p class="text-muted">Aucune image pour cet événement.</p>
+                                </div>
+                                @endif
+
 
                             <!-- Right Column - Images and Actions -->
                             <div class="col-md-4">
@@ -266,6 +314,11 @@
                                     @if($event->canBeEdited())
                                     <button type="submit" class="btn btn-eco" style="background-color: #2d5a27; border-color: #2d5a27; color: white;">
                                         <i class="fas fa-save me-2"></i>Mettre à jour
+                                    </button>
+                                    @else
+                                    <button type="button" class="btn btn-secondary" disabled>
+                                        <i class="fas fa-lock me-2"></i>Modification non autorisée
+                                    </button>
                                     </button>
                                     @else
                                     <button type="button" class="btn btn-secondary" disabled>
@@ -479,32 +532,6 @@ function showAlert(message, type = 'info') {
     }, 5000);
 }
 
-// Form validation
-document.getElementById('eventForm').addEventListener('submit', function(e) {
-    @if($event->canBeEdited())
-    const title = document.getElementById('title').value;
-    const description = document.getElementById('description').value;
-    const date = document.getElementById('date').value;
-    const location = document.getElementById('location').value;
-    const duration = document.getElementById('duration').value;
-
-    if (!title || !description || !date || !location || !duration) {
-        e.preventDefault();
-        alert('Veuillez remplir tous les champs obligatoires.');
-        return;
-    }
-
-    const selectedDate = new Date(date);
-    if (selectedDate <= new Date()) {
-        e.preventDefault();
-        alert('La date de l\'événement doit être dans le futur.');
-        return;
-    }
-    @else
-    e.preventDefault();
-    alert('Cet événement ne peut pas être modifié.');
-    @endif
-});
 
 // Set min datetime for date field
 document.addEventListener('DOMContentLoaded', function() {

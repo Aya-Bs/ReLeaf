@@ -16,6 +16,7 @@
         </div>
     </form>
 
+
     @if($blogs->isEmpty())
         <div class="alert alert-info">Aucun blog disponible.</div>
     @else
@@ -55,6 +56,7 @@
         <div class="d-flex justify-content-center mt-3">
             {{ $blogs->withQueryString()->links() }}
         </div>
+
     @endif
 </div>
 @endsection

@@ -84,6 +84,38 @@ class BlogController extends Controller
     }
 
     // Formulaire de création (organizer uniquement)
+
+    // Affiche tous les blogs (public)
+    public function index()
+    {
+        $blogs = Blog::latest()->get();
+        return view('blogs.index', compact('blogs'));
+    }
+
+    // Affiche les blogs sous forme de cartes
+    public function cards()
+{
+    // Tous les blogs pour tous les utilisateurs
+    $blogs = Blog::latest()->get();
+    return view('blogs.cards', compact('blogs')); // <-- nouvelle vue pour utilisateurs
+}
+    // Affiche les blogs de l'utilisateur connecté
+    public function myBlogs()
+    {
+        $user = auth()->user();
+
+        if ($user->role === 'organizer') {
+            // L'organizer voit tous ses blogs
+            $blogs = Blog::where('user_id', $user->id)->get();
+        } else {
+            // L'utilisateur normal voit ses propres blogs
+            $blogs = Blog::where('user_id', $user->id)->get();
+        }
+
+        return view('blogs.myblogs', compact('blogs'));
+    }
+
+    // Formulaire création (seulement organizer)
     public function create()
     {
         if (Auth::user()->role !== 'organizer') {
@@ -93,6 +125,7 @@ class BlogController extends Controller
     }
 
     // Stocke un nouveau blog avec validation
+    // Stocke le blog (seulement organizer)
     public function store(Request $request)
     {
         if (Auth::user()->role !== 'organizer') {
@@ -114,6 +147,10 @@ class BlogController extends Controller
             'image.mimes' => 'Les formats acceptés sont : jpeg, png, jpg, gif.',
             'image.max' => 'La taille de l’image ne doit pas dépasser 2 Mo.',
             'tags.regex' => 'Les tags doivent être séparés par des virgules et ne contenir que lettres, chiffres ou tirets.',
+
+            'content' => 'required|string',
+            'tags' => 'nullable|string',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $validated['user_id'] = Auth::id();
@@ -130,6 +167,8 @@ class BlogController extends Controller
     }
 
     // Formulaire d’édition
+
+    // Formulaire édition
     public function edit(Blog $blog)
     {
         if (Auth::id() !== $blog->user_id && Auth::user()->role !== 'organizer') {
@@ -139,6 +178,7 @@ class BlogController extends Controller
     }
 
     // Mise à jour du blog avec validation
+    // Met à jour le blog
     public function update(Request $request, Blog $blog)
     {
         if (Auth::id() !== $blog->user_id && Auth::user()->role !== 'organizer') {
@@ -159,6 +199,10 @@ class BlogController extends Controller
             'image.mimes' => 'Les formats acceptés sont : jpeg, png, jpg, gif.',
             'image.max' => 'La taille de l’image ne doit pas dépasser 2 Mo.',
            //'tags.regex' => 'Les tags doivent être séparés par des virgules et ne contenir que lettres, chiffres ou tirets.',
+
+            'content' => 'required|string',
+            'tags' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
@@ -172,6 +216,11 @@ class BlogController extends Controller
     }
 
     // Suppression
+
+        return redirect()->route('blogs.myblogs')->with('success', 'Blog mis à jour !');
+    }
+
+    // Supprimer un blog
     public function destroy(Blog $blog)
     {
         if (Auth::id() !== $blog->user_id && Auth::user()->role !== 'organizer') {
@@ -183,8 +232,14 @@ class BlogController extends Controller
     }
 
     // Affiche les détails d’un blog
+
+        return redirect()->route('blogs.myblogs')->with('success', 'Blog supprimé !');
+    }
+
+    // Affiche le détail d’un blog
     public function show(Blog $blog)
     {
         return view('blogs.show', compact('blog'));
     }
+
 }

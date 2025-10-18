@@ -145,6 +145,73 @@
                     </div>
                     <p class="text-xs font-semibold text-gray-700">Campagne</p>
                     <p class="text-sm text-gray-600 mt-1">{{$event->campaign->name ?? '-' }}</p>
+
+                    </div>
+                    <p class="text-xs font-semibold text-gray-700">Durée</p>
+                    <p class="text-sm text-gray-600 mt-1">{{ $event->duration ?? 'Non spécifiée' }}</p>
+                </div>
+
+                <!-- Lieu -->
+                <div class="small-info-card text-center">
+                    <div class="icon-wrap mx-auto mb-2">
+                        <svg class="w-5 h-5 text-[#2d5a27]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <p class="text-xs font-semibold text-gray-700">Lieu</p>
+                    <p class="text-sm text-gray-600 mt-1">{{ $event->location->name ?? 'Non spécifié' }}</p>
+                </div>
+
+                <!-- Statut -->
+                <div class="small-info-card text-center">
+                    <div class="icon-wrap mx-auto mb-2">
+                        <svg class="w-5 h-5 text-[#2d5a27]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/>
+                        </svg>
+                    </div>
+                    <p class="text-xs font-semibold text-gray-700">Statut</p>
+                    <p class="text-sm text-gray-600 mt-1 capitalize">
+                        @if($event->status === 'published') Publié
+                        @elseif($event->status === 'pending') En attente
+                        @elseif($event->status === 'draft') Brouillon
+                        @elseif($event->status === 'cancelled') Annulé
+                        @elseif($event->status === 'rejected') Rejeté
+                        @else Événement
+                        @endif
+                    </p>
+                </div>
+
+                <!-- Participants -->
+                <div class="small-info-card text-center">
+                    <div class="icon-wrap mx-auto mb-2">
+                        <svg class="w-5 h-5 text-[#2d5a27]" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1z"/>
+                        </svg>
+                    </div>
+                    <p class="text-xs font-semibold text-gray-700">Participants</p>
+                    <p class="text-sm text-gray-600 mt-1">{{ $event->reservations()->where('status','confirmed')->count() }} / {{ $event->max_participants ?? '∞' }}</p>
+                </div>
+
+                <!-- Campaign -->
+                <div class="small-info-card text-center">
+                    <div class="icon-wrap mx-auto mb-2">
+                        <svg class="w-5 h-5 text-[#2d5a27]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"/>
+                        </svg>
+                    </div>
+                    <p class="text-xs font-semibold text-gray-700">Campagne</p>
+                    <p class="text-sm text-gray-600 mt-1">{{$event->campaign->name ?? '-' }}</p>
+                </div>
+
+                <div class="small-info-card text-center">
+                    <div class="icon-wrap mx-auto mb-2">
+                        <svg class="w-5 h-5 text-[#2d5a27]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8v8m0 0l-3-3m3 3l3-3"/>
+</svg>
+                    </div>
+                    <p class="text-xs font-semibold text-gray-700">Sponsor</p>
+                    <p class="text-sm text-gray-600 mt-1">ESPRIT</p>
                 </div>
 
             </div>
@@ -563,6 +630,18 @@
 
 .hover\:bg-\[\#234420\]:hover {
     background-color: #234420;
+}
+
+.transition-colors {
+    transition-property: color, background-color, border-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.border-\[\#2d5a27\] {
+    border-color: #2d5a27;
+}
+
 }
 
 .transition-colors {

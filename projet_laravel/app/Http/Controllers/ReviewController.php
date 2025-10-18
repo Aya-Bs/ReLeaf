@@ -18,11 +18,18 @@ class ReviewController extends Controller
             abort(403);
         }
 
+
+        // Vérifier que l'utilisateur est l'auteur
+        if (Auth::id() !== $blog->author_id) {
+            abort(403);
+        }
         $reviews = $blog->reviews()->latest()->get();
         return view('reviews.index', compact('blog', 'reviews'));
     }
 
     // Afficher un commentaire spécifique
+
+    // Afficher un commentaire
     public function show($id)
     {
         $review = Review::findOrFail($id);
@@ -30,6 +37,8 @@ class ReviewController extends Controller
     }
 
     // Formulaire de création d'un commentaire
+
+    // Formulaire de création de commentaire
     public function create($blogId)
     {
         $blog = Blog::findOrFail($blogId);
@@ -69,6 +78,12 @@ class ReviewController extends Controller
         ]);
 
         Review::create([
+
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'required|string|max:1000',
+        ]);
+        $review = new Review([
             'user_name' => Auth::user()->name,
             'user_id' => Auth::id(),
             'rating' => $request->rating,
@@ -79,6 +94,10 @@ class ReviewController extends Controller
 
         return redirect()->route('blogs.show', $blog->id)
             ->with('success', 'Commentaire ajouté avec succès !');
+
+        $review->save();
+        // Rediriger vers la page du blog après ajout
+return redirect()->route('blogs.show', $blog->id)->with('success', 'Commentaire ajouté !');
     }
 
     // Formulaire d'édition
@@ -90,6 +109,11 @@ class ReviewController extends Controller
             abort(403);
         }
 
+
+        // Seul l'auteur du commentaire peut éditer
+        if (Auth::id() !== $review->user_id) {
+            abort(403);
+        }
         return view('backend.reviews.edit', compact('review'));
     }
 
@@ -142,4 +166,40 @@ class ReviewController extends Controller
 
         return redirect()->back()->with('success', 'Commentaire supprimé avec succès.');
     }
+
+{
+    $review = Review::findOrFail($id);
+
+    if (auth()->user()->name !== $review->user_name) {
+        abort(403, 'Action non autorisée');
+    }
+
+    $request->validate([
+        'comment' => 'required|string|max:500',
+        'rating' => 'required|integer|min:1|max:5',
+    ]);
+
+    $review->update([
+        'comment' => $request->comment,
+        'rating' => $request->rating,
+    ]);
+
+    return redirect()->back()->with('success', 'Commentaire modifié avec succès.');
+}
+
+public function destroy($id)
+{
+    $review = Review::findOrFail($id);
+
+    if (auth()->user()->name !== $review->user_name) {
+        abort(403, 'Action non autorisée');
+    }
+
+    $review->delete();
+
+    return redirect()->back()->with('success', 'Commentaire supprimé avec succès.');
+}
+
+
+
 }

@@ -21,12 +21,15 @@
         </div>
     </form>
 
+
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
     @if($blogs->isEmpty())
         <div class="alert alert-info">Aucun blog trouvé.</div>
+
+        <div class="alert alert-info">Vous n'avez aucun blog.</div>
     @else
         <div class="row">
             @foreach($blogs as $blog)
@@ -56,6 +59,11 @@
                                 <a href="{{ route('blogs.show', $blog) }}" class="btn btn-primary">Détails</a>
 
                                 {{-- Boutons Modifier / Supprimer pour les organisateurs --}}
+
+                                {{-- Bouton Détails toujours visible --}}
+                                <a href="{{ route('blogs.show', $blog) }}" class="btn btn-primary">Détails</a>
+
+                                {{-- Boutons Modifier et Supprimer pour les organizers seulement --}}
                                 @if(Auth::check() && Auth::user()->role === 'organizer')
                                     <a href="{{ route('blogs.edit', $blog) }}" class="btn btn-warning">Modifier</a>
 
@@ -76,6 +84,7 @@
         <div class="d-flex justify-content-center mt-3">
             {{ $blogs->withQueryString()->links() }}
         </div>
+
     @endif
 </div>
 

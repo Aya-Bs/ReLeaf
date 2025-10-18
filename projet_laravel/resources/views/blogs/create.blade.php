@@ -45,6 +45,20 @@
                         </div>
                     @endif
 
+                        <i class="fas fa-blog me-2" style="color: #2d5a27;"></i><strong>Créer un nouveau blog</strong>
+                    </h4>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-4" style="background: transparent; padding: 0; margin: 0;">
+                            <li class="breadcrumb-item"><a href="{{ route('home') }}" style="color: #2d5a27;">Accueil</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('blogs.index') }}" style="color: #2d5a27;">Blogs</a></li>
+                            <li class="breadcrumb-item active" aria-current="page" style="color: #2d5a27;"><strong>Créer</strong></li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="card-body">
+                    @if(session('success'))
+                        <div class="alert alert-success">{{ session('success') }}</div>
+                    @endif
                     <form action="{{ route('blogs.store') }}" method="POST" enctype="multipart/form-data" id="blogForm">
                         @csrf
                         <div class="row">
@@ -55,12 +69,15 @@
                                     <label for="title" class="form-label">
                                         <i class="fas fa-heading me-2" style="color: #2d5a27;"></i>
                                         Titre <span class="text-danger">*</span>
+
+                                        <i class="fas fa-heading me-2" style="color: #2d5a27;"></i>Titre <span class="text-danger">*</span>
                                     </label>
                                     <input type="text"
                                            class="form-control @error('title') is-invalid @enderror"
                                            id="title"
                                            name="title"
                                            value="{{ old('title') }}"
+                                           required
                                            placeholder="Titre du blog">
                                     @error('title')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -72,11 +89,13 @@
                                     <label for="content" class="form-label">
                                         <i class="fas fa-align-left me-2" style="color: #2d5a27;"></i>
                                         Contenu <span class="text-danger">*</span>
+                                        <i class="fas fa-align-left me-2" style="color: #2d5a27;"></i>Contenu <span class="text-danger">*</span>
                                     </label>
                                     <textarea class="form-control @error('content') is-invalid @enderror"
                                               id="content"
                                               name="content"
                                               rows="6"
+                                              required
                                               placeholder="Écrivez le contenu de votre blog...">{{ old('content') }}</textarea>
                                     @error('content')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -88,12 +107,14 @@
                                     <label for="tags" class="form-label">
                                         <i class="fas fa-tags me-2" style="color: #2d5a27;"></i>
                                         Tags
+                                        <i class="fas fa-tags me-2" style="color: #2d5a27;"></i>Tags <span class="text-danger">*</span>
                                     </label>
                                     <input type="text"
                                            class="form-control @error('tags') is-invalid @enderror"
                                            id="tags"
                                            name="tags"
                                            value="{{ old('tags') }}"
+                                           required
                                            placeholder="Ex: tech, laravel, programmation">
                                     @error('tags')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -120,6 +141,16 @@
                                             <div>
                                                 <button type="button" class="btn btn-outline-success btn-sm" id="browseBtn"
                                                         style="border-color:#2d5a27; color:#2d5a27;">Parcourir</button>
+
+                                        <i class="fas fa-images me-2" style="color: #2d5a27;"></i>Image du blog
+                                    </label>
+                                    <div class="drag-drop-area @error('image') is-invalid @enderror" id="dragDropArea" style="border:2px dashed #2d5a27; border-radius:12px; background:#f4fbf4; padding:1.2rem 0.5rem; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                                        <div class="drag-drop-content" style="pointer-events:none;">
+                                            <i class="fas fa-cloud-upload-alt" style="font-size:2.1rem; color:#2d5a27; margin-bottom:0.5rem;"></i>
+                                            <div style="font-size:1.05rem; color:#2d5a27; font-weight:500;">Glissez et déposez l'image</div>
+                                            <div style="color:#2d5a27; margin:0.25rem 0; font-size:0.95rem;">ou</div>
+                                            <div style="pointer-events:all;">
+                                                <button type="button" class="btn btn-outline-success btn-sm" id="browseBtn" style="border-color:#2d5a27; color:#2d5a27;">Parcourir</button>
                                                 <input type="file" id="image" name="image" accept="image/*" style="display:none;">
                                             </div>
                                         </div>
@@ -134,6 +165,8 @@
                                 <div class="d-flex justify-content-end mt-4">
                                     <button type="submit" class="btn btn-eco"
                                             style="background-color:#2d5a27; color:white;">
+
+                                    <button type="submit" class="btn btn-eco" style="background-color:#2d5a27; color:white;">
                                         <i class="fas fa-save me-2"></i>Créer le blog
                                     </button>
                                 </div>
@@ -150,6 +183,8 @@
 @push('scripts')
 <script>
 // Drag & Drop pour l'image
+
+// Drag & Drop for blog image
 const dragDropArea = document.getElementById('dragDropArea');
 const fileInput = document.getElementById('image');
 const browseBtn = document.getElementById('browseBtn');

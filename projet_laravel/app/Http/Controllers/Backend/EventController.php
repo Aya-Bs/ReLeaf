@@ -76,8 +76,8 @@ class EventController extends Controller
     public function store(Request $request)
     {
         if (!Auth::user()->isOrganizer()) {
-            return redirect()->route('dashboard')->with('error', 'Accès non autorisé.');
-        }
+        return redirect()->route('dashboard')->with('error', 'Accès non autorisé.');
+    }
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -92,6 +92,40 @@ class EventController extends Controller
 
         ]);
 
+
+
+    $validated = $request->validate([
+        'title' => 'required|string|min:3|max:255',
+        'description' => 'required|string|min:3',
+        'date' => 'required|date|after_or_equal:today',
+        'duration' => 'required|string|max:50',
+        'max_participants' => 'nullable|integer|min:1',
+        'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'campaign_id' => 'required|exists:campaigns,id',
+        'location_id' => 'required|exists:locations,id', 
+        'sponsor_id' => 'nullable|exists:sponsors,id'
+    ], [
+        'title.required' => 'Le titre de l\'événement est obligatoire.',
+        'title.min' => 'Le titre doit comporter au moins 3 caractères.',
+        'title.max' => 'Le titre ne doit pas dépasser 255 caractères.',
+        'description.required' => 'La description de l\'événement est requise.',
+        'description.min' => 'La description doit comporter au moins 3 caractères.',
+        'date.required' => 'La date de l\'événement est obligatoire.',
+        'date.date' => 'La date doit être une date valide.',
+        'date.after_or_equal' => 'La date doit être aujourd\'hui ou une date future.',
+        'duration.required' => 'La durée de l\'événement est obligatoire.',
+        'duration.max' => 'La durée ne doit pas dépasser 50 caractères.',
+        'max_participants.integer' => 'Le nombre maximum de participants doit être un nombre entier.',
+        'max_participants.min' => 'Le nombre maximum de participants doit être au moins 1.',
+        'images.*.image' => 'Les fichiers doivent être des images.',
+        'images.*.mimes' => 'Les images doivent être au format JPEG, PNG, JPG ou GIF.',
+        'images.*.max' => 'Chaque image ne doit pas dépasser 2 Mo.',
+        'location_id.required' => 'La sélection d\'un lieu est obligatoire.',
+        'location_id.exists' => 'Le lieu sélectionné n\'existe pas.',
+        'campaign_id.required' => 'La sélection d\'une campagne est obligatoire.',
+        'campaign_id.exists' => 'La campagne sélectionnée n\'existe pas.',
+        'sponsor_id.exists' => 'Le sponsor sélectionné n\'existe pas.'
+    ]);
 
 
 
@@ -202,6 +236,39 @@ class EventController extends Controller
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'campaign_id' => 'nullable|exists:campaigns,id'
         ]);
+
+    $validated = $request->validate([
+        'title' => 'required|string|min:3|max:255',
+        'description' => 'required|string|min:3',
+        'date' => 'required|date|after_or_equal:today',
+        'duration' => 'required|string|max:50',
+        'max_participants' => 'nullable|integer|min:1',
+        'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'campaign_id' => 'required|exists:campaigns,id',
+        'location_id' => 'required|exists:locations,id', 
+        'sponsor_id' => 'nullable|exists:sponsors,id'
+    ], [
+        'title.required' => 'Le titre de l\'événement est obligatoire.',
+        'title.min' => 'Le titre doit comporter au moins 3 caractères.',
+        'title.max' => 'Le titre ne doit pas dépasser 255 caractères.',
+        'description.required' => 'La description de l\'événement est requise.',
+        'description.min' => 'La description doit comporter au moins 3 caractères.',
+        'date.required' => 'La date de l\'événement est obligatoire.',
+        'date.date' => 'La date doit être une date valide.',
+        'date.after_or_equal' => 'La date doit être aujourd\'hui ou une date future.',
+        'duration.required' => 'La durée de l\'événement est obligatoire.',
+        'duration.max' => 'La durée ne doit pas dépasser 50 caractères.',
+        'max_participants.integer' => 'Le nombre maximum de participants doit être un nombre entier.',
+        'max_participants.min' => 'Le nombre maximum de participants doit être au moins 1.',
+        'images.*.image' => 'Les fichiers doivent être des images.',
+        'images.*.mimes' => 'Les images doivent être au format JPEG, PNG, JPG ou GIF.',
+        'images.*.max' => 'Chaque image ne doit pas dépasser 2 Mo.',
+        'location_id.required' => 'La sélection d\'un lieu est obligatoire.',
+        'location_id.exists' => 'Le lieu sélectionné n\'existe pas.',
+        'campaign_id.required' => 'La sélection d\'une campagne est obligatoire.',
+        'campaign_id.exists' => 'La campagne sélectionnée n\'existe pas.',
+        'sponsor_id.exists' => 'Le sponsor sélectionné n\'existe pas.'
+    ]);
 
         $event->update([
             'title' => $request->title,
