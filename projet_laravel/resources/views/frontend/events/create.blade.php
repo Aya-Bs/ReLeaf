@@ -8,7 +8,7 @@
 
     <div class="row">
         <div class="col-12">
-            <div >
+            <div>
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-4">
                         <i class="fas fa-calendar-plus me-2" style="color: #2d5a27;"></i><strong>Créer un nouvel événement</strong>
@@ -24,18 +24,18 @@
                 </div>
                 <div class="card-body">
                     @if(session('error'))
-                        <div class="alert alert-danger">
-                            <strong>Erreur :</strong> {{ session('error') }}
-                        </div>
+                    <div class="alert alert-danger">
+                        <strong>Erreur :</strong> {{ session('error') }}
+                    </div>
                     @endif
                     @if(session('debug'))
-                        <div class="alert alert-warning">
-                            <strong>Debug :</strong> {{ session('debug') }}
-                        </div>
+                    <div class="alert alert-warning">
+                        <strong>Debug :</strong> {{ session('debug') }}
+                    </div>
                     @endif
                     <form action="{{ route('events.store') }}" method="POST" enctype="multipart/form-data" id="eventForm">
                         @csrf
-                        
+
                         <div class="row">
                             <!-- Left Column - Form Fields -->
                             <div class="col-md-8">
@@ -44,15 +44,15 @@
                                     <label for="title" class="form-label">
                                         <i class="fas fa-heading me-2" style="color: #2d5a27;"></i>Titre de l'événement <span class="text-danger">*</span>
                                     </label>
-                                    <input type="text" 
-                                           class="form-control @error('title') is-invalid @enderror" 
-                                           id="title" 
-                                           name="title" 
-                                           value="{{ old('title') }}" 
-                                           required 
-                                           placeholder="Ex: Nettoyage de la plage">
+                                    <input type="text"
+                                        class="form-control @error('title') is-invalid @enderror"
+                                        id="title"
+                                        name="title"
+                                        value="{{ old('title') }}"
+                                        required
+                                        placeholder="Ex: Nettoyage de la plage">
                                     @error('title')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
 
@@ -61,14 +61,14 @@
                                     <label for="description" class="form-label">
                                         <i class="fas fa-align-left me-2" style="color: #2d5a27;"></i>Description <span class="text-danger">*</span>
                                     </label>
-                                    <textarea class="form-control @error('description') is-invalid @enderror" 
-                                              id="description" 
-                                              name="description" 
-                                              rows="4" 
-                                              required 
-                                              placeholder="Décrivez votre événement...">{{ old('description') }}</textarea>
+                                    <textarea class="form-control @error('description') is-invalid @enderror"
+                                        id="description"
+                                        name="description"
+                                        rows="4"
+                                        required
+                                        placeholder="Décrivez votre événement...">{{ old('description') }}</textarea>
                                     @error('description')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
 
@@ -79,15 +79,15 @@
                                             <label for="date" class="form-label">
                                                 <i class="fas fa-calendar-day me-2" style="color: #2d5a27;"></i>Date et heure <span class="text-danger">*</span>
                                             </label>
-                                            <input type="datetime-local" 
-                                                   class="form-control @error('date') is-invalid @enderror" 
-                                                   id="date" 
-                                                   name="date" 
-                                                   value="{{ old('date') }}" 
-                                                   required 
-                                                   min="{{ now()->format('Y-m-d\TH:i') }}">
+                                            <input type="datetime-local"
+                                                class="form-control @error('date') is-invalid @enderror"
+                                                id="date"
+                                                name="date"
+                                                value="{{ old('date') }}"
+                                                required
+                                                min="{{ now()->format('Y-m-d\TH:i') }}">
                                             @error('date')
-                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
                                     </div>
@@ -96,10 +96,10 @@
                                             <label for="duration" class="form-label">
                                                 <i class="fas fa-clock me-2" style="color: #2d5a27;"></i>Durée <span class="text-danger">*</span>
                                             </label>
-                                            <select class="form-select @error('duration') is-invalid @enderror" 
-                                                    id="duration" 
-                                                    name="duration" 
-                                                    required>
+                                            <select class="form-select @error('duration') is-invalid @enderror"
+                                                id="duration"
+                                                name="duration"
+                                                required>
                                                 <option value="">Sélectionnez une durée</option>
                                                 <option value="1 heure" {{ old('duration') == '1 heure' ? 'selected' : '' }}>1 heure</option>
                                                 <option value="2 heures" {{ old('duration') == '2 heures' ? 'selected' : '' }}>2 heures</option>
@@ -110,83 +110,108 @@
                                                 <option value="Week-end" {{ old('duration') == 'Week-end' ? 'selected' : '' }}>Week-end</option>
                                             </select>
                                             @error('duration')
-                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row mb-3">
 
-                                <!-- Location Dropdown -->
-                                <div class="col-md-6">
-                                    <label for="location_id" class="form-label">
-                                        <i class="fas fa-map-marker-alt me-2" style="color: #2d5a27;"></i>Lieu <span class="text-danger">*</span>
-                                    </label>
-                                    @php
-                                        $locations = \App\Models\Location::where('in_repair', false)->get();
-                                    @endphp
-                                    <select class="form-select @error('location_id') is-invalid @enderror" id="location_id" name="location_id" required>
-                                        <option value="">Sélectionnez un lieu</option>
-                                        @foreach($locations as $location)
-                                            <option value="{{ $location->id }}" {{ old('location_id') == $location->id ? 'selected' : '' }}>{{ $location->name }} ({{ $location->city }})</option>
-                                        @endforeach
-                                    </select>
-                                    @error('location_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-
-                                  
-                                    <div class="col-md-6 ">
-                                    <label for="campaign_id" class="form-label  
-                                             @error('campaign_id') is-invalid @enderror" 
-                                             style="color: #2d5a27;">
-                                         <i class="fas fa-bullhorn me-2" style="color: #2d5a27;"></i>Campagne
-                                    </label>
-                                    <select class="form-select @error('campaign_id') is-invalid @enderror"
-                                            id="campaign_id" 
-                                            name="campaign_id">
-                                        <option value="">Sélectionnez une campagne</option>
+                                    <!-- Location Dropdown -->
+                                    <div class="col-md-6">
+                                        <label for="location_id" class="form-label">
+                                            <i class="fas fa-map-marker-alt me-2" style="color: #2d5a27;"></i>Lieu <span class="text-danger">*</span>
+                                        </label>
                                         @php
-                                            $campaigns = \App\Models\Campaign::all();
+                                        $locations = \App\Models\Location::where('in_repair', false)->get();
                                         @endphp
-                                        @foreach($campaigns as $campaign)
-                                            <option value="{{ $campaign->id }}" {{ old('campaign_id') == $campaign->id ? 'selected' : '' }}>{{ $campaign->name }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('campaign_id')
+                                        <select class="form-select @error('location_id') is-invalid @enderror" id="location_id" name="location_id" required>
+                                            <option value="">Sélectionnez un lieu</option>
+                                            @foreach($locations as $location)
+                                            <option value="{{ $location->id }}" {{ old('location_id') == $location->id ? 'selected' : '' }}>{{ $location->name }} ({{ $location->city }})</option>
+                                            @endforeach
+                                        </select>
+                                        @error('location_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                        @enderror
+                                    </div>
 
-                                </div>
+
+
+                                    <div class="col-md-6 ">
+                                        <label for="campaign_id" class="form-label  
+                                             @error('campaign_id') is-invalid @enderror"
+                                            style="color: #2d5a27;">
+                                            <i class="fas fa-bullhorn me-2" style="color: #2d5a27;"></i>Campagne
+                                        </label>
+                                        <select class="form-select @error('campaign_id') is-invalid @enderror"
+                                            id="campaign_id"
+                                            name="campaign_id">
+                                            <option value="">Sélectionnez une campagne</option>
+                                            @php
+                                            $campaigns = \App\Models\Campaign::all();
+                                            @endphp
+                                            @foreach($campaigns as $campaign)
+                                            <option value="{{ $campaign->id }}" {{ old('campaign_id') == $campaign->id ? 'selected' : '' }}>{{ $campaign->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('campaign_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+
+                                    </div>
+                                    <!-- Sponsor selectable with search -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-12">
+                                            <label for="sponsor_search" class="form-label">
+                                                <i class="fas fa-handshake me-2" style="color: #2d5a27;"></i>Sélectionner un sponsor (optionnel)
+                                            </label>
+                                            @php
+                                            $sponsors = \App\Models\Sponsor::validated()->with('user')->get();
+                                            @endphp
+                                            <div class="input-group mb-2">
+                                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                                <input type="text" id="sponsor_search" class="form-control" placeholder="Rechercher par nom/entreprise...">
+                                            </div>
+                                            <select class="form-select" id="sponsor_id" name="sponsor_id">
+                                                <option value="">Aucun sponsor</option>
+                                                @foreach($sponsors as $s)
+                                                <option value="{{ $s->id }}" data-search="{{ strtolower(($s->company_name ?? '') . ' ' . ($s->user->name ?? '') . ' ' . ($s->city ?? '') ) }}" {{ old('sponsor_id') == $s->id ? 'selected' : '' }}>
+                                                    {{ $s->company_name ?? ($s->user->name ?? 'Sponsor') }}
+                                                    @if($s->city) - {{ $s->city }} @endif
+                                                </option>
+                                                @endforeach
+                                            </select>
+                                            <small class="text-muted">Le sponsor choisi recevra une demande pour parrainer cet événement et pourra l'accepter ou la refuser.</small>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     <label for="max_participants" class="form-label">
                                         <i class="fas fa-users me-2" style="color: #2d5a27;"></i>Nombre maximum de participants
                                     </label>
-                                    <input type="number" 
-                                           class="form-control @error('max_participants') is-invalid @enderror" 
-                                           id="max_participants" 
-                                           name="max_participants" 
-                                           value="{{ old('max_participants') }}" 
-                                           min="1" 
-                                           placeholder="Laissez vide pour illimité">
+                                    <input type="number"
+                                        class="form-control @error('max_participants') is-invalid @enderror"
+                                        id="max_participants"
+                                        name="max_participants"
+                                        value="{{ old('max_participants') }}"
+                                        min="1"
+                                        placeholder="Laissez vide pour illimité">
                                     @error('max_participants')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                     <small class="form-text text-muted">Optionnel - Laissez vide si pas de limite</small>
                                 </div>
-                              
-</div>
+
+                            </div>
 
 
                             <!-- Right Column - More Fields, Images and Actions -->
                             <div class="col-md-4 ">
                                 <!-- Max Participants -->
-                         <div class="alert alert-info mt-10 mb-4">
+                                <div class="alert alert-info mt-10 mb-4">
                                     <i class="fas fa-info-circle me-2 "></i>
-                                    <strong>Important :</strong> Après la création, votre événement sera en statut "Brouillon". 
+                                    <strong>Important :</strong> Après la création, votre événement sera en statut "Brouillon".
                                     Vous pourrez le soumettre pour approbation depuis la liste de vos événements.
                                 </div>
 
@@ -207,14 +232,14 @@
                                         </div>
                                     </div>
                                     @error('images.*')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                     <small class="form-text text-muted">
                                         Vous pouvez sélectionner plusieurs images. Formats acceptés: JPG, PNG, GIF. Max: 2MB par image.
                                     </small>
                                     <!-- Image preview -->
                                     <div id="imagePreview" class="mt-3 row g-2"></div>
-                                </div>                               
+                                </div>
 
                                 <!-- Buttons -->
                                 <div class="d-flex justify-content-between mt-4 mb-30">
@@ -226,7 +251,7 @@
                                     </button>
                                 </div>
 
-                                 
+
                             </div>
                         </div>
                     </form>
@@ -239,68 +264,68 @@
 
 @push('scripts')
 <script>
-// Drag & Drop functionality
-const dragDropArea = document.getElementById('dragDropArea');
-const fileInput = document.getElementById('images');
-const browseBtn = document.getElementById('browseBtn');
+    // Drag & Drop functionality
+    const dragDropArea = document.getElementById('dragDropArea');
+    const fileInput = document.getElementById('images');
+    const browseBtn = document.getElementById('browseBtn');
 
-// Browse button click
-browseBtn.addEventListener('click', function() {
-    fileInput.click();
-});
+    // Browse button click
+    browseBtn.addEventListener('click', function() {
+        fileInput.click();
+    });
 
-// File input change
-fileInput.addEventListener('change', function(e) {
-    handleFiles(e.target.files);
-});
+    // File input change
+    fileInput.addEventListener('change', function(e) {
+        handleFiles(e.target.files);
+    });
 
-// Drag & drop events
-['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-    dragDropArea.addEventListener(eventName, preventDefaults, false);
-});
+    // Drag & drop events
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dragDropArea.addEventListener(eventName, preventDefaults, false);
+    });
 
-function preventDefaults(e) {
-    e.preventDefault();
-    e.stopPropagation();
-}
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
 
-['dragenter', 'dragover'].forEach(eventName => {
-    dragDropArea.addEventListener(eventName, highlight, false);
-});
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dragDropArea.addEventListener(eventName, highlight, false);
+    });
 
-['dragleave', 'drop'].forEach(eventName => {
-    dragDropArea.addEventListener(eventName, unhighlight, false);
-});
+    ['dragleave', 'drop'].forEach(eventName => {
+        dragDropArea.addEventListener(eventName, unhighlight, false);
+    });
 
-function highlight() {
-    dragDropArea.classList.add('drag-over');
-}
+    function highlight() {
+        dragDropArea.classList.add('drag-over');
+    }
 
-function unhighlight() {
-    dragDropArea.classList.remove('drag-over');
-}
+    function unhighlight() {
+        dragDropArea.classList.remove('drag-over');
+    }
 
-dragDropArea.addEventListener('drop', function(e) {
-    const dt = e.dataTransfer;
-    const files = dt.files;
-    handleFiles(files);
-    fileInput.files = files;
-});
+    dragDropArea.addEventListener('drop', function(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+        fileInput.files = files;
+    });
 
-// Handle selected files
-function handleFiles(files) {
-    const preview = document.getElementById('imagePreview');
-    preview.innerHTML = '';
-    
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                const col = document.createElement('div');
-                col.className = 'col-6 col-md-4 mb-2';
-                col.innerHTML = `
+    // Handle selected files
+    function handleFiles(files) {
+        const preview = document.getElementById('imagePreview');
+        preview.innerHTML = '';
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    const col = document.createElement('div');
+                    col.className = 'col-6 col-md-4 mb-2';
+                    col.innerHTML = `
                     <div class="card position-relative">
                         <img src="${e.target.result}" class="card-img-top" style="height: 100px; object-fit: cover;">
                         <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 remove-new-image" data-file-name="${file.name}" style="padding: 0.25rem 0.5rem;">
@@ -311,168 +336,181 @@ function handleFiles(files) {
                         </div>
                     </div>
                 `;
-                preview.appendChild(col);
-                
-                // Add remove functionality for new images
-                col.querySelector('.remove-new-image').addEventListener('click', function() {
-                    removeNewImage(this, file.name);
-                });
-            };
-            
-            reader.readAsDataURL(file);
-        }
-    }
-}
+                    preview.appendChild(col);
 
-// Remove new image before upload
-function removeNewImage(button, fileName) {
-    if (confirm('Supprimer cette image ?')) {
-        const card = button.closest('.col-6');
-        card.remove();
-        
-        // Remove file from input
-        const dt = new DataTransfer();
-        const files = fileInput.files;
-        
-        for (let i = 0; i < files.length; i++) {
-            if (files[i].name !== fileName) {
-                dt.items.add(files[i]);
+                    // Add remove functionality for new images
+                    col.querySelector('.remove-new-image').addEventListener('click', function() {
+                        removeNewImage(this, file.name);
+                    });
+                };
+
+                reader.readAsDataURL(file);
             }
         }
-        
-        fileInput.files = dt.files;
-    }
-}
-
-// Form validation
-document.getElementById('eventForm').addEventListener('submit', function(e) {
-    const title = document.getElementById('title').value;
-    const description = document.getElementById('description').value;
-    const date = document.getElementById('date').value;
-    const location = document.getElementById('location').value;
-    const duration = document.getElementById('duration').value;
-
-    if (!title || !description || !date || !location || !duration) {
-        e.preventDefault();
-        alert('Veuillez remplir tous les champs obligatoires.');
-        return;
     }
 
-    const selectedDate = new Date(date);
-    if (selectedDate <= new Date()) {
-        e.preventDefault();
-        alert('La date de l\'événement doit être dans le futur.');
-        return;
-    }
-});
+    // Remove new image before upload
+    function removeNewImage(button, fileName) {
+        if (confirm('Supprimer cette image ?')) {
+            const card = button.closest('.col-6');
+            card.remove();
 
-// Set min datetime for date field
-document.addEventListener('DOMContentLoaded', function() {
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    document.getElementById('date').min = now.toISOString().slice(0, 16);
-});
+            // Remove file from input
+            const dt = new DataTransfer();
+            const files = fileInput.files;
+
+            for (let i = 0; i < files.length; i++) {
+                if (files[i].name !== fileName) {
+                    dt.items.add(files[i]);
+                }
+            }
+
+            fileInput.files = dt.files;
+        }
+    }
+
+    // Form validation
+    document.getElementById('eventForm').addEventListener('submit', function(e) {
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+        const date = document.getElementById('date').value;
+        const location = document.getElementById('location_id').value;
+        const duration = document.getElementById('duration').value;
+
+        if (!title || !description || !date || !location || !duration) {
+            e.preventDefault();
+            alert('Veuillez remplir tous les champs obligatoires.');
+            return;
+        }
+
+        const selectedDate = new Date(date);
+        if (selectedDate <= new Date()) {
+            e.preventDefault();
+            alert('La date de l\'événement doit être dans le futur.');
+            return;
+        }
+    });
+
+    // Set min datetime for date field
+    document.addEventListener('DOMContentLoaded', function() {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('date').min = now.toISOString().slice(0, 16);
+        // Simple search filter for sponsors
+        const sponsorSearch = document.getElementById('sponsor_search');
+        const sponsorSelect = document.getElementById('sponsor_id');
+        if (sponsorSearch && sponsorSelect) {
+            sponsorSearch.addEventListener('input', function() {
+                const term = this.value.trim().toLowerCase();
+                Array.from(sponsorSelect.options).forEach((opt, idx) => {
+                    if (idx === 0) return; // keep placeholder
+                    const hay = (opt.getAttribute('data-search') || '').toLowerCase();
+                    opt.hidden = term && !hay.includes(term);
+                });
+            });
+        }
+    });
 </script>
 @endpush
 
 @push('styles')
 <style>
-.drag-drop-area {
-    border: 2px dashed #dee2e6;
-    border-radius: 8px;
-    padding: 40px 20px;
-    text-align: center;
-    background-color: #f8f9fa;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    margin-bottom: 10px;
-}
-
-.drag-drop-area:hover {
-    border-color: #2d5a27;
-    background-color: #f0f9f0;
-}
-
-.drag-drop-area.drag-over {
-    border-color: #2d5a27;
-    background-color: #e8f5e8;
-}
-
-.drag-drop-content {
-    pointer-events: none;
-}
-
-.drag-drop-icon {
-    font-size: 48px;
-    color: #6c757d;
-    margin-bottom: 16px;
-}
-
-.drag-drop-area h5 {
-    color: #495057;
-    font-weight: 500;
-    margin-bottom: 8px;
-    font-size: 16px;
-}
-
-.drag-drop-area .text-muted {
-    color: #6c757d !important;
-    margin-bottom: 12px;
-    font-size: 14px;
-}
-
-#browseBtn {
-    pointer-events: all;
-    background-color: white;
-    border: 1px solid #2d5a27;
-    color: #2d5a27
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: all 0.3s ease;
-}
-
-#browseBtn:hover {
-    background-color: #2d5a27;
-    color: white;
-}
-
-.card-img-top {
-    object-fit: cover;
-}
-
-.remove-new-image {
-    opacity: 0.8;
-    transition: opacity 0.3s ease;
-}
-
-.remove-new-image:hover {
-    opacity: 1;
-}
-
-.alert-info {
-    background-color: #e8f4f8;
-    border-color: #b3e0f0;
-    color: #055160;
-}
-
-.alert-info i {
-    color: #055160;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .col-md-6 {
-        width: 100%;
-    }
-    
     .drag-drop-area {
-        padding: 30px 15px;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 40px 20px;
+        text-align: center;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-bottom: 10px;
     }
-    
+
+    .drag-drop-area:hover {
+        border-color: #2d5a27;
+        background-color: #f0f9f0;
+    }
+
+    .drag-drop-area.drag-over {
+        border-color: #2d5a27;
+        background-color: #e8f5e8;
+    }
+
+    .drag-drop-content {
+        pointer-events: none;
+    }
+
     .drag-drop-icon {
-        font-size: 36px;
+        font-size: 48px;
+        color: #6c757d;
+        margin-bottom: 16px;
     }
-}
+
+    .drag-drop-area h5 {
+        color: #495057;
+        font-weight: 500;
+        margin-bottom: 8px;
+        font-size: 16px;
+    }
+
+    .drag-drop-area .text-muted {
+        color: #6c757d !important;
+        margin-bottom: 12px;
+        font-size: 14px;
+    }
+
+    #browseBtn {
+        pointer-events: all;
+        background-color: white;
+        border: 1px solid #2d5a27;
+        color: #2d5a27;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    #browseBtn:hover {
+        background-color: #2d5a27;
+        color: white;
+    }
+
+    .card-img-top {
+        object-fit: cover;
+    }
+
+    .remove-new-image {
+        opacity: 0.8;
+        transition: opacity 0.3s ease;
+    }
+
+    .remove-new-image:hover {
+        opacity: 1;
+    }
+
+    .alert-info {
+        background-color: #e8f4f8;
+        border-color: #b3e0f0;
+        color: #055160;
+    }
+
+    .alert-info i {
+        color: #055160;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .col-md-6 {
+            width: 100%;
+        }
+
+        .drag-drop-area {
+            padding: 30px 15px;
+        }
+
+        .drag-drop-icon {
+            font-size: 36px;
+        }
+    }
 </style>
 @endpush

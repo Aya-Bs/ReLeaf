@@ -43,10 +43,10 @@
                                 {{ $sponsor->formatted_sponsorship_type }}
                             </span>
                             @if($sponsor->city)
-                                <small class="text-muted">
-                                    <i class="fas fa-map-marker-alt me-1"></i>
-                                    {{ $sponsor->city }}
-                                </small>
+                            <small class="text-muted">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                {{ $sponsor->city }}
+                            </small>
                             @endif
                         </div>
                         <div class="sponsor-actions">
@@ -54,9 +54,9 @@
                                 <i class="fas fa-eye me-1"></i>Voir plus
                             </a>
                             @if($sponsor->website)
-                                <a href="{{ $sponsor->website }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-external-link-alt me-1"></i>Site web
-                                </a>
+                            <a href="{{ $sponsor->website }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-external-link-alt me-1"></i>Site web
+                            </a>
                             @endif
                         </div>
                     </div>
@@ -168,64 +168,63 @@
 
 @push('styles')
 <style>
-.hero-section {
-    background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%);
-    min-height: 50vh;
-}
+    .hero-section {
+        background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%);
+        min-height: 50vh;
+    }
 
-.sponsor-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: none;
-}
+    .sponsor-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+    }
 
-.sponsor-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-}
+    .sponsor-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
 
-.section-title {
-    position: relative;
-    display: inline-block;
-}
+    .section-title {
+        position: relative;
+        display: inline-block;
+    }
 
-.section-title::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 3px;
-    background: #28a745;
-    border-radius: 2px;
-}
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 3px;
+        background: #28a745;
+        border-radius: 2px;
+    }
 
-.benefit-item {
-    transition: transform 0.3s ease;
-}
+    .benefit-item {
+        transition: transform 0.3s ease;
+    }
 
-.benefit-item:hover {
-    transform: translateY(-5px);
-}
+    .benefit-item:hover {
+        transform: translateY(-5px);
+    }
 
-.empty-state {
-    padding: 4rem 2rem;
-}
+    .empty-state {
+        padding: 4rem 2rem;
+    }
 
-.btn-success {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    border: none;
-    transition: transform 0.3s ease;
-}
+    .btn-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        transition: transform 0.3s ease;
+    }
 
-.btn-success:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
-}
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+    }
 
-.badge {
-    font-size: 0.8rem;
-}
+    .badge {
+        font-size: 0.8rem;
+    }
 </style>
 @endpush
-

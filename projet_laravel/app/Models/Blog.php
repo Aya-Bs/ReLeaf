@@ -13,6 +13,7 @@ class Blog extends Model
         'image_url',
         'tags',
     ];
+    
 
     protected $casts = [
         'date_posted' => 'datetime',
