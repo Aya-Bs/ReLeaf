@@ -52,6 +52,11 @@
                         <i class="fas fa-hands-helping me-1"></i>Volontaire
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('volunteers.badge.*') ? 'active' : '' }}" href="{{ route('volunteers.badge.show', auth()->user()->volunteer->id) }}">
+                        <i class="fas fa-id-card me-1"></i>Mon Badge
+                    </a>
+                </li>
                 @else
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('volunteers.create') ? 'active' : '' }}" href="{{ route('volunteers.create') }}">

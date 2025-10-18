@@ -498,6 +498,12 @@ Route::middleware(['auth'])->group(function () {
 // Route de test
 Route::get('/test', 'App\Http\Controllers\TestController@test');
 
+// Routes pour les badges volontaires
+Route::middleware(['auth'])->group(function () {
+    Route::get('/volunteers/{volunteer}/badge', [App\Http\Controllers\VolunteerBadgeController::class, 'showBadge'])->name('volunteers.badge.show');
+    Route::get('/volunteers/{volunteer}/badge/download', [App\Http\Controllers\VolunteerBadgeController::class, 'generateBadge'])->name('volunteers.badge.download');
+});
+
 require __DIR__ . '/auth.php';
 require __DIR__ . '/2fa.php';
 // Routes auteur (blogs)

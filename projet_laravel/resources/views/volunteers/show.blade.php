@@ -71,6 +71,33 @@
                 </div>
             </div>
 
+            <!-- Section Badge Volontaire -->
+            @if($volunteer->isApproved())
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-id-card me-2"></i>Badge Volontaire
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6>Votre carte d'identité volontaire officielle</h6>
+                            <p class="text-muted mb-0">Téléchargez ou imprimez votre badge ReLeaf pour prouver votre statut de volontaire.</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{{ route('volunteers.badge.show', $volunteer) }}" class="btn btn-success me-2">
+                                <i class="fas fa-eye me-1"></i>Voir Badge
+                            </a>
+                            <a href="{{ route('volunteers.badge.download', $volunteer) }}" class="btn btn-outline-success">
+                                <i class="fas fa-download me-1"></i>Télécharger PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <div class="d-flex gap-2">
                 @can('update', $volunteer)
                     <a href="{{ route('volunteers.edit', $volunteer) }}" class="btn btn-outline-primary">
