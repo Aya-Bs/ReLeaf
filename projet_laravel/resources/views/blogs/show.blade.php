@@ -99,12 +99,22 @@
                         <label class="form-label d-block">Note :</label>
                         <div class="rating">
                             @for($i = 5; $i >= 1; $i--)
-                                <input type="radio" name="rating" id="star{{ $i }}" value="{{ $i }}">
+                                <input type="radio" name="rating" id="star{{ $i }}" value="{{ $i }}" {{ old('rating') == $i ? 'checked' : '' }}>
                                 <label for="star{{ $i }}">★</label>
                             @endfor
                         </div>
+                        @error('rating')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
-                    <textarea name="comment" class="form-control mb-3" rows="3" placeholder="Votre commentaire..." required></textarea>
+
+                    <div class="mb-3">
+                        <textarea name="comment" class="form-control @error('comment') is-invalid @enderror" rows="3" placeholder="Votre commentaire...">{{ old('comment') }}</textarea>
+                        @error('comment')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     <button type="submit" class="btn btn-primary">Publier</button>
                 </form>
             </div>
@@ -156,63 +166,5 @@ function confirmDelete(id) {
         }
     });
 }
-
-function editReview(id, currentComment, currentRating) {
-    Swal.fire({
-        title: 'Modifier votre commentaire',
-        html: `
-            <div style="text-align:left">
-                <label>Note :</label>
-                <div id="stars-${id}" class="mb-3">
-                    ${[5,4,3,2,1].map(star => `
-                        <i class="fa fa-star star ${star <= currentRating ? 'text-warning' : 'text-secondary'}"
-                           data-value="${star}" style="cursor:pointer; font-size:22px; margin-right:5px;"></i>
-                    `).join('')}
-                </div>
-                <textarea id="comment-text" class="swal2-textarea" rows="3" placeholder="Votre commentaire...">${currentComment}</textarea>
-            </div>
-        `,
-        showCancelButton: true,
-        confirmButtonText: 'Enregistrer',
-        cancelButtonText: 'Annuler',
-        focusConfirm: false,
-        preConfirm: () => {
-            const rating = document.querySelector('#stars-' + id + ' .selected')?.dataset.value;
-            const comment = document.getElementById('comment-text').value.trim();
-            if (!rating || !comment) {
-                Swal.showValidationMessage('Veuillez ajouter une note et un commentaire');
-            }
-            return { rating, comment };
-        },
-        didOpen: () => {
-            const stars = document.querySelectorAll(`#stars-${id} .star`);
-            stars.forEach(star => {
-                star.addEventListener('click', function() {
-                    stars.forEach(s => s.classList.remove('text-warning', 'selected'));
-                    this.classList.add('text-warning', 'selected');
-                    let value = this.dataset.value;
-                    stars.forEach(s => {
-                        if (s.dataset.value <= value) s.classList.add('text-warning');
-                    });
-                });
-            });
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const form = document.createElement('form');
-            form.action = `/reviews/${id}`;
-            form.method = 'POST';
-            form.innerHTML = `
-                @csrf
-                @method('PUT')
-                <input type="hidden" name="rating" value="${result.value.rating}">
-                <input type="hidden" name="comment" value="${result.value.comment}">
-            `;
-            document.body.appendChild(form);
-            form.submit();
-        }
-    });
-}
 </script>
-
 @endsection

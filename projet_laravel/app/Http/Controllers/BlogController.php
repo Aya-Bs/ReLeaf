@@ -15,30 +15,22 @@ class BlogController extends Controller
         return view('blogs.index', compact('blogs'));
     }
 
-    // Affiche les blogs sous forme de cartes
+    // Vue des blogs sous forme de cartes (publique)
     public function cards()
-{
-    // Tous les blogs pour tous les utilisateurs
-    $blogs = Blog::latest()->get();
-    return view('blogs.cards', compact('blogs')); // <-- nouvelle vue pour utilisateurs
-}
-    // Affiche les blogs de l'utilisateur connecté
+    {
+        $blogs = Blog::latest()->get();
+        return view('blogs.cards', compact('blogs'));
+    }
+
+    // Affiche les blogs de l’utilisateur connecté
     public function myBlogs()
     {
         $user = auth()->user();
-
-        if ($user->role === 'organizer') {
-            // L'organizer voit tous ses blogs
-            $blogs = Blog::where('user_id', $user->id)->get();
-        } else {
-            // L'utilisateur normal voit ses propres blogs
-            $blogs = Blog::where('user_id', $user->id)->get();
-        }
-
+        $blogs = Blog::where('user_id', $user->id)->get();
         return view('blogs.myblogs', compact('blogs'));
     }
 
-    // Formulaire création (seulement organizer)
+    // Formulaire de création (organizer uniquement)
     public function create()
     {
         if (Auth::user()->role !== 'organizer') {
@@ -47,34 +39,47 @@ class BlogController extends Controller
         return view('blogs.create');
     }
 
-    // Stocke le blog (seulement organizer)
+    // ✅ Stocke un nouveau blog avec validation stricte
     public function store(Request $request)
     {
         if (Auth::user()->role !== 'organizer') {
             abort(403, 'Vous n’êtes pas autorisé à créer un blog.');
         }
 
+        // 🔍 Validation avec messages personnalisés
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'tags' => 'nullable|string',
+            'content' => 'required|string|min:20',
+            'tags' => 'nullable|string|max:255',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'title.required' => 'Le titre est obligatoire.',
+            'title.max' => 'Le titre ne doit pas dépasser 255 caractères.',
+            'content.required' => 'Le contenu est obligatoire.',
+            'content.min' => 'Le contenu doit contenir au moins 20 caractères.',
+            'image.required' => 'L’image est obligatoire.',
+            'image.image' => 'Le fichier doit être une image.',
+            'image.mimes' => 'Les formats acceptés sont : jpeg, png, jpg, gif.',
+                        'image.max' => 'La taille de l’image ne doit pas dépasser 2 Mo.',
         ]);
 
+        // ✅ Ajout des champs automatiques
         $validated['user_id'] = Auth::id();
         $validated['date_posted'] = now();
 
+        // ✅ Sauvegarde de l’image
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('blogs', 'public');
             $validated['image_url'] = '/storage/' . $imagePath;
         }
 
+        // ✅ Création du blog
         Blog::create($validated);
 
         return redirect()->route('blogs.myblogs')->with('success', 'Blog créé avec succès !');
     }
 
-    // Formulaire édition
+    // Formulaire d’édition
     public function edit(Blog $blog)
     {
         if (Auth::id() !== $blog->user_id && Auth::user()->role !== 'organizer') {
@@ -83,31 +88,44 @@ class BlogController extends Controller
         return view('blogs.edit', compact('blog'));
     }
 
-    // Met à jour le blog
+    // ✅ Mise à jour du blog avec validation
     public function update(Request $request, Blog $blog)
     {
         if (Auth::id() !== $blog->user_id && Auth::user()->role !== 'organizer') {
             abort(403);
         }
 
+        // Validation stricte + messages personnalisés
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'tags' => 'nullable|string',
+            'content' => 'required|string|min:20',
+            'tags' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'title.required' => 'Le titre est obligatoire.',
+            'title.max' => 'Le titre ne doit pas dépasser 255 caractères.',
+            'content.required' => 'Le contenu est obligatoire.',
+            'content.min' => 'Le contenu doit contenir au moins 20 caractères.',
+            'image.image' => 'Le fichier doit être une image.',
+            'image.mimes' => 'Les formats acceptés sont : jpeg, png, jpg, gif.',
+            'image.max' => 'La taille de l image ne doit pas dépasser 2 Mo.',
+            'tags.regex' => 'Les tags doivent être séparés par des virgules et ne contenir que des lettres, chiffres ou tirets.',
+
         ]);
 
+        // ✅ Gestion de la nouvelle image
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('blogs', 'public');
             $validated['image_url'] = '/storage/' . $imagePath;
         }
 
+        // ✅ Mise à jour du blog
         $blog->update($validated);
 
-        return redirect()->route('blogs.myblogs')->with('success', 'Blog mis à jour !');
+        return redirect()->route('blogs.myblogs')->with('success', 'Blog mis à jour avec succès !');
     }
 
-    // Supprimer un blog
+    // Suppression
     public function destroy(Blog $blog)
     {
         if (Auth::id() !== $blog->user_id && Auth::user()->role !== 'organizer') {
@@ -115,14 +133,13 @@ class BlogController extends Controller
         }
 
         $blog->delete();
-        return redirect()->route('blogs.myblogs')->with('success', 'Blog supprimé !');
+        return redirect()->route('blogs.myblogs')->with('success', 'Blog supprimé avec succès !');
     }
 
-    // Affiche le détail d’un blog
+    // Affiche les détails d’un blog
     public function show(Blog $blog)
     {
         return view('blogs.show', compact('blog'));
     }
-
-
 }
+
