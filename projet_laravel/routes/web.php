@@ -169,7 +169,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
             ->withCount(['resources', 'events'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-
         return view('backend.campaigns.index', compact('campaigns'));
     })->name('campaigns.index');
 
@@ -179,12 +178,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
         return view('backend.campaigns.show', compact('campaign'));
     })->name('campaigns.show');
 
+    // ✅ Gestion des demandes de suppression de campagnes
+    Route::get('/campaigns/deletion-requests', [CampaignController::class, 'deletionRequests'])
+        ->name('campaigns.deletion-requests');
+    Route::post('/campaigns/deletion-requests/{deletionRequest}/process', [CampaignController::class, 'processDeletionRequest'])
+        ->name('campaigns.process-deletion-request');
+
     // ✅ AJOUTÉ : Gestion des ressources (backend) - Même pattern
     Route::get('/resources', function () {
         $resources = \App\Models\Resource::with('campaign')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-
         return view('backend.resources.index', compact('resources'));
     })->name('resources.index');
 
@@ -267,6 +271,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{campaign}/edit', [CampaignController::class, 'edit'])->name('edit');
         Route::put('/{campaign}', [CampaignController::class, 'update'])->name('update');
         Route::delete('/{campaign}', [CampaignController::class, 'destroy'])->name('destroy');
+        Route::post('/{campaign}/request-deletion', [CampaignController::class, 'requestDeletion'])
+             ->name('request-deletion');
         
         // Routes supplémentaires
         Route::post('/{campaign}/toggle-visibility', [CampaignController::class, 'toggleVisibility'])

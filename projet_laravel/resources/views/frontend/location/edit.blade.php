@@ -10,12 +10,11 @@
             <div>
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-4">
-                        <i class="fas fa-home me-2" style="color: #2d5a27;"></i><strong>Modifier le lieu</strong>
+                         <i class="fas fa-map-pin me-2 style="color: #2d5a27;"></i><strong>Modifier le lieu</strong>
                     </h4>
                     <!-- Breadcrumb -->
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-4" style="background: transparent; padding: 0; margin: 0;">
-                            <li class="breadcrumb-item"><a href="{{ route('home') }}" style="color: #2d5a27;">Accueil</a></li>
                             <li class="breadcrumb-item"><a href="{{ route('locations.index') }}" style="color: #2d5a27;">Lieux</a></li>
                             <li class="breadcrumb-item active" aria-current="page" style="color: #2d5a27;"><strong>Modifier</strong></li>
                         </ol>

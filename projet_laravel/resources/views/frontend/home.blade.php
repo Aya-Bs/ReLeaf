@@ -3,36 +3,147 @@
 @section('title', 'EcoEvents - Accueil')
 
 @section('content')
-<!-- Hero Section -->
-<section class="hero-section bg-gradient-primary text-white py-5">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">
-                    <span class="text-success">EcoEvents</span>
-                </h1>
-                <p class="lead mb-4">
-                    Rejoignez la communauté pour organiser et promouvoir des événements
-                    autour de l'écologie et du développement durable.
-                </p>
-                <div class="d-flex gap-3 flex-wrap">
-                    <a href="{{ route('profile.show') }}" class="btn btn-success btn-lg">
-                        <i class="fas fa-user-circle me-2"></i>Mon Profil
-                    </a>
-                    @if(auth()->user()->isAdmin())
-                        <a href="{{ route('backend.dashboard') }}" class="btn btn-outline-light btn-lg">
-                            <i class="fas fa-cog me-2"></i>Administration
-                        </a>
-                    @endif
+<!-- Hero Section - Campagnes -->
+<section class="campaigns-hero-section position-relative overflow-hidden">
+    <div id="campaignsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+        <div class="carousel-inner">
+            @forelse($featuredCampaigns as $index => $campaign)
+            <div class="carousel-item {{ $index === 0 ? 'active' : '' }} position-relative">
+                <!-- Image de fond -->
+                <img src="{{ $campaign->image_url ? asset('storage/' . $campaign->image_url) : 'https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80' }}" 
+                     alt="{{ $campaign->name }}"
+                     class="d-block w-100 hero-carousel-image">
+                
+                <!-- Overlay sombre pour meilleure lisibilité -->
+                <div class="carousel-overlay"></div>
+                
+                <!-- Contenu superposé sur l'image -->
+                <div class="carousel-content position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-8 text-white">
+                                <div class="hero-content">
+                                    <h6 class="hero-subtitle mb-3">Campagne Écologique</h6>
+                                    <h1 class="hero-title display-4 fw-bold mb-4">
+                                        {{ $campaign->name }}
+                                    </h1>
+                                    <p class="hero-description lead mb-4">
+                                        {{ Str::limit($campaign->description, 200) }}
+                                    </p>
+                                    
+                                    <div class="campaign-meta mb-4">
+                                        <div class="row">
+                                            <div class="col-md-4 mb-3">
+                                                <div class="meta-item">
+                                                    <i class="fas fa-calendar me-2"></i>
+                                                    <strong>Début:</strong> 
+                                                    {{ $campaign->start_date->format('d/m/Y') }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <div class="meta-item">
+                                                    <i class="fas fa-bullseye me-2"></i>
+                                                    <strong>Objectif:</strong> 
+                                                    {{ number_format($campaign->goal, 0, ',', ' ') }} TND
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4 mb-3">
+                                                <div class="meta-item">
+                                                    <i class="fas fa-leaf me-2"></i>
+                                                    <strong>Impact:</strong> 
+                                                    {{ $campaign->environmental_impact ?? 'Écologique' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="hero-buttons d-flex gap-3 flex-wrap">
+                                        <a href="{{ route('campaigns.show', $campaign) }}" class="btn btn-success btn-lg">
+                                            <i class="fas fa-info-circle me-2"></i>Plus de détails
+                                        </a>
+                                        <a href="{{ route('campaigns.index') }}" class="btn btn-outline-light btn-lg">
+                                            <i class="fas fa-list me-2"></i>Toutes les campagnes
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-lg-6">
-                <img src="{{ asset('images/eco-events-hero.png') }}"
-                     alt="Événements écologiques"
-                     class="img-fluid rounded shadow"
-                     onerror="this.src='https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'">
+            @empty
+            <div class="carousel-item active position-relative">
+                <!-- Image de fond par défaut -->
+                <img src="https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
+                     alt="Campagnes écologiques"
+                     class="d-block w-100 hero-carousel-image">
+                
+                <!-- Overlay sombre -->
+                <div class="carousel-overlay"></div>
+                
+                <!-- Contenu superposé -->
+                <div class="carousel-content position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-8 text-white">
+                                <div class="hero-content">
+                                    <h6 class="hero-subtitle mb-3">Prochaines Campagnes</h6>
+                                    <h1 class="hero-title display-4 fw-bold mb-4">
+                                        Rejoignez le Mouvement Écologique
+                                    </h1>
+                                    <p class="hero-description lead mb-4">
+                                        Découvrez nos prochaines campagnes pour un avenir plus durable. 
+                                        Ensemble, créons un impact positif sur notre environnement.
+                                    </p>
+                                    
+                                    <div class="hero-buttons d-flex gap-3 flex-wrap">
+                                        @guest
+                                            <a href="{{ route('campaigns.index') }}" class="btn btn-outline-light btn-lg">
+                                                <i class="fas fa-list me-2"></i>Explorer les campagnes
+                                            </a>
+                                        @else
+                                            @php $role = optional(auth()->user())->role; @endphp
+                                            @if(in_array($role, ['admin', 'organizer']))
+                                                <a href="{{ route('campaigns.create') }}" class="btn btn-success btn-lg">
+                                                    <i class="fas fa-plus me-2"></i>Créer une campagne
+                                                </a>
+                                            @endif
+
+                                            <a href="{{ route('campaigns.index') }}" class="btn btn-outline-light btn-lg">
+                                                <i class="fas fa-list me-2"></i>Explorer les campagnes
+                                            </a>
+                                        @endguest
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endforelse
+        </div>
+
+        <!-- Carousel Controls -->
+        @if($featuredCampaigns->count() > 1)
+        <button class="carousel-control-prev" type="button" data-bs-target="#campaignsCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Précédent</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#campaignsCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Suivant</span>
+        </button>
+
+        <!-- Carousel Indicators -->
+        <div class="carousel-indicators-container">
+            <div class="carousel-indicators">
+                @foreach($featuredCampaigns as $index => $campaign)
+                <button type="button" data-bs-target="#campaignsCarousel" data-bs-slide-to="{{ $index }}" 
+                        class="{{ $index === 0 ? 'active' : '' }}" aria-current="{{ $index === 0 ? 'true' : 'false' }}"></button>
+                @endforeach
             </div>
         </div>
+        @endif
     </div>
 </section>
 
@@ -93,8 +204,7 @@
                         <div class="avatar-container mb-3">
                             <img src="{{ $ambassador->avatar_url }}"
                                  alt="{{ $ambassador->full_name }}"
-                                 class="rounded-circle ambassador-avatar"
-                                 style="width: 80px; height: 80px; object-fit: cover;">
+                                 class="rounded-circle ambassador-avatar fixed-avatar-size">
                             <div class="eco-badge">
                                 <i class="fas fa-leaf text-white"></i>
                             </div>
@@ -132,7 +242,8 @@
     </div>
 </section>
 
-<!-- Recent Events Section -->
+
+
 <!-- Recent Events Section -->
 <section class="recent-events-section py-5 bg-light">
     <div class="container">
@@ -174,10 +285,6 @@
          style="height: 200px; object-fit: cover;" 
          onerror="this.src='https://via.placeholder.com/300x200?text=Image+Not+Found'">
 @endif
-
-
-
-
                                            
                                             <div class="card-body d-flex flex-column" >
                                                 <!-- Event Date -->
@@ -281,11 +388,247 @@
 
 @push('styles')
 <style>
-.hero-section {
-    background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%);
-    min-height: 60vh;
+/* Hero Carousel Styles - CORRECTED */
+.campaigns-hero-section {
+    position: relative;
+    overflow: hidden;
 }
 
+.hero-carousel-image {
+    height: 600px; /* Hauteur augmentée */
+    object-fit: cover;
+    width: 100%;
+}
+
+.carousel-item {
+    position: relative;
+}
+
+.carousel-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.3) 0%,
+        rgba(0, 0, 0, 0.5) 50%,
+        rgba(0, 0, 0, 0.7) 100%
+    );
+    z-index: 1;
+}
+
+.carousel-content {
+    z-index: 2;
+}
+
+.hero-content {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    color: #28a745;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+}
+
+.hero-description {
+    font-size: 1.3rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.meta-item {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.meta-item strong {
+    color: #28a745;
+}
+
+.hero-buttons .btn {
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+
+.hero-buttons .btn-success {
+    background: #28a745;
+    border-color: #28a745;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.hero-buttons .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.hero-buttons .btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Carousel Controls */
+.carousel-control-prev,
+.carousel-control-next {
+    width: 60px;
+    height: 60px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    margin: 0 2rem;
+    backdrop-filter: blur(10px);
+    z-index: 3;
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.carousel-indicators-container {
+    position: absolute;
+    bottom: 2rem;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    z-index: 3;
+}
+
+.carousel-indicators button {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 2px solid transparent;
+    margin: 0 5px;
+}
+
+.carousel-indicators .active {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+/* Event Cards - Rectangle avec contenu sur image */
+.event-card-wrapper {
+    height: 280px; /* Hauteur augmentée */
+}
+
+.event-card-rectangle {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+}
+
+.event-bg-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.event-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.2) 0%,
+        rgba(0, 0, 0, 0.4) 30%,
+        rgba(0, 0, 0, 0.7) 100%
+    );
+    z-index: 1;
+}
+
+.event-content {
+    top: 0;
+    left: 0;
+    z-index: 2;
+}
+
+.event-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 3;
+}
+
+.event-badge .badge {
+    font-size: 0.65rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 15px;
+}
+
+.event-date {
+    display: inline-block;
+}
+
+.event-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+    line-height: 1.3;
+}
+
+.event-description {
+    font-size: 0.9rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    line-height: 1.4;
+    opacity: 0.9;
+}
+
+.event-meta {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0.5rem;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.event-meta small {
+    font-size: 0.75rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.event-actions .btn {
+    border-radius: 20px;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Avatar et images fixes */
+.fixed-avatar-size {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border: 3px solid #28a745;
+}
+
+/* Existing Styles */
 .stat-card {
     transition: transform 0.3s ease;
 }
@@ -315,16 +658,13 @@
     right: -5px;
     background: #28a745;
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
+    width: 25px;
+    height: 25px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 3px solid white;
-}
-
-.ambassador-avatar {
-    border: 3px solid #28a745;
+    border: 2px solid white;
+    font-size: 0.7rem;
 }
 
 .section-title {
@@ -344,152 +684,25 @@
     border-radius: 2px;
 }
 
-.event-card {
-    border: none;
+.event-card-rectangle {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.event-card-rectangle:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+.event-card-rectangle:hover .event-bg-image {
+    transform: scale(1.05);
+}
+
+.event-bg-image {
     transition: transform 0.3s ease;
-}
-
-.event-card:hover {
-    transform: translateY(-2px);
-}
-
-.event-date {
-    background: rgba(40, 167, 69, 0.1);
-    padding: 8px 16px;
-    border-radius: 20px;
-    display: inline-block;
 }
 
 .cta-section {
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-}
-
-@media (max-width: 768px) {
-    .hero-section {
-        text-align: center;
-        padding: 3rem 0;
-    }
-
-    .hero-section h1 {
-        font-size: 2.5rem;
-    }
-
-    .btn-lg {
-        padding: 0.75rem 1.5rem;
-        font-size: 1rem;
-    }
-}
-
-/* Event Cards Styling */
-.event-card {
-    transition: all 0.3s ease;
-    border-radius: 15px;
-    overflow: hidden;
-}
-
-.event-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
-}
-
-.event-image {
-    transition: transform 0.3s ease;
-}
-
-.event-card:hover .event-image {
-    transform: scale(1.05);
-}
-
-.event-image-placeholder {
-    height: 200px;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 15px 15px 0 0;
-}
-
-.event-badge {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-}
-
-.event-badge .badge {
-    font-size: 0.7rem;
-    padding: 0.4rem 0.8rem;
-    border-radius: 20px;
-}
-
-.event-date {
-    background: rgba(40, 167, 69, 0.1);
-    padding: 0.5rem 1rem;
-    border-radius: 25px;
-    display: inline-block;
-}
-
-.event-meta {
-    border-top: 1px solid #e9ecef;
-    padding-top: 1rem;
-    margin-top: 1rem;
-}
-
-.event-meta .col-4 {
-    border-right: 1px solid #e9ecef;
-}
-
-.event-meta .col-4:last-child {
-    border-right: none;
-}
-
-/* Carousel Styling */
-.carousel-indicators button {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: #6c757d;
-    border: 2px solid transparent;
-}
-
-.carousel-indicators .active {
-    background-color: #28a745;
-    border-color: #28a745;
-}
-
-.carousel-control-prev,
-.carousel-control-next {
-    width: 50px;
-    opacity: 0.8;
-}
-
-.carousel-control-prev:hover,
-.carousel-control-next:hover {
-    opacity: 1;
-}
-
-.carousel-control-prev-icon,
-.carousel-control-next-icon {
-    background-size: 1.5rem;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .event-card {
-        margin-bottom: 2rem;
-    }
-    
-    .event-meta .col-4 {
-        margin-bottom: 0.5rem;
-        border-right: none;
-        border-bottom: 1px solid #e9ecef;
-        padding-bottom: 0.5rem;
-    }
-    
-    .event-meta .col-4:last-child {
-        border-bottom: none;
-    }
-    
-    .carousel-control-prev,
-    .carousel-control-next {
-        width: 40px;
-    }
 }
 
 /* Animation for card entrance */
@@ -513,6 +726,97 @@
 .carousel-item .row > div:nth-child(3) { animation-delay: 0.3s; }
 .carousel-item .row > div:nth-child(4) { animation-delay: 0.4s; }
 
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-carousel-image {
+        height: 500px;
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-description {
+        font-size: 1.1rem;
+    }
+    
+    .hero-buttons .btn {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .carousel-control-prev,
+    .carousel-control-next {
+        margin: 0 1rem;
+        width: 50px;
+        height: 50px;
+    }
+    
+    .event-card-wrapper {
+        height: 240px;
+    }
+    
+    .fixed-avatar-size {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .event-content {
+        padding: 1rem !important;
+    }
+    
+    .event-title {
+        font-size: 1rem;
+    }
+    
+    .event-description {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-carousel-image {
+        height: 400px;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-description {
+        font-size: 1rem;
+    }
+    
+    .event-card-wrapper {
+        height: 220px;
+    }
+    
+    .fixed-avatar-size {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .event-content {
+        padding: 0.75rem !important;
+    }
+    
+    .event-meta .row {
+        font-size: 0.7rem;
+    }
+    
+    .event-actions .btn {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+    
+    .event-title {
+        font-size: 0.9rem;
+    }
+    
+    .event-description {
+        font-size: 0.75rem;
+    }
+}
 </style>
 @endpush
 
@@ -558,34 +862,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.addEventListener('scroll', animateStats);
     animateStats(); // Animation initiale
-});
-</script>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const carousel = document.getElementById('eventsCarousel');
-    
-    // Auto-rotate carousel every 30 seconds
-    if (carousel) {
+    // Auto-rotate campaigns carousel every 5 seconds
+    const campaignsCarousel = document.getElementById('campaignsCarousel');
+    if (campaignsCarousel) {
         setInterval(() => {
-            const nextButton = carousel.querySelector('.carousel-control-next');
+            const nextButton = campaignsCarousel.querySelector('.carousel-control-next');
+            if (nextButton) {
+                nextButton.click();
+            }
+        }, 5000);
+    }
+
+    // Auto-rotate events carousel every 30 seconds
+    const eventsCarousel = document.getElementById('eventsCarousel');
+    if (eventsCarousel) {
+        setInterval(() => {
+            const nextButton = eventsCarousel.querySelector('.carousel-control-next');
             if (nextButton) {
                 nextButton.click();
             }
         }, 30000);
     }
 
-    // Add hover effects
-    const eventCards = document.querySelectorAll('.event-card');
+    // Add hover effects to event cards
+    const eventCards = document.querySelectorAll('.event-card-rectangle');
     eventCards.forEach(card => {
         card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-8px)';
-            this.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.15)';
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.3)';
         });
         
         card.addEventListener('mouseleave', function() {
             this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '0 2px 15px rgba(0, 0, 0, 0.1)';
+            this.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+        });
+    });
+
+    // Ensure all images maintain fixed size
+    const images = document.querySelectorAll('.event-bg-image, .fixed-avatar-size');
+    images.forEach(img => {
+        img.addEventListener('load', function() {
+            this.style.objectFit = 'cover';
         });
     });
 });

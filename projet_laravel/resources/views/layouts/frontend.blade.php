@@ -232,8 +232,8 @@ body {
                         </li>
                     @endif
                     
-                    <!-- Campaigns Menu -->
-                    <li class="nav-item dropdown">
+                       @if(auth()->user()->role === 'organizer')
+                       <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-bullhorn me-1"></i>Campagnes
                         </a>
@@ -247,6 +247,17 @@ body {
                         </ul>
                     </li>
 
+                        
+                    @else
+                        <!-- Menu pour les utilisateurs normaux -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('campaigns.index') }}">
+                                <i class="fas fa-bullhorn me-2"></i>Campagnes
+                            </a>
+                        </li>
+                    @endif
+                    <!-- Campaigns Menu -->
+                    
                      <!-- Resources Menu -->
                      <li class="nav-item">
                          <a class="nav-link" href="{{ route('resources.index') }}">

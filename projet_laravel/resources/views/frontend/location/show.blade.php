@@ -214,6 +214,23 @@
     }
 </style>
 
+<div class="d-flex justify-content-between align-items-center mb-2 " style ="margin-left: 1300px;">
+                <div class="breadcrumb-nav">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+
+                            <li class="breadcrumb-item">
+                                <a href="{{ route('locations.index') }}" class="text-eco">
+                                Lieux                                
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                {{ $location->name ?? 'Location' }}
+                            </li>
+                        </ol>
+                    </nav>
+            </div>
+</div>
        
  <div class="location-map-section">
     <div id="map"></div>

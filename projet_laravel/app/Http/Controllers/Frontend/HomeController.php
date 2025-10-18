@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\User;
+use App\Models\Campaign;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -46,7 +47,16 @@ class HomeController extends Controller
             $query->where('is_eco_ambassador', true);
         })->with('profile')->limit(6)->get();
 
-        return view('frontend.home', compact('stats', 'recentEvents', 'ecoAmbassadors'));
+        // ✅ NOUVEAU : Campagnes en vedette pour le hero
+        $featuredCampaigns = Campaign::where('visibility', true)
+                                    ->where('status', 'active')
+                                    ->where('end_date', '>', now())
+                                    ->with('organizer')
+                                    ->orderBy('start_date', 'asc')
+                                    ->take(5)
+                                    ->get();
+
+        return view('frontend.home', compact('stats', 'recentEvents', 'ecoAmbassadors', 'featuredCampaigns'));
     }
 
     /**

@@ -7,9 +7,10 @@
     <!-- Header Section -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
         <div class="mb-3 mb-md-0">
-            <h1 class="page-title mb-0">Mes Lieux</h1>
+            <h1 class="page-title mb-0">Gestion des Lieux</h1>
             <p class="text-muted mb-0">Gérez vos espaces de location</p>
         </div>
+        
     </div>
 
     <!-- Search and Filter Bar -->

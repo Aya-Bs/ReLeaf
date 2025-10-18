@@ -209,6 +209,7 @@
                                         </a>
                                     @elseif($event->isFull && auth()->check())
                                     @elseif($event->isFull && auth()->check())
+                                    @elseif($event->isFull && auth()->check())
                                         <form action="{{ route('waiting-list.join', $event) }}" method="POST" class="w-100">
                                             @csrf
                                             <button type="submit" class="btn btn-warning w-100">

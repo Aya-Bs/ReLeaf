@@ -79,10 +79,13 @@
                             <i class="fas fa-times me-1"></i>Effacer
                         </button>
                         
-                        <!-- Create Campaign Button -->
+                        <!-- Create Campaign Button (only for admin and organizer) -->
+                        @php $role = optional(auth()->user())->role; @endphp
+                        @if(in_array($role, ['admin', 'organizer']))
                         <a href="{{ route('campaigns.create') }}" class="btn btn-eco btn-sm">
                             <i class="fas fa-plus me-2"></i>Créer une campagne
                         </a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -98,158 +101,150 @@
     </div>
 
     <!-- Content Container -->
-    <div id="contentContainer">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    Liste des campagnes 
-                    <small id="filterInfo" class="text-muted"></small>
-                </h5>
-            </div>
-            <div class="card-body">
-                @if($campaigns->count() > 0)
-                    <!-- Campaigns Table -->
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Image</th>
-                                    <th>Nom</th>
-                                    <th>Catégorie</th>
-                                    <th>Statut</th>
-                                    <th>Dates</th>
-                                    <th>Financement</th>
-                                    <th>Participants</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($campaigns as $campaign)
-                                <tr>
-                                    <td>
-                                        @if($campaign->image_url)
-                                            <img src="{{ Storage::url($campaign->image_url) }}" 
-                                                 alt="{{ $campaign->name }}" 
-                                                 class="campaign-image-table"
-                                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWxsPSIjNkM3NTdEIi8+CjxwYXRoIGQ9Ik0zMCAzN0MzMy44NjYgMzcgMzcgMzMuODY2IDM3IDMwQzM3IDI2LjEzNCAzMy44NjYgMjMgMzAgMjNDMjYuMTM0IDIzIDIzIDI2LjEzNCAyMyAzMEMyMyAzMy44NjYgMjYuMTM0IDM3IDMwIDM3Wk0zMCAxNkMzNS41MjIgMTYgNDAgMTguMjM4IDQwIDIxVjM5QzQwIDQxLjc2MiAzNS41MjIgNDQgMzAgNDRDMjQuNDc4IDQ0IDIwIDQxLjc2MiAyMCAzOVYyMUMyMCAxOC4yMzggMjQuNDc4IDE2IDMwIDE2WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+'">
-                                        @else
-                                            <div class="campaign-image-placeholder-table">
-                                                <i class="fas fa-leaf text-white"></i>
-                                            </div>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <strong>{{ $campaign->name }}</strong>
-                                        @if(!$campaign->visibility)
-                                            <br><small class="text-warning"><i class="fas fa-eye-slash me-1"></i>Privée</small>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-light text-dark">
-                                            @switch($campaign->category)
-                                                @case('reforestation') 🌲 @break
-                                                @case('nettoyage') 🧹 @break
-                                                @case('sensibilisation') 📢 @break
-                                                @case('recyclage') ♻️ @break
-                                                @case('biodiversite') 🦋 @break
-                                                @case('energie_renouvelable') ⚡ @break
-                                                @default 🔧 @break
-                                            @endswitch
-                                            {{ ucfirst($campaign->category) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-{{ $campaign->status == 'active' ? 'eco' : ($campaign->status == 'completed' ? 'eco' : ($campaign->status == 'eco' ? 'eco-danger' : 'eco')) }}">
-                                            @switch($campaign->status)
-                                                @case('active') 🟢 @break
-                                                @case('completed') ✅ @break
-                                                @case('cancelled') ❌ @break
-                                                @default ⏸️ @break
-                                            @endswitch
-                                            {{ ucfirst($campaign->status) }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <small>
-                                            <strong>{{ $campaign->start_date->format('d/m/Y') }}</strong><br>
-                                            <span class="text-muted">au {{ $campaign->end_date->format('d/m/Y') }}</span>
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <div class="progress mb-1" style="height: 6px;">
-                                            <div class="progress-bar bg-eco" style="width: {{ $campaign->funds_progress_percentage }}%"></div>
-                                        </div>
-                                        <small>
-                                            <strong>{{ number_format($campaign->funds_raised, 0, ',', ' ') }} €</strong>
-                                            @if($campaign->goal)
-                                                / {{ number_format($campaign->goal, 0, ',', ' ') }} €
-                                            @endif
-                                            <br>
-                                            <span class="text-muted">{{ $campaign->funds_progress_percentage }}% atteint</span>
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-eco">{{ $campaign->participants_count }}</span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="{{ route('campaigns.show', $campaign) }}" class="btn btn-outline-eco" title="Voir">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{{ route('campaigns.edit', $campaign) }}" class="btn btn-outline-eco" title="Modifier">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <form action="{{ route('campaigns.toggle-visibility', $campaign) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <button type="submit" class="btn btn-outline-eco" title="{{ $campaign->visibility ? 'Rendre privée' : 'Rendre publique' }}">
-                                                    <i class="fas fa-{{ $campaign->visibility ? 'eye-slash' : 'eye' }}"></i>
-                                                </button>
-                                            </form>
-                                            <form action="{{ route('campaigns.destroy', $campaign) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-outline-eco-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette campagne ?')" title="Supprimer">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+    @php
+        $userCampaigns = $campaigns->filter(function($campaign) {
+            return $campaign->organizer_id === auth()->id();
+        });
+    @endphp
 
-                    <!-- Pagination -->
-                    @if($campaigns->hasPages())
-                    <div class="d-flex justify-content-between align-items-center mt-4">
-                        <div class="pagination-info">
-                            <p class="mb-0 text-muted">
-                                Affichage de <strong>{{ $campaigns->firstItem() }}</strong> à <strong>{{ $campaigns->lastItem() }}</strong> 
-                                sur <strong>{{ $campaigns->total() }}</strong> campagnes
-                            </p>
-                        </div>
-                        <div class="pagination-links">
-                            {{ $campaigns->links() }}
+    <!-- Updated Campaigns Carousel -->
+    <div id="contentContainer">
+        <div class="carousel-wrapper">
+            <button id="prevButton" class="carousel-nav left">&#8249;</button>
+            <div id="campaignsCarousel" class="carousel-container">
+                @foreach($userCampaigns as $campaign)
+                <div class="campaign-card">
+                    <div class="card">
+                        <img src="{{ $campaign->image_url ? Storage::url($campaign->image_url) : 'placeholder.jpg' }}" class="card-img-top" alt="{{ $campaign->name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ $campaign->name }}</h5>
+                            <p class="card-text">{{ ucfirst($campaign->category) }}</p>
+                            <p class="card-text text-muted">{{ $campaign->start_date->format('d/m/Y') }} - {{ $campaign->end_date->format('d/m/Y') }}</p>
+                            <a href="{{ route('campaigns.show', $campaign) }}" class="btn btn-primary">Voir plus</a>
                         </div>
                     </div>
-                    @endif
-                @else
-                <div class="text-center py-5">
-                    <i class="fas fa-leaf fa-3x text-eco mb-3"></i>
-                    <p class="text-muted" id="emptyMessage">
-                        @if(request()->has('search') || request()->has('category') || request()->has('status') || request()->has('sort'))
-                            Aucune campagne trouvée avec les critères de recherche.
-                        @else
-                            Aucune campagne créée pour le moment.
-                        @endif
-                    </p>
-                    <a href="{{ route('campaigns.create') }}" class="btn btn-eco">Créer votre première campagne</a>
                 </div>
-                @endif
+                @endforeach
             </div>
+            <button id="nextButton" class="carousel-nav right">&#8250;</button>
         </div>
     </div>
+
+    <!-- JavaScript for Highlighting Center Card -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const carousel = document.getElementById('campaignsCarousel');
+            const cards = document.querySelectorAll('.campaign-card');
+            const cardWidth = cards[0].offsetWidth;
+            let scrollAmount = 0;
+
+            function highlightCenterCard() {
+                const centerIndex = Math.round((carousel.scrollLeft + carousel.offsetWidth / 2) / cardWidth) - 1;
+                cards.forEach((card, index) => {
+                    if (index === centerIndex) {
+                        card.classList.add('highlight');
+                    } else {
+                        card.classList.remove('highlight');
+                    }
+                });
+            }
+
+            // Auto-Swipe (commented out)
+            /*
+            setInterval(() => {
+                scrollAmount += cardWidth;
+                if (scrollAmount >= carousel.scrollWidth - carousel.offsetWidth) {
+                    scrollAmount = 0;
+                }
+                carousel.scrollTo({ left: scrollAmount, behavior: 'smooth' });
+                highlightCenterCard();
+            }, 3000);
+            */
+
+            // Manual Navigation
+            document.getElementById('prevButton').addEventListener('click', () => {
+                scrollAmount -= cardWidth;
+                if (scrollAmount < 0) {
+                    scrollAmount = 0;
+                }
+                carousel.scrollTo({ left: scrollAmount, behavior: 'smooth' });
+                highlightCenterCard();
+            });
+
+            document.getElementById('nextButton').addEventListener('click', () => {
+                scrollAmount += cardWidth;
+                if (scrollAmount >= carousel.scrollWidth - carousel.offsetWidth) {
+                    scrollAmount = carousel.scrollWidth - carousel.offsetWidth;
+                }
+                carousel.scrollTo({ left: scrollAmount, behavior: 'smooth' });
+                highlightCenterCard();
+            });
+
+            // Initial Highlight
+            highlightCenterCard();
+
+            // Update highlight on scroll
+            carousel.addEventListener('scroll', highlightCenterCard);
+        });
+    </script>
+
+    <!-- Styles for Highlighted Center Card -->
+    <style>
+        .carousel-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .carousel-container {
+            display: flex;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            width: 100%;
+            height: 500px; /* Increased height for the container */
+            align-items: center; /* Center align cards vertically */
+        }
+        .campaign-card {
+            flex: 0 0 calc(33.33% - 1rem);
+            margin-right: 1rem;
+            box-sizing: border-box;
+            transition: transform 0.3s, filter 0.3s;
+        }
+        .campaign-card .card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .campaign-card .card-img-top {
+            height: 200px;
+            object-fit: cover;
+        }
+        .campaign-card.highlight {
+            transform: scale(1.2);
+            filter: brightness(1.2);
+            z-index: 1;
+        }
+        .campaign-card:not(.highlight) {
+            filter: brightness(0.7);
+            transform: scale(0.9);
+        }
+        .carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .carousel-nav.left {
+            left: 0;
+        }
+        .carousel-nav.right {
+            right: 0;
+        }
+    </style>
 </div>
 @endsection
 
@@ -575,5 +570,72 @@ document.addEventListener('DOMContentLoaded', function() {
         updateFilters();
     });
 });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const carousel = document.getElementById('campaignsCarousel');
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+        const cards = document.querySelectorAll('.campaign-card');
+        const cardWidth = cards[0].offsetWidth;
+
+        function updateNavButtons() {
+            // Hide the left arrow if at the start
+            if (carousel.scrollLeft <= 0) {
+                prevButton.style.display = 'none';
+            } else {
+                prevButton.style.display = 'block';
+            }
+
+            // Hide the right arrow if at the end
+            if (carousel.scrollLeft + carousel.offsetWidth >= carousel.scrollWidth) {
+                nextButton.style.display = 'none';
+            } else {
+                nextButton.style.display = 'block';
+            }
+        }
+
+        // Align the first card at the start
+        function alignFirstCard() {
+            carousel.scrollTo({ left: 0, behavior: 'smooth' });
+        }
+
+        // Initial check
+        updateNavButtons();
+        alignFirstCard();
+
+        // Update buttons on scroll
+        carousel.addEventListener('scroll', updateNavButtons);
+
+        // Manual Navigation
+        prevButton.addEventListener('click', () => {
+            const newScrollLeft = Math.max(0, carousel.scrollLeft - cardWidth);
+            carousel.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
+        });
+
+        nextButton.addEventListener('click', () => {
+            const maxScrollLeft = carousel.scrollWidth - carousel.offsetWidth;
+            const newScrollLeft = Math.min(maxScrollLeft, carousel.scrollLeft + cardWidth);
+            carousel.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
+        });
+
+        // Card click behavior
+        cards.forEach((card, index) => {
+            card.addEventListener('click', () => {
+                const centerIndex = Math.round(carousel.scrollLeft / cardWidth);
+                if (index < centerIndex) {
+                    // Scroll left if the clicked card is to the left of the center
+                    const newScrollLeft = Math.max(0, carousel.scrollLeft - cardWidth);
+                    carousel.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
+                } else if (index > centerIndex) {
+                    // Scroll right if the clicked card is to the right of the center
+                    const maxScrollLeft = carousel.scrollWidth - carousel.offsetWidth;
+                    const newScrollLeft = Math.min(maxScrollLeft, carousel.scrollLeft + cardWidth);
+                    carousel.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
+                }
+            });
+        });
+    });
 </script>
 @endpush

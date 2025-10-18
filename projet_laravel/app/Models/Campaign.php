@@ -146,4 +146,15 @@ class Campaign extends Model
             ->where('status', 'pending')
             ->with('volunteer.user');
     }
+
+    // Ajouter cette relation dans Campaign.php
+    public function deletionRequests()
+    {
+        return $this->hasMany(CampaignDeletionRequest::class);
+    }
+
+    public function pendingDeletionRequest()
+    {
+        return $this->hasOne(CampaignDeletionRequest::class)->where('status', 'pending');
+    }
 }
