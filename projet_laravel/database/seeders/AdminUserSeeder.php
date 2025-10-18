@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\Profile;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -30,7 +29,7 @@ class AdminUserSeeder extends Seeder
         );
 
         // Créer le profil admin s'il n'existe pas
-        if (!$admin->profile) {
+        if (! $admin->profile) {
             Profile::create([
                 'user_id' => $admin->id,
                 'first_name' => 'Admin',

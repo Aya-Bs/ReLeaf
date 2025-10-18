@@ -1,13 +1,6 @@
 <?php
 
 return [
-    'mailgun' => [
-        'domain' => env('MAILGUN_DOMAIN'),
-        'secret' => env('MAILGUN_SECRET'),
-        'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
-        'scheme' => 'https',
-    ],
-
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
         'api_url' => 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',

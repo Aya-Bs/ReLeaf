@@ -47,7 +47,7 @@
                                             </div>
                                             <div class="col-12 mt-1">
                                                 <i class="fas fa-map-marker-alt me-1"></i>
-                                                {{ $certification->reservation->event->location }}
+                                                {{ $certification->reservation->event->location->name ?? 'Lieu non défini' }}
                                             </div>
                                         </div>
                                     </div>
@@ -66,15 +66,37 @@
                                     </div>
 
                                     <div class="certificate-actions mt-auto">
-                                        <div class="btn-group w-100">
-                                            <a href="{{ route('user.certificates.show', $certification->certificate_code) }}" 
-                                               class="btn btn-outline-eco">
-                                                <i class="fas fa-eye me-2"></i>Voir le certificat
-                                            </a>
-                                            <a href="{{ route('user.certificates.download', $certification->certificate_code) }}" 
-                                               class="btn btn-eco">
-                                                <i class="fas fa-download me-2"></i>Télécharger PDF
-                                            </a>
+                                        <div class="d-grid gap-2">
+                                            <div class="btn-group">
+                                                <a href="{{ route('user.certificates.show', $certification->certificate_code) }}" 
+                                                   class="btn btn-outline-eco btn-sm">
+                                                    <i class="fas fa-eye me-1"></i>Voir
+                                                </a>
+                                                <a href="{{ route('user.certificates.download', $certification->certificate_code) }}" 
+                                                   class="btn btn-eco btn-sm">
+                                                    <i class="fas fa-download me-1"></i>PDF
+                                                </a>
+                                            </div>
+                                            <div class="btn-group">
+                                                <a href="{{ $certification->getLinkedInShareUrl() }}" 
+                                                   target="_blank" 
+                                                   class="btn btn-outline-primary btn-sm" 
+                                                   title="Partager sur LinkedIn">
+                                                    <i class="fab fa-linkedin"></i>
+                                                </a>
+                                                <a href="{{ $certification->getTwitterShareUrl() }}" 
+                                                   target="_blank" 
+                                                   class="btn btn-outline-info btn-sm" 
+                                                   title="Partager sur Twitter">
+                                                    <i class="fab fa-twitter"></i>
+                                                </a>
+                                                <a href="{{ $certification->getFacebookShareUrl() }}" 
+                                                   target="_blank" 
+                                                   class="btn btn-outline-secondary btn-sm" 
+                                                   title="Partager sur Facebook">
+                                                    <i class="fab fa-facebook"></i>
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

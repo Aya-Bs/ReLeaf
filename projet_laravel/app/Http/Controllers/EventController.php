@@ -3,46 +3,134 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Services\EventRecommendationService;
 use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
-    /**
-     * Afficher la liste des événements publics
-     */
-    public function index(Request $request)
+    private EventRecommendationService $recommendationService;
+
+    public function __construct(EventRecommendationService $recommendationService)
     {
-        $query = Event::where('status', 'published')
-                     ->with(['user', 'reservations'])
-                     ->orderBy('date', 'asc');
+        $this->recommendationService = $recommendationService;
+    }
+
+    /**
+     * Afficher la liste des événements selon le rôle de l'utilisateur
+     */
+ public function index(Request $request)
+    {
+        
+              $query = Event::whereIn('status', ['published', 'cancelled'])
+                 ->with(['user', 'reservations', 'location'])
+                 ->orderBy('date', 'asc');
+
+        // Logique selon le rôle de l'utilisateur
+        if (auth()->check()) {
+            if (auth()->user()->role === 'organizer') {
+                // Les organisateurs voient seulement leurs propres événements
+                $query->where('user_id', auth()->id());
+            }
+            // Les utilisateurs avec rôle 'user' voient tous les événements (pas de filtre supplémentaire)
+        }
 
         // Filtres
+        // Apply filters using model scopes when available
         switch ($request->get('filter')) {
             case 'upcoming':
-                $query->where('date', '>=', now());
+                $query->upcoming();
                 break;
             case 'available':
-                $query->whereRaw('(SELECT COUNT(*) FROM reservations WHERE event_id = events.id AND status IN ("pending", "confirmed")) < max_participants');
+                // Use the scopeWithAvailableSeats implemented on the Event model
+                $query->withAvailableSeats();
                 break;
             default:
-                // Tous les événements
+                // no additional filter - published and cancelled events only
                 break;
         }
 
         // Recherche textuelle
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'LIKE', "%{$search}%")
-                  ->orWhere('description', 'LIKE', "%{$search}%")
-                  ->orWhere('location', 'LIKE', "%{$search}%");
-            });
+       // Search by title/description/location
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%')
+                  ->orWhereHas('location', function($q) use ($request) {
+                      $q->where('name', 'like', '%' . $request->search . '%')
+                        ->orWhere('city', 'like', '%' . $request->search . '%');
+                  });
         }
 
-        $events = $query->paginate(12);
+        // Filter by location
+        if ($request->filled('location') && $request->location !== 'all') {
+            $query->where('location_id', $request->location);
+        }
 
-        return view('events.index', compact('events'));
+        // Filter by max price
+        if ($request->filled('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
+        // Filter by date (YYYY-MM-DD)
+        if ($request->filled('date')) {
+            $query->whereDate('date', '=', $request->date);
+        }
+
+        $events = $query->paginate(8);
+
+        // Pour chaque événement, calculer les informations nécessaires pour la liste d'attente
+        $events->getCollection()->transform(function ($event) {
+            $reservedCount = $event->reservations()->where('status', 'confirmed')->count();
+            $availableSeats = $event->max_participants - $reservedCount;
+            $isFull = $availableSeats <= 0;
+            
+            $userReservation = auth()->check() 
+                ? $event->reservations()->where('user_id', auth()->id())->whereIn('status', ['pending', 'confirmed'])->first() 
+                : null;
+                
+            $userInWaitingList = auth()->check() 
+                ? $event->waitingList()->where('user_id', auth()->id())->exists() 
+                : false;
+
+            $event->availableSeats = $availableSeats;
+            $event->isFull = $isFull;
+            $event->userReservation = $userReservation;
+            $event->userInWaitingList = $userInWaitingList;
+
+            return $event;
+        });
+
+        // 🤖 IA : Recommandations d'événements basées sur la géolocalisation
+        $aiRecommendations = null;
+        if (auth()->check() && !$request->has('search') && !$request->has('filter')) {
+            try {
+                // Obtenir tous les événements pour l'analyse IA
+                $allEventsForAI = Event::whereIn('status', ['published'])
+                    ->with(['user', 'location'])
+                    ->orderBy('date', 'asc')
+                    ->get();
+                
+                $aiRecommendations = $this->recommendationService->getRecommendedEvents(
+                    auth()->user(), 
+                    $allEventsForAI
+                );
+            } catch (\Exception $e) {
+                \Log::error('AI Recommendations Error: ' . $e->getMessage());
+            }
+        }
+
+        // Provide a list of published AND cancelled event dates for the calendar (YYYY-MM-DD)
+        $allEventDates = Event::whereIn('status', ['published', 'cancelled'])
+            ->pluck('date')
+            ->map(function ($d) {
+                return $d->format('Y-m-d');
+            })
+            ->unique()
+            ->values()
+            ->toArray();
+
+        return view('events.index', compact('events', 'allEventDates', 'aiRecommendations'));
     }
+
 
     /**
      * Afficher un événement spécifique
@@ -58,6 +146,6 @@ class EventController extends Controller
             ? $event->reservations()->where('user_id', auth()->id())->whereIn('status', ['pending', 'confirmed'])->first() 
             : null;
 
-        return view('events.show', compact('event', 'availableSeats', 'userReservation'));
+        return view('frontend.events.show', compact('event', 'availableSeats', 'userReservation'));
     }
 }

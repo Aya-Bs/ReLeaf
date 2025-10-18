@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\User;
+use App\Models\Campaign;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -24,15 +25,38 @@ class HomeController extends Controller
             })->count(),
         ];
 
-        // Récupérer les événements récents publiés et à venir
-        $recentEvents = collect(); // À corriger après migration
+       // Logique selon le rôle de l'utilisateur
+        $query = Event::where('status', 'published')
+            ->where('date', '>=', now())
+            ->orderBy('created_at', 'desc')
+            ->take(12); // Get 12 events for 3 slides of 4
+
+        if (auth()->check()) {
+            if (auth()->user()->role === 'organizer') {
+                // Les organisateurs voient seulement leurs propres événements
+                $query->where('user_id', auth()->id());
+            }
+            // Les utilisateurs avec rôle 'user' voient tous les événements
+        }
+
+        $recentEvents = $query->get();
+
 
         // Récupérer les ambassadeurs écologiques
         $ecoAmbassadors = User::whereHas('profile', function($query) {
             $query->where('is_eco_ambassador', true);
         })->with('profile')->limit(6)->get();
 
-        return view('frontend.home', compact('stats', 'recentEvents', 'ecoAmbassadors'));
+        // ✅ NOUVEAU : Campagnes en vedette pour le hero
+        $featuredCampaigns = Campaign::where('visibility', true)
+                                    ->where('status', 'active')
+                                    ->where('end_date', '>', now())
+                                    ->with('organizer')
+                                    ->orderBy('start_date', 'asc')
+                                    ->take(5)
+                                    ->get();
+
+        return view('frontend.home', compact('stats', 'recentEvents', 'ecoAmbassadors', 'featuredCampaigns'));
     }
 
     /**

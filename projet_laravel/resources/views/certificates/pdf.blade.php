@@ -185,6 +185,38 @@
             color: #2d5a27;
             font-family: monospace;
         }
+
+        .qr-code-section {
+            background: #f8f9fa;
+            border: 3px solid #2d5a27;
+            padding: 25px;
+            margin: 30px auto;
+            width: 60%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .qr-code-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .qr-code-image {
+            max-width: 120px;
+            height: auto;
+            margin: 10px 0;
+        }
+        
+        .qr-code-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+            font-style: italic;
+        }
         
         .certificate-footer {
             margin-top: 50px;
@@ -279,7 +311,7 @@
                         </div>
                         <div class="event-info-item">
                             <div class="event-info-label">Lieu</div>
-                            <div class="event-info-value">{{ $certification->reservation->event->location }}</div>
+                            <div class="event-info-value">{{ $certification->reservation->event->location->name ?? 'Lieu non défini' }}</div>
                         </div>
                     </div>
                 </div>
@@ -288,6 +320,35 @@
                     <div class="verification-label">Code de Vérification</div>
                     <div class="verification-value">{{ $certification->certificate_code }}</div>
                 </div>
+
+                @if($certification->qr_code_path)
+                <div class="qr-code-section">
+                    <div class="qr-code-label">Vérification QR Code</div>
+                    @php
+                        $qrCodePath = storage_path('app/public/' . $certification->qr_code_path);
+                        if (file_exists($qrCodePath)) {
+                            $qrCodeContent = file_get_contents($qrCodePath);
+                            $qrCodeBase64 = 'data:image/svg+xml;base64,' . base64_encode($qrCodeContent);
+                        } else {
+                            $qrCodeBase64 = null;
+                        }
+                    @endphp
+                    
+                    @if($qrCodeBase64)
+                        <img src="{{ $qrCodeBase64 }}" alt="QR Code de vérification" class="qr-code-image">
+                    @else
+                        <div class="qr-code-placeholder">
+                            <div style="width: 120px; height: 120px; border: 2px dashed #2d5a27; display: flex; align-items: center; justify-content: center; margin: 10px auto;">
+                                <span style="color: #2d5a27; font-size: 12px; text-align: center;">QR Code<br>Non disponible</span>
+                            </div>
+                        </div>
+                    @endif
+                    
+                    <div class="qr-code-text">
+                        Scannez ce code pour vérifier l'authenticité du certificat
+                    </div>
+                </div>
+                @endif
             </div>
             
             <div class="certificate-footer">

@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RegisterUserRequest;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
@@ -27,54 +26,40 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(RegisterUserRequest $request): RedirectResponse
     {
-        $request->validate([
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
-            'name' => ['required', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:20', 'regex:/^[\+]?[0-9\s\-\(\)]+$/'],
-            'birth_date' => ['nullable', 'date', 'before:today'],
-            'city' => ['nullable', 'string', 'max:255'],
-            'country' => ['nullable', 'string', 'max:2'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'terms' => ['required', 'accepted'],
-        ], [
-            'first_name.required' => 'Le prénom est obligatoire.',
-            'last_name.required' => 'Le nom est obligatoire.',
-            'phone.regex' => 'Le format du numéro de téléphone n\'est pas valide.',
-            'birth_date.before' => 'La date de naissance doit être antérieure à aujourd\'hui.',
-            'birth_date.date' => 'La date de naissance n\'est pas valide.',
-            'country.max' => 'Le code pays ne doit pas dépasser 2 caractères.',
-            'terms.required' => 'Vous devez accepter les conditions d\'utilisation.',
-            'terms.accepted' => 'Vous devez accepter les conditions d\'utilisation.',
-        ]);
+        // La validation est automatiquement effectuée par RegisterUserRequest
+        
+        try {
+            $user = User::create([
+        'name' => $request->name,
+        'first_name' => $request->first_name,
+        'last_name' => $request->last_name,
+        'phone' => $request->phone,
+        'birth_date' => $request->birth_date,
+        'city' => $request->city,
+        'country' => $request->country,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'role' => $request->role, // USE THE ROLE FROM THE REQUEST
+    ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'phone' => $request->phone,
-            'birth_date' => $request->birth_date,
-            'city' => $request->city,
-            'country' => $request->country,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'user', // Par défaut, les nouveaux utilisateurs sont des utilisateurs normaux
-        ]);
+            // Créer automatiquement le profil avec les informations de base
+            $user->profile()->create([
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+            ]);
 
-        // Créer automatiquement le profil avec les informations de base
-        $user->profile()->create([
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-        ]);
+            event(new Registered($user));
 
-        event(new Registered($user));
+            // Connecter l'utilisateur pour qu'il puisse voir la page de vérification
+            Auth::login($user);
 
-        // Connecter l'utilisateur pour qu'il puisse voir la page de vérification
-        Auth::login($user);
-
-        return redirect()->route('verification.notice');
+            return redirect()->route('verification.notice');
+        } catch (\Exception $e) {
+            // Log l'erreur pour debug
+            \Log::error('Registration error: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'Une erreur est survenue lors de la création du compte.']);
+        }
     }
 }
