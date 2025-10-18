@@ -9,11 +9,19 @@ use Illuminate\Support\Facades\Auth;
 class BlogController extends Controller
 {
     // Affiche tous les blogs (public)
-    public function index()
-    {
-        $blogs = Blog::latest()->get();
-        return view('blogs.index', compact('blogs'));
+   public function index(Request $request)
+{
+    $query = Blog::query();
+
+    if ($request->filled('title')) {
+        $query->where('title', 'like', '%' . $request->title . '%');
     }
+
+    $blogs = $query->latest()->get();
+
+    return view('blogs.index', compact('blogs'));
+}
+
 
     // Vue des blogs sous forme de cartes (publique)
     public function cards()
@@ -23,19 +31,52 @@ class BlogController extends Controller
     }
 
     // Affiche les blogs de l’utilisateur connecté
-    public function myBlogs(Request $request)
-    {
-        $user = auth()->user();
+public function myBlogs(Request $request)
+{
+    $user = auth()->user();
+
+    // Organizers voient leurs propres blogs, les autres utilisateurs voient tous les blogs
+    if ($user->role === 'organizer') {
         $query = Blog::where('user_id', $user->id);
-
-        // Filtre par titre si rempli
-        if ($request->filled('title')) {
-            $query->where('title', 'like', '%' . $request->title . '%');
-        }
-
-        $blogs = $query->latest()->get();
-        return view('blogs.myblogs', compact('blogs'));
+    } else {
+        $query = Blog::query();
     }
+
+    // Filtrer par titre si le champ est rempli
+    if ($request->filled('title')) {
+        $query->where('title', 'like', '%' . $request->title . '%');
+    }
+
+    $blogs = $query->latest()->get();
+
+    return view('blogs.myblogs', compact('blogs'));
+}
+
+
+// Filtre AJAX
+public function filter(Request $request)
+{
+    $user = auth()->user();
+
+    if ($user->role === 'organizer') {
+        $query = Blog::where('user_id', $user->id);
+    } else {
+        $query = Blog::query();
+    }
+
+    if ($request->filled('title')) {
+        $query->where('title', 'like', '%' . $request->title . '%');
+    }
+
+    $blogs = $query->latest()->get();
+
+    if ($blogs->count() > 0) {
+        return view('blogs.partials.blogs_list', compact('blogs'))->render();
+    }
+
+    return '<div class="alert alert-info">Aucun blog trouvé.</div>';
+}
+
 
     // Formulaire de création (organizer uniquement)
     public function create()
@@ -142,23 +183,4 @@ class BlogController extends Controller
         return view('blogs.show', compact('blog'));
     }
 
-    // Filtre AJAX par titre (live search)
-    public function filter(Request $request)
-    {
-        $user = auth()->user();
-        $query = Blog::where('user_id', $user->id);
-
-        if ($request->filled('title')) {
-            $query->where('title', 'like', '%' . $request->title . '%');
-        }
-
-        $blogs = $query->latest()->get();
-
-        if ($blogs->count() > 0) {
-            return view('blogs.partials.blogs_list', compact('blogs'))->render();
-        }
-
-        // Si aucun résultat
-        return '<div class="alert alert-info">Aucun blog trouvé.</div>';
-    }
 }

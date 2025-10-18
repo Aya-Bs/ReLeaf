@@ -11,7 +11,7 @@
         @endif
     </div>
 
-    {{-- Formulaire de filtre par titre seulement --}}
+    {{-- Formulaire de filtre par titre, accessible à tous --}}
     <form method="GET" action="{{ route('blogs.myblogs') }}" class="row g-2 mb-4">
         <div class="col-md-10">
             <input type="text" name="title" value="{{ request('title') }}" class="form-control" placeholder="Rechercher par titre">
@@ -55,6 +55,7 @@
                             <div class="mt-auto d-flex gap-2">
                                 <a href="{{ route('blogs.show', $blog) }}" class="btn btn-primary">Détails</a>
 
+                                {{-- Boutons Modifier / Supprimer pour les organisateurs --}}
                                 @if(Auth::check() && Auth::user()->role === 'organizer')
                                     <a href="{{ route('blogs.edit', $blog) }}" class="btn btn-warning">Modifier</a>
 
