@@ -288,6 +288,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reviews/{review}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
     Route::put('/reviews/{id}', [ReviewController::class, 'update'])->name('reviews.update');
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+    // web.php
+   Route::get('/blogs/filter', [BlogController::class, 'filter'])->name('blogs.filter');
+
 });
 
 

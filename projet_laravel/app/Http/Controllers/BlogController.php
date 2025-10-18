@@ -23,10 +23,17 @@ class BlogController extends Controller
     }
 
     // Affiche les blogs de l’utilisateur connecté
-    public function myBlogs()
+    public function myBlogs(Request $request)
     {
         $user = auth()->user();
-        $blogs = Blog::where('user_id', $user->id)->get();
+        $query = Blog::where('user_id', $user->id);
+
+        // Filtre par titre si rempli
+        if ($request->filled('title')) {
+            $query->where('title', 'like', '%' . $request->title . '%');
+        }
+
+        $blogs = $query->latest()->get();
         return view('blogs.myblogs', compact('blogs'));
     }
 
@@ -39,18 +46,17 @@ class BlogController extends Controller
         return view('blogs.create');
     }
 
-    // ✅ Stocke un nouveau blog avec validation stricte
+    // Stocke un nouveau blog avec validation
     public function store(Request $request)
     {
         if (Auth::user()->role !== 'organizer') {
             abort(403, 'Vous n’êtes pas autorisé à créer un blog.');
         }
 
-        // 🔍 Validation avec messages personnalisés
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string|min:20',
-            'tags' => 'nullable|string|max:255',
+            'tags' => ['nullable', 'string', 'max:255', 'regex:/^[\w\s,-]+$/'],
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
             'title.required' => 'Le titre est obligatoire.',
@@ -60,20 +66,18 @@ class BlogController extends Controller
             'image.required' => 'L’image est obligatoire.',
             'image.image' => 'Le fichier doit être une image.',
             'image.mimes' => 'Les formats acceptés sont : jpeg, png, jpg, gif.',
-                        'image.max' => 'La taille de l’image ne doit pas dépasser 2 Mo.',
+            'image.max' => 'La taille de l’image ne doit pas dépasser 2 Mo.',
+            'tags.regex' => 'Les tags doivent être séparés par des virgules et ne contenir que lettres, chiffres ou tirets.',
         ]);
 
-        // ✅ Ajout des champs automatiques
         $validated['user_id'] = Auth::id();
         $validated['date_posted'] = now();
 
-        // ✅ Sauvegarde de l’image
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('blogs', 'public');
             $validated['image_url'] = '/storage/' . $imagePath;
         }
 
-        // ✅ Création du blog
         Blog::create($validated);
 
         return redirect()->route('blogs.myblogs')->with('success', 'Blog créé avec succès !');
@@ -88,18 +92,17 @@ class BlogController extends Controller
         return view('blogs.edit', compact('blog'));
     }
 
-    // ✅ Mise à jour du blog avec validation
+    // Mise à jour du blog avec validation
     public function update(Request $request, Blog $blog)
     {
         if (Auth::id() !== $blog->user_id && Auth::user()->role !== 'organizer') {
             abort(403);
         }
 
-        // Validation stricte + messages personnalisés
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string|min:20',
-            'tags' => 'nullable|string|max:255',
+            'tags' => ['nullable', 'string', 'max:255', 'regex:/^[\w\s,-]+$/'],
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
             'title.required' => 'Le titre est obligatoire.',
@@ -108,18 +111,15 @@ class BlogController extends Controller
             'content.min' => 'Le contenu doit contenir au moins 20 caractères.',
             'image.image' => 'Le fichier doit être une image.',
             'image.mimes' => 'Les formats acceptés sont : jpeg, png, jpg, gif.',
-            'image.max' => 'La taille de l image ne doit pas dépasser 2 Mo.',
-            'tags.regex' => 'Les tags doivent être séparés par des virgules et ne contenir que des lettres, chiffres ou tirets.',
-
+            'image.max' => 'La taille de l’image ne doit pas dépasser 2 Mo.',
+            'tags.regex' => 'Les tags doivent être séparés par des virgules et ne contenir que lettres, chiffres ou tirets.',
         ]);
 
-        // ✅ Gestion de la nouvelle image
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('blogs', 'public');
             $validated['image_url'] = '/storage/' . $imagePath;
         }
 
-        // ✅ Mise à jour du blog
         $blog->update($validated);
 
         return redirect()->route('blogs.myblogs')->with('success', 'Blog mis à jour avec succès !');
@@ -141,5 +141,24 @@ class BlogController extends Controller
     {
         return view('blogs.show', compact('blog'));
     }
-}
 
+    // Filtre AJAX par titre (live search)
+    public function filter(Request $request)
+    {
+        $user = auth()->user();
+        $query = Blog::where('user_id', $user->id);
+
+        if ($request->filled('title')) {
+            $query->where('title', 'like', '%' . $request->title . '%');
+        }
+
+        $blogs = $query->latest()->get();
+
+        if ($blogs->count() > 0) {
+            return view('blogs.partials.blogs_list', compact('blogs'))->render();
+        }
+
+        // Si aucun résultat
+        return '<div class="alert alert-info">Aucun blog trouvé.</div>';
+    }
+}

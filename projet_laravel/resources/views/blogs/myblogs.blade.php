@@ -11,12 +11,22 @@
         @endif
     </div>
 
+    {{-- Formulaire de filtre par titre seulement --}}
+    <form method="GET" action="{{ route('blogs.myblogs') }}" class="row g-2 mb-4">
+        <div class="col-md-10">
+            <input type="text" name="title" value="{{ request('title') }}" class="form-control" placeholder="Rechercher par titre">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+        </div>
+    </form>
+
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
     @if($blogs->isEmpty())
-        <div class="alert alert-info">Vous n'avez aucun blog.</div>
+        <div class="alert alert-info">Aucun blog trouvé.</div>
     @else
         <div class="row">
             @foreach($blogs as $blog)
@@ -43,10 +53,8 @@
                             @endif
 
                             <div class="mt-auto d-flex gap-2">
-                                {{-- Bouton Détails toujours visible --}}
                                 <a href="{{ route('blogs.show', $blog) }}" class="btn btn-primary">Détails</a>
 
-                                {{-- Boutons Modifier et Supprimer pour les organizers seulement --}}
                                 @if(Auth::check() && Auth::user()->role === 'organizer')
                                     <a href="{{ route('blogs.edit', $blog) }}" class="btn btn-warning">Modifier</a>
 
