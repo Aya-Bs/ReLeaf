@@ -50,6 +50,11 @@
                 </div>
             @endforeach
         </div>
+
+        {{-- Pagination --}}
+        <div class="d-flex justify-content-center mt-3">
+            {{ $blogs->withQueryString()->links() }}
+        </div>
     @endif
 </div>
 @endsection
