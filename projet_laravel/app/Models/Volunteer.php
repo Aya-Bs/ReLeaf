@@ -24,7 +24,10 @@ class Volunteer extends Model
         'status',
         'bio',
         'motivation',
-        'previous_volunteer_experience'
+        'previous_volunteer_experience',
+        'approval_status',
+        'approved_at',
+        'approved_by'
     ];
 
     protected $casts = [
@@ -32,12 +35,18 @@ class Volunteer extends Model
         'availability' => 'array',
         'preferred_regions' => 'array',
         'max_hours_per_week' => 'integer',
+        'approved_at' => 'datetime',
     ];
 
     // Relations
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function assignments(): HasMany
@@ -59,6 +68,21 @@ class Volunteer extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('approval_status', 'pending');
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('approval_status', 'approved');
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('approval_status', 'rejected');
     }
 
     public function scopeByRegion($query, $region)
@@ -186,6 +210,42 @@ class Volunteer extends Model
         $skills = $this->skills ?? [];
         $skills = array_filter($skills, fn($s) => $s !== $skill);
         $this->update(['skills' => array_values($skills)]);
+    }
+
+    // Approval methods
+    public function approve($approvedBy): void
+    {
+        $this->update([
+            'approval_status' => 'approved',
+            'approved_at' => now(),
+            'approved_by' => $approvedBy,
+            'status' => 'active'
+        ]);
+    }
+
+    public function reject($approvedBy): void
+    {
+        $this->update([
+            'approval_status' => 'rejected',
+            'approved_at' => now(),
+            'approved_by' => $approvedBy,
+            'status' => 'inactive'
+        ]);
+    }
+
+    public function isPending(): bool
+    {
+        return $this->approval_status === 'pending';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->approval_status === 'approved';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->approval_status === 'rejected';
     }
 }
 

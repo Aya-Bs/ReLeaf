@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use App\Models\Volunteer;
 use App\Models\User;
+use App\Mail\VolunteerApproved;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class VolunteerController extends Controller
@@ -22,6 +25,10 @@ class VolunteerController extends Controller
             $query->where('status', $request->status);
         }
 
+        if ($request->filled('approval_status')) {
+            $query->where('approval_status', $request->approval_status);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('user', function($q) use ($search) {
@@ -36,6 +43,9 @@ class VolunteerController extends Controller
             'total' => Volunteer::count(),
             'active' => Volunteer::where('status', 'active')->count(),
             'inactive' => Volunteer::where('status', 'inactive')->count(),
+            'pending' => Volunteer::where('approval_status', 'pending')->count(),
+            'approved' => Volunteer::where('approval_status', 'approved')->count(),
+            'rejected' => Volunteer::where('approval_status', 'rejected')->count(),
         ];
 
         return view('backend.volunteers.index', compact('volunteers', 'stats'));
@@ -107,5 +117,56 @@ class VolunteerController extends Controller
 
         return redirect()->route('backend.volunteers.index')
             ->with('success', 'Profil volontaire supprimé avec succès.');
+    }
+
+    /**
+     * Approve a volunteer.
+     */
+    public function approve(Volunteer $volunteer)
+    {
+        if ($volunteer->isApproved()) {
+            return redirect()->back()
+                ->with('warning', 'Ce volontaire est déjà approuvé.');
+        }
+
+        $volunteer->approve(Auth::id());
+
+        // Envoyer l'email d'approbation
+        Mail::to($volunteer->user->email)->send(new VolunteerApproved($volunteer));
+
+        return redirect()->back()
+            ->with('success', 'Volontaire approuvé avec succès. Un email de confirmation a été envoyé.');
+    }
+
+    /**
+     * Reject a volunteer.
+     */
+    public function reject(Volunteer $volunteer)
+    {
+        if ($volunteer->isRejected()) {
+            return redirect()->back()
+                ->with('warning', 'Ce volontaire a déjà été rejeté.');
+        }
+
+        $volunteer->reject(Auth::id());
+
+        return redirect()->back()
+            ->with('success', 'Volontaire rejeté avec succès.');
+    }
+
+    /**
+     * Reset volunteer approval status to pending.
+     */
+    public function reset(Volunteer $volunteer)
+    {
+        $volunteer->update([
+            'approval_status' => 'pending',
+            'approved_at' => null,
+            'approved_by' => null,
+            'status' => 'inactive'
+        ]);
+
+        return redirect()->back()
+            ->with('success', 'Statut d\'approbation réinitialisé avec succès.');
     }
 }

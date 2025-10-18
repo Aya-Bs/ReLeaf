@@ -6,6 +6,43 @@
 <div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-lg-8">
+            @if(auth()->user()->hasPendingVolunteerApplication())
+                <div class="alert alert-warning">
+                    <i class="fas fa-clock me-2"></i>
+                    <strong>Votre candidature est en cours de traitement</strong><br>
+                    <small>Veuillez attendre l'email de confirmation de notre équipe.</small>
+                </div>
+                <div class="text-center">
+                    <a href="{{ route('profile.show') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour au profil
+                    </a>
+                </div>
+            @elseif(auth()->user()->hasRejectedVolunteerApplication())
+                <div class="alert alert-danger">
+                    <i class="fas fa-times-circle me-2"></i>
+                    <strong>Votre candidature a été rejetée</strong><br>
+                    <small>Vous pouvez contacter notre équipe pour plus d'informations.</small>
+                </div>
+                <div class="text-center">
+                    <a href="{{ route('profile.show') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour au profil
+                    </a>
+                </div>
+            @elseif(auth()->user()->isVolunteer())
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong>Vous êtes déjà volontaire approuvé !</strong><br>
+                    <small>Vous pouvez consulter votre profil volontaire.</small>
+                </div>
+                <div class="text-center">
+                    <a href="{{ route('volunteers.show', auth()->user()->volunteer) }}" class="btn btn-success me-2">
+                        <i class="fas fa-eye me-2"></i>Voir mon profil volontaire
+                    </a>
+                    <a href="{{ route('profile.show') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour au profil
+                    </a>
+                </div>
+            @else
             <div class="card">
                 <div class="card-header bg-success text-white">
                     <h4 class="mb-0">
@@ -211,6 +248,7 @@
                     </form>
                 </div>
             </div>
+            @endif
         </div>
     </div>
 </div>

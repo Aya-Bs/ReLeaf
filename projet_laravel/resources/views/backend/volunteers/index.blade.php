@@ -56,6 +56,43 @@
     </div>
 </div>
 
+<!-- Statistiques d'approbation -->
+<div class="row">
+    <div class="col-lg-4 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>{{ $stats['pending'] }}</h3>
+                <p>En attente d'approbation</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-clock"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{{ $stats['approved'] }}</h3>
+                <p>Approuvés</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-6">
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>{{ $stats['rejected'] }}</h3>
+                <p>Rejetés</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Filtres et recherche -->
 <div class="card card-eco">
     <div class="card-header">
@@ -67,13 +104,24 @@
     <div class="card-body">
         <form method="GET" action="{{ route('backend.volunteers.index') }}">
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="form-group">
                         <label for="status">Statut</label>
                         <select class="form-control" id="status" name="status">
                             <option value="">Tous</option>
                             <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Actif</option>
                             <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactif</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="approval_status">Statut d'approbation</label>
+                        <select class="form-control" id="approval_status" name="approval_status">
+                            <option value="">Tous</option>
+                            <option value="pending" {{ request('approval_status') == 'pending' ? 'selected' : '' }}>En attente</option>
+                            <option value="approved" {{ request('approval_status') == 'approved' ? 'selected' : '' }}>Approuvé</option>
+                            <option value="rejected" {{ request('approval_status') == 'rejected' ? 'selected' : '' }}>Rejeté</option>
                         </select>
                     </div>
                 </div>
@@ -115,6 +163,7 @@
                             <th>Nom</th>
                             <th>Email</th>
                             <th>Statut</th>
+                            <th>Approbation</th>
                             <th>Expérience</th>
                             <th>Heures max/semaine</th>
                             <th>Inscrit le</th>
@@ -134,25 +183,86 @@
                                         {{ ucfirst($volunteer->status) }}
                                     </span>
                                 </td>
+                                <td>
+                                    @if($volunteer->approval_status === 'pending')
+                                        <span class="badge badge-warning">
+                                            <i class="fas fa-clock"></i> En attente
+                                        </span>
+                                    @elseif($volunteer->approval_status === 'approved')
+                                        <span class="badge badge-success">
+                                            <i class="fas fa-check"></i> Approuvé
+                                        </span>
+                                    @elseif($volunteer->approval_status === 'rejected')
+                                        <span class="badge badge-danger">
+                                            <i class="fas fa-times"></i> Rejeté
+                                        </span>
+                                    @endif
+                                </td>
                                 <td>{{ ucfirst($volunteer->experience_level) }}</td>
                                 <td>{{ $volunteer->max_hours_per_week }}h</td>
                                 <td>{{ $volunteer->created_at->format('d/m/Y') }}</td>
                                 <td>
                                     <div class="btn-group">
                                         <a href="{{ route('backend.volunteers.show', $volunteer) }}" 
-                                           class="btn btn-sm btn-info">
+                                           class="btn btn-sm btn-info" title="Voir">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         <a href="{{ route('backend.volunteers.edit', $volunteer) }}" 
-                                           class="btn btn-sm btn-warning">
+                                           class="btn btn-sm btn-warning" title="Modifier">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        
+                                        @if($volunteer->approval_status === 'pending')
+                                            <form method="POST" action="{{ route('backend.volunteers.approve', $volunteer) }}" 
+                                                  style="display: inline;" 
+                                                  onsubmit="return confirm('Approuver ce volontaire ?')">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-success" title="Approuver">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ route('backend.volunteers.reject', $volunteer) }}" 
+                                                  style="display: inline;" 
+                                                  onsubmit="return confirm('Rejeter ce volontaire ?')">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Rejeter">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </form>
+                                        @elseif($volunteer->approval_status === 'approved')
+                                            <form method="POST" action="{{ route('backend.volunteers.reset', $volunteer) }}" 
+                                                  style="display: inline;" 
+                                                  onsubmit="return confirm('Réinitialiser l\'approbation ?')">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-warning" title="Réinitialiser">
+                                                    <i class="fas fa-undo"></i>
+                                                </button>
+                                            </form>
+                                        @elseif($volunteer->approval_status === 'rejected')
+                                            <form method="POST" action="{{ route('backend.volunteers.approve', $volunteer) }}" 
+                                                  style="display: inline;" 
+                                                  onsubmit="return confirm('Approuver ce volontaire ?')">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-success" title="Approuver">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ route('backend.volunteers.reset', $volunteer) }}" 
+                                                  style="display: inline;" 
+                                                  onsubmit="return confirm('Réinitialiser l\'approbation ?')">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-warning" title="Réinitialiser">
+                                                    <i class="fas fa-undo"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                        
                                         <form method="POST" action="{{ route('backend.volunteers.destroy', $volunteer) }}" 
                                               style="display: inline;" 
                                               onsubmit="return confirm('Supprimer ce volontaire ?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>

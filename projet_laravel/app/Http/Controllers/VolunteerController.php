@@ -17,7 +17,7 @@ class VolunteerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Volunteer::with('user');
+        $query = Volunteer::with('user')->where('approval_status', 'approved');
 
         // Filter by status
         if ($request->has('status') && $request->status !== '') {
@@ -65,6 +65,12 @@ class VolunteerController extends Controller
                 ->with('info', 'Vous avez déjà un profil volontaire.');
         }
 
+        // Check if user has pending or rejected application
+        if (Auth::user()->hasPendingVolunteerApplication() || Auth::user()->hasRejectedVolunteerApplication()) {
+            return redirect()->route('profile.show')
+                ->with('info', 'Vous avez déjà une candidature de volontaire.');
+        }
+
         return view('volunteers.create');
     }
 
@@ -77,6 +83,12 @@ class VolunteerController extends Controller
         if (Auth::user()->isVolunteer()) {
             return redirect()->route('volunteers.show', Auth::user()->volunteer)
                 ->with('error', 'Vous avez déjà un profil volontaire.');
+        }
+
+        // Check if user has pending or rejected application
+        if (Auth::user()->hasPendingVolunteerApplication() || Auth::user()->hasRejectedVolunteerApplication()) {
+            return redirect()->route('profile.show')
+                ->with('error', 'Vous avez déjà une candidature de volontaire.');
         }
 
         $validated = $request->validate([
@@ -95,12 +107,13 @@ class VolunteerController extends Controller
         ]);
 
         $validated['user_id'] = Auth::id();
-        $validated['status'] = 'active';
+        $validated['status'] = 'inactive'; // Inactif jusqu'à approbation
+        $validated['approval_status'] = 'pending'; // En attente d'approbation
 
         $volunteer = Volunteer::create($validated);
 
-        return redirect()->route('volunteers.show', $volunteer)
-            ->with('success', 'Profil volontaire créé avec succès !');
+        return redirect()->route('profile.show')
+            ->with('success', 'Votre candidature de volontaire a été soumise avec succès ! Vous recevrez un email de confirmation une fois approuvée par notre équipe.');
     }
 
     /**
@@ -108,6 +121,11 @@ class VolunteerController extends Controller
      */
     public function show(Volunteer $volunteer)
     {
+        // Vérifier que le volontaire est approuvé ou que l'utilisateur est le propriétaire
+        if (!$volunteer->isApproved() && Auth::id() !== $volunteer->user_id) {
+            abort(403, 'Ce profil volontaire n\'est pas encore approuvé.');
+        }
+
         $volunteer->load('user', 'assignments.assignable');
         
         $recentAssignments = $volunteer->assignments()

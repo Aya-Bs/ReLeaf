@@ -88,7 +88,23 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isVolunteer(): bool
     {
-        return $this->volunteer !== null;
+        return $this->volunteer !== null && $this->volunteer->isApproved();
+    }
+
+    /**
+     * Check if user has a pending volunteer application.
+     */
+    public function hasPendingVolunteerApplication(): bool
+    {
+        return $this->volunteer !== null && $this->volunteer->isPending();
+    }
+
+    /**
+     * Check if user has a rejected volunteer application.
+     */
+    public function hasRejectedVolunteerApplication(): bool
+    {
+        return $this->volunteer !== null && $this->volunteer->isRejected();
     }
 
     /**

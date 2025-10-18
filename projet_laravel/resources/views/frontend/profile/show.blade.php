@@ -46,13 +46,29 @@
                             
                             @if($user->isVolunteer())
                                 <div class="mt-2">
-                                    <span class="badge bg-warning">
-                                        <i class="fas fa-hands-helping me-1"></i>Volontaire
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-hands-helping me-1"></i>Volontaire Approuvé
                                     </span>
                                     <div class="mt-2">
-                                        <a href="{{ route('volunteers.show', $user->volunteer) }}" class="btn btn-sm btn-outline-warning">
+                                        <a href="{{ route('volunteers.show', $user->volunteer) }}" class="btn btn-sm btn-outline-success">
                                             <i class="fas fa-eye me-1"></i>Voir mon profil volontaire
                                         </a>
+                                    </div>
+                                </div>
+                            @elseif($user->hasPendingVolunteerApplication())
+                                <div class="mt-2">
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-clock me-2"></i>
+                                        <strong>Votre candidature est en cours de traitement</strong><br>
+                                        <small>Veuillez attendre l'email de confirmation de notre équipe.</small>
+                                    </div>
+                                </div>
+                            @elseif($user->hasRejectedVolunteerApplication())
+                                <div class="mt-2">
+                                    <div class="alert alert-danger">
+                                        <i class="fas fa-times-circle me-2"></i>
+                                        <strong>Votre candidature a été rejetée</strong><br>
+                                        <small>Vous pouvez contacter notre équipe pour plus d'informations.</small>
                                     </div>
                                 </div>
                             @else

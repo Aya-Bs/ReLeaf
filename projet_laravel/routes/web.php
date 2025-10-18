@@ -113,6 +113,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
 
     // Gestion des volontaires
     Route::resource('volunteers', \App\Http\Controllers\Backend\VolunteerController::class);
+    Route::post('volunteers/{volunteer}/approve', [\App\Http\Controllers\Backend\VolunteerController::class, 'approve'])
+        ->name('volunteers.approve');
+    Route::post('volunteers/{volunteer}/reject', [\App\Http\Controllers\Backend\VolunteerController::class, 'reject'])
+        ->name('volunteers.reject');
+    Route::post('volunteers/{volunteer}/reset', [\App\Http\Controllers\Backend\VolunteerController::class, 'reset'])
+        ->name('volunteers.reset');
 
     // Gestion des missions
     Route::resource('assignments', \App\Http\Controllers\Backend\AssignmentController::class);
