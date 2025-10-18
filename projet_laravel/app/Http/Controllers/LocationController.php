@@ -67,21 +67,44 @@ class LocationController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-            'city' => 'required|string|max:255',
-            'capacity' => 'nullable|integer|min:1',
+        $validated = $request->validate([
+            'name' => 'required|string|min:3|max:255',
+            'address' => 'required|string|min:3||max:255',
+            'city' => 'required|string||min:4|max:255',
+            'capacity' => 'required|integer|min:1',
             'description' => 'nullable|string',
-            'images.*' => 'nullable|image|max:2048',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
             'price' => 'required|numeric|min:0',
-
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'name.required' => 'Le nom du lieu est obligatoire.',
+            'name.min' => 'Le nom doit contenir au moins 3 caractères.',
+            'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
+            'address.required' => 'L\'adresse du lieu est obligatoire.',
+            'address.min' => 'L\'adresse doit contenir au moins 3 caractères.',
+            'address.max' => 'L\'adresse ne doit pas dépasser 255 caractères.',
+            'city.required' => 'La ville est obligatoire.',
+            'city.min' => 'Le nom de la ville doit contenir au moins 4 caractères.',
+            'city.max' => 'Le nom de la ville ne doit pas dépasser 255 caractères.',
+            'capacity.required' => 'La capacité est obligatoire.',
+            'capacity.integer' => 'La capacité doit être un nombre entier.',
+            'capacity.min' => 'La capacité doit être au moins 1.',
+            'latitude.required' => 'La latitude est obligatoire.',
+            'latitude.numeric' => 'La latitude doit être un nombre.',
+            'latitude.between' => 'La latitude doit être entre -90 et 90 degrés.',
+            'longitude.required' => 'La longitude est obligatoire.',
+            'longitude.numeric' => 'La longitude doit être un nombre.',
+            'longitude.between' => 'La longitude doit être entre -180 et 180 degrés.',
+            'price.required' => 'Le prix est obligatoire.',
+            'price.numeric' => 'Le prix doit être un nombre.',
+            'price.min' => 'Le prix ne peut pas être négatif.',
+            'images.*.image' => 'Les fichiers doivent être des images valides.',
+            'images.*.mimes' => 'Les images doivent être aux formats JPEG, PNG, JPG ou GIF.',
+            'images.*.max' => 'Chaque image ne doit pas dépasser 2 Mo.',
         ]);
 
-    $data['in_repair'] = $request->has('in_repair');
-    $data['latitude'] = $request->input('latitude');
-    $data['longitude'] = $request->input('longitude');
-    $data['price'] = $request->input('price'); 
+        $validated['in_repair'] = $request->has('in_repair');
 
         // Handle images upload
         $images = [];
@@ -90,9 +113,9 @@ class LocationController extends Controller
                 $images[] = $img->store('locations', 'public');
             }
         }
-        $data['images'] = $images;
+        $validated['images'] = $images;
 
-        Location::create($data);
+        Location::create($validated);
         return redirect()->route('locations.index')->with('success', 'Lieu ajouté avec succès!');
     }
 
@@ -139,19 +162,45 @@ class LocationController extends Controller
     /**
      * Update the specified resource in storage.
      */
-public function update(Request $request, Location $location)
+    public function update(Request $request, Location $location)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'capacity' => 'nullable|integer|min:1',
-            'address' => 'required|string',
-            'city' => 'required|string',
+            'name' => 'required|string|min:3|max:255',
+            'address' => 'required|string|min:3||max:255',
+            'city' => 'required|string||min:4|max:255',
+            'capacity' => 'required|integer|min:1',
             'description' => 'nullable|string',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'in_repair' => 'boolean',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
             'price' => 'required|numeric|min:0',
+            'in_repair' => 'boolean',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'name.required' => 'Le nom du lieu est obligatoire.',
+            'name.min' => 'Le nom doit contenir au moins 3 caractères.',
+            'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
+            'address.required' => 'L\'adresse du lieu est obligatoire.',
+            'address.min' => 'L\'adresse doit contenir au moins 3 caractères.',
+            'address.max' => 'L\'adresse ne doit pas dépasser 255 caractères.',
+            'city.required' => 'La ville est obligatoire.',
+            'city.min' => 'Le nom de la ville doit contenir au moins 4 caractères.',
+            'city.max' => 'Le nom de la ville ne doit pas dépasser 255 caractères.',
+            'capacity.required' => 'La capacité est obligatoire.',
+            'capacity.integer' => 'La capacité doit être un nombre entier.',
+            'capacity.min' => 'La capacité doit être au moins 1.',
+            'latitude.required' => 'La latitude est obligatoire.',
+            'latitude.numeric' => 'La latitude doit être un nombre.',
+            'latitude.between' => 'La latitude doit être entre -90 et 90 degrés.',
+            'longitude.required' => 'La longitude est obligatoire.',
+            'longitude.numeric' => 'La longitude doit être un nombre.',
+            'longitude.between' => 'La longitude doit être entre -180 et 180 degrés.',
+            'price.required' => 'Le prix est obligatoire.',
+            'price.numeric' => 'Le prix doit être un nombre.',
+            'price.min' => 'Le prix ne peut pas être négatif.',
+            'in_repair.boolean' => 'Le statut de réparation doit être vrai ou faux.',
+            'images.*.image' => 'Les fichiers doivent être des images valides.',
+            'images.*.mimes' => 'Les images doivent être aux formats JPEG, PNG, JPG ou GIF.',
+            'images.*.max' => 'Chaque image ne doit pas dépasser 2 Mo.',
         ]);
 
         // Handle image deletion

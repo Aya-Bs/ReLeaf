@@ -84,69 +84,6 @@
                     </a>
                 </li>
 
-<<<<<<< HEAD
-                <!-- User Dropdown -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="{{ auth()->user()->avatar_url }}" alt="Avatar" class="rounded-circle me-1" width="24">
-                        {{ auth()->user()->name }}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <a class="dropdown-item" href="{{ route('profile.show') }}">
-                                <i class="fas fa-user me-2"></i>Mon profil
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="{{ route('user.certificates.index') }}">
-                                <i class="fas fa-certificate me-2"></i>Mes Certifications
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="{{ route('chatbot.index') }}">
-                                <i class="fas fa-robot me-2"></i>Assistant IA
-                            </a>
-                        </li>
-                        @if(auth()->user()->role === 'sponsor' && auth()->user()->sponsor)
-                        <li>
-                            <a class="dropdown-item" href="{{ route('profile.show') }}">
-                                <i class="fas fa-building me-2"></i>Profil sponsor
-                            </a>
-                        </li>
-                        @if(auth()->user()->sponsor->isDeletionRequested())
-                        <li>
-                            <span class="dropdown-item text-warning">
-                                <i class="fas fa-clock me-2"></i>Suppression demandée
-                            </span>
-                        </li>
-                        @else
-                        <li>
-                            <form method="POST" action="{{ route('sponsor.self.requestDeletion') }}" onsubmit="return confirm('Confirmer la demande de suppression de votre compte sponsor ?');">
-                                @csrf
-                                <button type="submit" class="dropdown-item text-danger">
-                                    <i class="fas fa-user-slash me-2"></i>Demande suppression sponsor
-                                </button>
-                            </form>
-                        </li>
-                        @endif
-                        @endif
-                        <li>
-                            <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                <i class="fas fa-cog me-2"></i>Paramètres
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="dropdown-item text-danger">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
-                </li>
-=======
                     <!-- User Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -185,7 +122,6 @@
                             </li>
                         </ul>
                     </li>
->>>>>>> firas
                 @endguest
             </ul>
         </div>
@@ -207,20 +143,6 @@
 
 @push('styles')
 <style>
-<<<<<<< HEAD
-    .navbar {
-        box-shadow: 0 2px 4px rgba(0, 0, 0, .04);
-    }
-
-.nav-link.active {
-    color: #2d5a27 !important;
-    font-weight: 500;
-}
-
-    .dropdown-item:active {
-        background-color: #2d5a27;
-    }
-=======
 .navbar {
     box-shadow: 0 2px 4px rgba(0,0,0,.04);
 }
@@ -327,6 +249,5 @@
 .dropdown-item:active {
     background-color: #2d5a27;
 }
->>>>>>> firas
 </style>
 @endpush

@@ -3,59 +3,28 @@
 @section('title', 'Faire un Don - ' . $event->title)
 
 @section('content')
-<!-- Hero Section -->
-<section class="hero-section bg-gradient-primary text-white py-5">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-8 mx-auto text-center">
-                <h1 class="display-4 fw-bold mb-4">
-                    <i class="fas fa-heart me-2 text-success"></i>
-                    Soutenir cet événement
-                </h1>
-                <p class="lead mb-4">
-                    Votre don contribue directement à la réussite de cet événement écologique.
-                    Ensemble, créons un impact positif !
-                </p>
-            </div>
-        </div>
-    </div>
-</section>
+@php
+$collected = \App\Models\Donation::where('event_id', $event->id)
+->where('status', 'confirmed')
+->sum('amount');
+@endphp
 
-<!-- Event Info Section -->
-<section class="event-info-section py-4 bg-light">
+<!-- Simple Event Header -->
+<section class="py-4 bg-light border-bottom">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h4 class="mb-2">{{ $event->title }}</h4>
-                                <p class="text-muted mb-2">{{ Str::limit($event->description, 150) }}</p>
-                                <div class="event-meta">
-                                    <small class="text-muted me-3">
-                                        <i class="fas fa-calendar me-1"></i>
-                                        {{ $event->date ? $event->date->format('d/m/Y à H:i') : 'Date à définir' }}
-                                    </small>
-                                    <small class="text-muted">
-                                        <i class="fas fa-map-marker-alt me-1"></i>
-                                        {{ $event->location ?? 'Lieu à définir' }}
-                                    </small>
-                                </div>
-                            </div>
-                            <div class="col-md-4 text-md-end">
-                                <div class="funding-progress">
-                                    <div class="progress mb-2" style="height: 8px;">
-                                        <div class="progress-bar bg-success" role="progressbar"
-                                            style="width: {{ min(($event->total_funding / 1000) * 100, 100) }}%">
-                                        </div>
-                                    </div>
-                                    <small class="text-muted">
-                                        {{ number_format($event->total_funding, 0, ',', ' ') }} € collectés
-                                    </small>
-                                </div>
-                            </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between">
+                    <div class="mb-3 mb-md-0">
+                        <h2 class="h4 mb-1">{{ $event->title }}</h2>
+                        <div class="small text-muted">
+                            <span class="me-3"><i class="far fa-calendar me-1"></i>{{ $event->date ? $event->date->format('d/m/Y à H:i') : 'Date à définir' }}</span>
+                            <span><i class="fas fa-map-marker-alt me-1"></i>{{ $event->location?->name ?? 'Lieu à définir' }}</span>
                         </div>
+                    </div>
+                    <div class="text-success fw-semibold">
+                        <i class="fas fa-donate me-1"></i>
+                        Collecté: {{ number_format($collected, 2, ',', ' ') }} €
                     </div>
                 </div>
             </div>
@@ -64,19 +33,15 @@
 </section>
 
 <!-- Donation Form Section -->
-<section class="donation-form-section py-5">
+<section class="py-4">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-6">
-                <div class="card shadow-lg border-0">
-                    <div class="card-header bg-success text-white text-center py-4">
-                        <h3 class="mb-0">
-                            <i class="fas fa-donate me-2"></i>
-                            Faire un Don
-                        </h3>
-                        <p class="mb-0 mt-2">Choisissez le type de don et remplissez le formulaire</p>
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-success text-white py-3">
+                        <h5 class="mb-0"><i class="fas fa-donate me-2"></i>Faire un Don</h5>
                     </div>
-                    <div class="card-body p-4 p-md-5">
+                    <div class="card-body p-4">
                         <div class="row justify-content-center">
                             <div class="col-lg-8">
 
@@ -98,40 +63,11 @@
                                 <form action="{{ route('donations.store', $event) }}" method="POST" id="donation-form" data-has-sponsor="{{ (Auth::check() && Auth::user()->role === 'sponsor' && Auth::user()->sponsor) ? 'true' : 'false' }}">
                                     @csrf
 
-                                    <!-- Donation Type -->
-                                    <div class="row mb-4">
-                                        <div class="col-12">
-                                            <h5 class="text-success mb-3">
-                                                <i class="fas fa-gift me-2"></i>Type de don
-                                            </h5>
-                                        </div>
-                                    </div>
-
                                     @php
                                     $resolvedType = 'individual';
                                     if(Auth::check() && Auth::user()->role === 'sponsor') { $resolvedType = 'sponsor'; }
                                     @endphp
                                     <input type="hidden" name="type" value="{{ $resolvedType }}">
-                                    <div class="alert alert-info mb-3 py-2">
-                                        <i class="fas fa-info-circle me-2"></i>
-                                        Type de don verrouillé: <strong>{{ $resolvedType === 'sponsor' ? 'Don de sponsor' : 'Don individuel' }}</strong>
-                                    </div>
-                                    <div class="row mb-4 small text-muted">
-                                        <div class="col-12">
-                                            <div class="form-check mb-2 opacity-75">
-                                                <input class="form-check-input" type="radio" disabled {{ $resolvedType==='individual' ? 'checked' : '' }}>
-                                                <label class="form-check-label">
-                                                    Don individuel
-                                                </label>
-                                            </div>
-                                            <div class="form-check opacity-50">
-                                                <input class="form-check-input" type="radio" disabled {{ $resolvedType==='sponsor' ? 'checked' : '' }}>
-                                                <label class="form-check-label">
-                                                    Don de sponsor
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
 
                                     {{-- Conditional Sponsor ID / Name section --}}
                                     @if(Auth::check() && Auth::user()->role === 'sponsor' && Auth::user()->sponsor)
@@ -186,14 +122,6 @@
                                     </div>
 
                                     <!-- Payment Method -->
-                                    <div class="row mb-4">
-                                        <div class="col-12">
-                                            <h5 class="text-success mb-3">
-                                                <i class="fas fa-credit-card me-2"></i>Méthode de paiement
-                                            </h5>
-                                        </div>
-                                    </div>
-
                                     <div class="row mb-3">
                                         <div class="col-12">
                                             <label for="payment_method" class="form-label">Méthode de paiement *</label>
@@ -243,135 +171,7 @@
         </div>
     </div>
 </section>
-
-<!-- Impact Section -->
-<section class="impact-section py-5 bg-light">
-    <div class="container">
-        <div class="row">
-            <div class="col-12 text-center mb-5">
-                <h2 class="section-title">
-                    <span class="text-success">Votre impact</span>
-                </h2>
-                <p class="lead text-muted">
-                    Découvrez comment votre don contribue à la réussite de l'événement
-                </p>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="card impact-card h-100 shadow-sm text-center">
-                    <div class="card-body">
-                        <div class="impact-icon mb-3">
-                            <i class="fas fa-leaf fa-3x text-success"></i>
-                        </div>
-                        <h5 class="card-title">Action Directe</h5>
-                        <p class="card-text text-muted">
-                            Votre don finance directement les actions écologiques de cet événement
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card impact-card h-100 shadow-sm text-center">
-                    <div class="card-body">
-                        <div class="impact-icon mb-3">
-                            <i class="fas fa-users fa-3x text-success"></i>
-                        </div>
-                        <h5 class="card-title">Communauté</h5>
-                        <p class="card-text text-muted">
-                            Vous rejoignez une communauté de donateurs engagés pour l'environnement
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card impact-card h-100 shadow-sm text-center">
-                    <div class="card-body">
-                        <div class="impact-icon mb-3">
-                            <i class="fas fa-chart-line fa-3x text-success"></i>
-                        </div>
-                        <h5 class="card-title">Transparence</h5>
-                        <p class="card-text text-muted">
-                            Suivez l'utilisation de votre don et l'impact généré
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 @endsection
-
-@push('styles')
-<style>
-    .hero-section {
-        background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%);
-        min-height: 40vh;
-    }
-
-    .impact-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border: none;
-    }
-
-    .impact-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    }
-
-    .section-title {
-        position: relative;
-        display: inline-block;
-    }
-
-    .section-title::after {
-        content: '';
-        position: absolute;
-        bottom: -10px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 60px;
-        height: 3px;
-        background: #28a745;
-        border-radius: 2px;
-    }
-
-    .form-control:focus {
-        border-color: #28a745;
-        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
-    }
-
-    .form-select:focus {
-        border-color: #28a745;
-        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
-    }
-
-    .btn-success {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        border: none;
-        transition: transform 0.3s ease;
-    }
-
-    .btn-success:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
-    }
-
-    .quick-amount {
-        transition: all 0.3s ease;
-    }
-
-    .quick-amount:hover {
-        background-color: #28a745;
-        color: white;
-    }
-
-    .progress-bar {
-        transition: width 0.6s ease;
-    }
-</style>
-@endpush
 
 @push('scripts')
 <script>
@@ -380,7 +180,6 @@
         if (!form) return;
         const sponsorNameField = document.getElementById('sponsor-name-field');
         const hiddenType = form.querySelector('input[name="type"]').value;
-        // If hidden type is sponsor AND user is not sponsor role (field exists), show the sponsor name field.
         if (hiddenType === 'sponsor' && sponsorNameField) {
             sponsorNameField.style.display = 'flex';
         }

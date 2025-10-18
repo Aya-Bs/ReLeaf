@@ -28,7 +28,7 @@
                             
                             <!-- Form -->
                             <div class="flex-fill" style="flex: 1 1 70%;">
-                                <form action="{{ route('locations.update', $location) }}" method="POST" enctype="multipart/form-data" class="bg-white p-4 shadow rounded-5 border-0 h-100">
+                                <form action="{{ route('locations.update', $location) }}" method="POST" enctype="multipart/form-data" class="bg-white p-4 shadow rounded-5 border-0 h-100" novalidate>
                                     @csrf
                                     @method('PUT')
                                         <div class="col-md-12 mb-3">
@@ -57,7 +57,7 @@
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <label for="capacity" class="form-label fw-semibold" style="color:#2d5a27;">
-                                                <i class="fas fa-users me-2"></i>Capacité
+                                                <i class="fas fa-users me-2"></i>Capacité <span class="text-danger">*</span>
                                             </label>
                                             <input type="number" class="form-control form-control-lg" id="capacity" name="capacity" value="{{ old('capacity', $location->capacity) }}" min="1">
                                         </div>

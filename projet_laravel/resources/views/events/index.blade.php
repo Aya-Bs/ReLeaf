@@ -177,12 +177,12 @@
                                         <button class="btn btn-outline-warning w-100" disabled>
                                             <i class="fas fa-hourglass-half me-2"></i>En liste d'attente
                                         </button>
+
                                     @elseif($event->availableSeats > 0 && auth()->check())
                                         <a href="{{ route('events.seats', $event) }}" 
                                         class="btn btn-eco w-100">
                                             <i class="fas fa-ticket-alt me-2"></i>Réserver une place
                                         </a>
-                                    @elseif($event->isFull && auth()->check())
                                     @elseif($event->isFull && auth()->check())
                                         <form action="{{ route('waiting-list.join', $event) }}" method="POST" class="w-100">
                                             @csrf
