@@ -21,7 +21,7 @@
                     </nav>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('events.update', $event) }}" method="POST" enctype="multipart/form-data" id="eventForm" data-can-edit="{{ $event->canBeEdited() ? '1' : '0' }}">
+                    <form action="{{ route('events.update', $event) }}" method="POST" enctype="multipart/form-data" id="eventForm" novalidate >
                         @csrf
                         @method('PUT')
 
@@ -83,44 +83,24 @@
                                     </div>
                                 </div>
 
-                                <div class="row mb-3">
-                                    <!-- Location Dropdown -->
-                                    <div class="col-md-6">
-                                        <label for="location_id" class="form-label">
-                                            <i class="fas fa-map-marker-alt me-2" style="color: #2d5a27;"></i>Lieu <span class="text-danger">*</span>
-                                        </label>
-                                        @php
-                                        $locations = \App\Models\Location::all();
-                                        @endphp
-                                        <select class="form-select @error('location_id') is-invalid @enderror" id="location_id" name="location_id" required {{ !$event->canBeEdited() ? 'disabled' : '' }}>
-                                            <option value="">Sélectionnez un lieu</option>
-                                            @foreach($locations as $location)
-                                            <option value="{{ $location->id }}" {{ old('location_id', $event->location_id) == $location->id ? 'selected' : '' }}>{{ $location->name }} ({{ $location->city }})</option>
-                                            @endforeach
-                                        </select>
-                                        @error('location_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label for="campaign_id" class="form-label">
-                                            <i class="fas fa-bullhorn me-2" style="color: #2d5a27;"></i>Campagne
-                                        </label>
-                                        @php
-                                        $campaigns = \App\Models\Campaign::all();
-                                        @endphp
-                                        <select class="form-select @error('campaign_id') is-invalid @enderror" id="campaign_id" name="campaign_id" {{ !$event->canBeEdited() ? 'disabled' : '' }}>
-                                            <option value="">Aucune campagne</option>
-                                            @foreach($campaigns as $campaign)
-                                            <option value="{{ $campaign->id }}" {{ old('campaign_id', $event->campaign_id) == $campaign->id ? 'selected' : '' }}>{{ $campaign->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        @error('campaign_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
+<div class="col-md-6">
+    <label for="campaign_id" class="form-label">
+        <i class="fas fa-bullhorn me-2" style="color: #2d5a27;"></i>Campagne <span class="text-danger">*</span>
+    </label>
+    @php
+        $campaigns = \App\Models\Campaign::all();
+    @endphp
+    <select class="form-select @error('campaign_id') is-invalid @enderror" id="campaign_id" name="campaign_id" {{ !$event->canBeEdited() ? 'disabled' : '' }}>
+        <option value="">Aucune campagne</option>
+        @foreach($campaigns as $campaign)
+            <option value="{{ $campaign->id }}" {{ old('campaign_id', $event->campaign_id) == $campaign->id ? 'selected' : '' }}>{{ $campaign->name }}</option>
+        @endforeach
+    </select>
+    @error('campaign_id')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror                                    
+</div>
+</div>
                                 <!-- Max Participants -->
                                 <div class="mb-3">
                                     <label for="max_participants" class="form-label">

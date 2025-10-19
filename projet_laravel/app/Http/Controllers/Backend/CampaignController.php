@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use App\Models\CampaignDeletionRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use App\Services\CarbonCalculatorService;
 
 class CampaignController extends Controller
 {
@@ -100,7 +102,7 @@ class CampaignController extends Controller
             'funds_raised' => 'nullable|numeric|min:0',
             'environmental_impact' => 'nullable|string|max:255',
             'tags' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
             'visibility' => 'nullable|boolean',
         ]);
 
@@ -266,6 +268,7 @@ class CampaignController extends Controller
 
     public function processDeletionRequest(Request $request, CampaignDeletionRequest $deletionRequest)
     {
+    
         if (!Auth::user()->isAdmin()) {
             return redirect()->route('dashboard')->with('error', 'Accès non autorisé.');
         }
@@ -276,26 +279,34 @@ class CampaignController extends Controller
         ]);
 
         if ($request->action === 'approve') {
-            // Supprimer la campagne
-            $campaign = $deletionRequest->campaign;
+            // Important: d'abord marquer la demande comme "approved", ensuite supprimer la campagne.
+            // Si on supprime la campagne avant, la contrainte FK (onDelete cascade) supprime aussi la demande
+            // et l'update échoue. On encapsule dans une transaction pour l'atomicité.
+            DB::transaction(function () use ($request, $deletionRequest) {
+                // Mettre à jour la demande (audit)
+                $deletionRequest->update([
+                    'status' => 'approved',
+                    'processed_by' => Auth::id(),
+                    'admin_notes' => $request->admin_notes,
+                    'processed_at' => now()
+                ]);
 
-            // Supprimer l'image associée
-            if ($campaign->image_url) {
-                Storage::disk('public')->delete($campaign->image_url);
+                // Supprimer la campagne (et son image si présente)
+                $campaign = $deletionRequest->campaign()->first();
+                if ($campaign) {
+                    if (!empty($campaign->image_url)) {
+                        Storage::disk('public')->delete($campaign->image_url);
+                    }
+                    $campaign->delete();
+                }
+            });
+
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['status' => 'ok', 'message' => 'Demande approuvée et campagne supprimée.']);
             }
 
-            $campaign->delete();
-
-            // Mettre à jour la demande
-            $deletionRequest->update([
-                'status' => 'approved',
-                'processed_by' => Auth::id(),
-                'admin_notes' => $request->admin_notes,
-                'processed_at' => now()
-            ]);
-
-            return redirect()->route('backend.campaigns.deletion-requests')
-                ->with('success', 'Demande de suppression approuvée et campagne supprimée.');
+            // Retourner à la page précédente au lieu d'une route spécifique pour éviter les 404
+            return redirect()->back()->with('success', 'Demande de suppression approuvée et campagne supprimée.');
         } else {
             // Rejeter la demande
             $deletionRequest->update([
@@ -305,8 +316,68 @@ class CampaignController extends Controller
                 'processed_at' => now()
             ]);
 
-            return redirect()->route('backend.campaigns.deletion-requests')
-                ->with('success', 'Demande de suppression rejetée.');
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['status' => 'ok', 'message' => 'Demande rejetée.']);
+            }
+
+            // Retourner à la page précédente afin de simplement rafraîchir l'interface
+            return redirect()->back()->with('success', 'Demande de suppression rejetée.');
         }
+    }
+
+
+
+ /**
+ * Affiche le bilan carbone avec Carbon Interface + ADEME
+ */
+public function carbonReport(Campaign $campaign)
+{
+    $calculator = new CarbonCalculatorService();
+    
+    $carbonData = [];
+    $totalFootprint = 0;
+    
+    foreach ($campaign->resources as $resource) {
+        $footprint = $calculator->calculateResourceFootprint($resource);
+        $carbonData[$resource->id] = [
+            'resource' => $resource,
+            'footprint' => $footprint,
+            'details' => $this->getFootprintDetails($resource, $footprint)
+        ];
+        $totalFootprint += $footprint;
+    }
+    
+    // Déterminer la méthode utilisée
+    $apiStatus = $calculator->testApiConnections();
+    $usedApi = config('services.carbon_interface.api_key') ? 'carbon_interface' : 'ademe';
+    
+    return view('frontend.campaigns.carbon-report', compact(
+        'campaign', 'carbonData', 'totalFootprint', 'apiStatus', 'usedApi'
+    ));
+}
+    
+    /**
+     * Test manuel des APIs
+     */
+    public function testApis()
+    {
+        $calculator = new CarbonCalculatorService();
+        $results = $calculator->testApiConnections();
+        
+        return response()->json([
+            'apis' => $results,
+            'timestamp' => now()->toDateTimeString()
+        ]);
+    }
+    
+    private function getFootprintDetails($resource, $footprint)
+    {
+        return [
+            'type' => $resource->resource_type,
+            'quantity' => $resource->quantity_needed,
+            'unit' => $resource->unit,
+            'calculated_at' => now()->toDateTimeString(),
+            'method' => config('services.default_carbon_api', 'climatiq')
+        ];
     }
 }

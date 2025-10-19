@@ -9,6 +9,7 @@ use App\Http\Requests\StoreResourceRequest;
 use App\Http\Requests\UpdateResourceRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class ResourceController extends Controller
 {
@@ -53,7 +54,12 @@ class ResourceController extends Controller
         }
 
         $resources = $query->paginate(15);
-        $campaigns = Campaign::where('status', 'active')->get();
+        // If the current user is an organizer, only show their campaigns in dropdowns/filters
+        $campaignsQuery = Campaign::where('status', 'active');
+        if (auth()->check() && auth()->user()->isOrganizer()) {
+            $campaignsQuery->where('organizer_id', auth()->id());
+        }
+        $campaigns = $campaignsQuery->get();
 
         // Statistiques
         $totalResources = Resource::count();
@@ -116,14 +122,22 @@ class ResourceController extends Controller
         }
 
         $resources = $query->paginate(16);
-        $campaigns = Campaign::where('status', 'active')->get();
+        // For the public "all" resources page, if user is organizer limit campaigns in the selector
+        $campaignsQuery = Campaign::where('status', 'active');
+        if (auth()->check() && auth()->user()->isOrganizer()) {
+            $campaignsQuery->where('organizer_id', auth()->id());
+        }
+        $campaigns = $campaignsQuery->get();
 
         return view('frontend.resources.all', compact('resources', 'campaigns'));
     }
 
     public function create()
     {
-        $campaigns = Campaign::where('status', 'active')->get();
+        $campaigns = Campaign::where('status', 'active')
+            ->where('organizer_id', auth()->id())
+            ->get();
+
         return view('frontend.resources.create', compact('campaigns'));
     }
 
@@ -158,7 +172,10 @@ class ResourceController extends Controller
             return redirect()->route('resources.index')->with('error', 'Cette ressource ne peut pas être modifiée.');
         }
 
-        $campaigns = Campaign::where('status', 'active')->get();
+        $campaigns = Campaign::where('status', 'active')
+            ->where('organizer_id', auth()->id())
+            ->get();
+
         return view('frontend.resources.edit', compact('resource', 'campaigns'));
     }
 
@@ -175,7 +192,7 @@ class ResourceController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'campaign_id' => 'required|exists:campaigns,id',
+            'campaign_id' => ['required', Rule::exists('campaigns', 'id')->where(fn($q) => $q->where('organizer_id', auth()->id()))],
             'provider' => 'nullable|string|max:255',
             'quantity_needed' => 'required|integer|min:1',
             'quantity_pledged' => 'nullable|integer|min:0',
@@ -185,7 +202,7 @@ class ResourceController extends Controller
             'priority' => 'required|in:low,medium,high,urgent',
             'status' => 'required|in:needed,pledged,received,in_use',
             'notes' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
         ]);
 
         // Préparer les données pour la mise à jour
