@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\Profile;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -118,7 +117,7 @@ class UserProfileSeeder extends Seeder
                     'interests' => ['Jardinage bio', 'Permaculture', 'Compostage'],
                     'notification_preferences' => 'both',
                     'is_eco_ambassador' => true,
-                ]
+                ],
             ],
             [
                 'name' => 'Pierre Martin',
@@ -140,7 +139,7 @@ class UserProfileSeeder extends Seeder
                     'interests' => ['Énergies renouvelables', 'Transition énergétique', 'Innovation'],
                     'notification_preferences' => 'email',
                     'is_eco_ambassador' => false,
-                ]
+                ],
             ],
             [
                 'name' => 'Sophie Leroy',
@@ -161,7 +160,7 @@ class UserProfileSeeder extends Seeder
                     'interests' => ['Militantisme', 'Sensibilisation', 'Événements écologiques'],
                     'notification_preferences' => 'email',
                     'is_eco_ambassador' => true,
-                ]
+                ],
             ],
             [
                 'name' => 'Thomas Dubois',
@@ -183,7 +182,7 @@ class UserProfileSeeder extends Seeder
                     'interests' => ['Développement durable', 'Recyclage', 'Transport écologique'],
                     'notification_preferences' => 'sms',
                     'is_eco_ambassador' => false,
-                ]
+                ],
             ],
             [
                 'name' => 'Emma Rousseau',
@@ -204,7 +203,7 @@ class UserProfileSeeder extends Seeder
                     'interests' => ['Cuisine bio', 'Alimentation locale', 'Zéro déchet'],
                     'notification_preferences' => 'both',
                     'is_eco_ambassador' => true,
-                ]
+                ],
             ],
             [
                 'name' => 'Ahmed Ben Salah',
@@ -226,7 +225,7 @@ class UserProfileSeeder extends Seeder
                     'interests' => ['Protection marine', 'Écologie côtière', 'Sensibilisation'],
                     'notification_preferences' => 'both',
                     'is_eco_ambassador' => true,
-                ]
+                ],
             ],
             [
                 'name' => 'Lina Chen',
@@ -247,8 +246,8 @@ class UserProfileSeeder extends Seeder
                     'interests' => ['Reboisement', 'Protection des forêts', 'Activisme'],
                     'notification_preferences' => 'email',
                     'is_eco_ambassador' => true,
-                ]
-            ]
+                ],
+            ],
         ];
 
         foreach ($users as $userData) {

@@ -125,6 +125,79 @@ class ReservationController extends Controller
     }
 
     /**
+     * 🤖 IA : Obtenir une suggestion de place optimale
+     */
+    public function suggestSeat(Event $event): JsonResponse
+    {
+        try {
+            $suggestion = Reservation::suggestBestSeat($event, auth()->user());
+            
+            return response()->json([
+                'success' => true,
+                'suggestion' => $suggestion,
+                'message' => 'Suggestion générée avec succès'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la génération de la suggestion',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * 🤖 IA : Réserver automatiquement la place suggérée
+     */
+    public function reserveSuggestedSeat(Request $request, Event $event)
+    {
+        $request->validate([
+            'seat_number' => 'required|string',
+            'num_guests' => 'integer|min:1|max:10',
+            'comments' => 'nullable|string|max:500'
+        ]);
+
+        // Vérifier si l'utilisateur a déjà une réservation
+        $existingReservation = Reservation::where('user_id', auth()->id())
+                                        ->where('event_id', $event->id)
+                                        ->whereIn('status', ['pending', 'confirmed'])
+                                        ->first();
+
+        if ($existingReservation) {
+            return redirect()->back()->with('error', 'Vous avez déjà une réservation pour cet événement.');
+        }
+
+        // Vérifier si la place est toujours disponible
+        $seatTaken = Reservation::where('event_id', $event->id)
+                               ->where('seat_number', $request->seat_number)
+                               ->whereIn('status', ['pending', 'confirmed'])
+                               ->exists();
+
+        if ($seatTaken) {
+            return redirect()->back()->with('error', 'Cette place n\'est plus disponible. Veuillez en choisir une autre.');
+        }
+
+        // Créer la réservation avec la place suggérée
+        $reservation = Reservation::createWithTimeout([
+            'user_name' => auth()->user()->name,
+            'user_id' => auth()->id(),
+            'event_id' => $event->id,
+            'seat_number' => $request->seat_number,
+            'num_guests' => $request->num_guests ?? 1,
+            'comments' => $request->comments,
+            'seat_details' => [
+                'type' => 'ai_suggested',
+                'section' => substr($request->seat_number, 0, 1),
+                'row' => substr($request->seat_number, 1),
+                'ai_recommended' => true
+            ]
+        ]);
+
+        return redirect()->route('reservations.confirmation', $reservation)
+                        ->with('success', 'Votre place suggérée par l\'IA a été réservée avec succès !');
+    }
+
+    /**
      * Page de confirmation de réservation
      */
     public function confirmation(Reservation $reservation)

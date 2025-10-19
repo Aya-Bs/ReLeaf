@@ -29,66 +29,45 @@
                             
                             <!-- Form -->
                             <div class="flex-fill" style="flex: 1 1 70%;">
-                                <form action="{{ route('locations.store') }}" method="POST" enctype="multipart/form-data" class="bg-white p-4 shadow rounded-5 border-0 h-100" novalidate>
+                                <form action="{{ route('locations.store') }}" method="POST" enctype="multipart/form-data" class="bg-white p-4 shadow rounded-5 border-0 h-100">
                                     @csrf
                                         <div class="col-md-12 mb-3">
                                             <label for="name" class="form-label fw-semibold" style="color:#2d5a27;">
                                                 <i class="fas fa-leaf me-2"></i>Nom du lieu <span class="text-danger">*</span>
                                             </label>
-                                            <input type="text" class="form-control form-control-lg" id="name" name="name" value="{{ old('name') }}" >
-                                            @error('name')
-                                                <div class="alert alert-danger">{{ $message }}</div>
-                                            @enderror
+                                            <input type="text" class="form-control form-control-lg" id="name" name="name" value="{{ old('name') }}" required>
                                         </div>
-                                        
                                                                             
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <label for="address" class="form-label fw-semibold" style="color:#2d5a27;">
                                                 <i class="fas fa-map-pin me-2"></i>Adresse <span class="text-danger">*</span>
                                             </label>
-                                            <input type="text" class="form-control form-control-lg" id="address" name="address" value="{{ old('address') }}" >
-                                            @error('address')
-                                                <div class="alert alert-danger">{{ $message }}</div>
-                                            @enderror
+                                            <input type="text" class="form-control form-control-lg" id="address" name="address" value="{{ old('address') }}" required>
                                         </div>
-                                       
                                         <div class="col-md-6 mb-3">
                                             <label for="city" class="form-label fw-semibold" style="color:#2d5a27;">
                                                 <i class="fas fa-city me-2"></i>Ville <span class="text-danger">*</span>
                                             </label>
-                                            <input type="text" class="form-control form-control-lg" id="city" name="city" value="{{ old('city') }}"  autocomplete="off">
-                                            @error('city')
-                                                <div class="alert alert-danger">{{ $message }}</div>
-                                            @enderror
+                                            <input type="text" class="form-control form-control-lg" id="city" name="city" value="{{ old('city') }}" required autocomplete="off">
                                             <small class="form-text text-muted">Tapez une ville pour centrer la carte.</small>
                                         </div>
-                                      
                                     </div>
                                     
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <label for="capacity" class="form-label fw-semibold" style="color:#2d5a27;">
-                                                <i class="fas fa-users me-2"></i>Capacité <span class="text-danger">*</span>
+                                                <i class="fas fa-users me-2"></i>Capacité
                                             </label>
                                             <input type="number" class="form-control form-control-lg" id="capacity" name="capacity" value="{{ old('capacity') }}" min="1">
-                                            @error('capacity')
-                                                <div class="alert alert-danger">{{ $message }}</div>
-                                            @enderror
                                         </div>
-                                     
                                         <div class="col-md-6 mb-3">
                                             <label for="price" class="form-label fw-semibold" style="color:#2d5a27;">
                                                 <i class="fas fa-dollar-sign me-2"></i>Prix <span class="text-danger">*</span>
                                             </label>
-                                            <input type="number" class="form-control form-control-lg" id="price" name="price" value="{{ old('price') }}" min="0" step="0.01" >
-                                            @error('price')
-                                                <div class="alert alert-danger">{{ $message }}</div>
-                                            @enderror
+                                            <input type="number" class="form-control form-control-lg" id="price" name="price" value="{{ old('price') }}" min="0" step="0.01" required>
                                         </div>
-                                     
                                     </div>
-                                       
                                     
                                     <div class="mb-3">
                                         <label for="description" class="form-label fw-semibold" style="color:#2d5a27;">
@@ -96,9 +75,6 @@
                                         </label>
                                         <textarea class="form-control form-control-lg" id="description" name="description" rows="3">{{ old('description') }}</textarea>
                                     </div>
-                                    @error('description')
-                                        <div class="alert alert-danger">{{ $message }}</div>
-                                    @enderror
                                     
                                     <div class="mb-3">
                                         <div class="form-check">
@@ -108,7 +84,6 @@
                                             </label>
                                         </div>
                                     </div>
-
 
                                     <!-- Images Upload Section -->
                                     <div class="mb-3">
@@ -131,9 +106,6 @@
                                             <div id="imagePreview" class="d-flex flex-wrap gap-3 justify-content-center mt-3"></div>
                                         </label>
                                     </div>
-                                    @error('images.*')
-                                        <div class="alert alert-danger">{{ $message }}</div>
-                                    @enderror
 
                                     <input type="hidden" id="latitude" name="latitude" value="{{ old('latitude') }}">
                                     <input type="hidden" id="longitude" name="longitude" value="{{ old('longitude') }}">

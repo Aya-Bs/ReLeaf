@@ -287,7 +287,7 @@
                                                     <p class="card-text small text-muted">
                                                         {{ $certification->date_awarded->format('d/m/Y') }}
                                                     </p>
-                                                    <div class="d-flex gap-1 justify-content-center">
+                                                    <div class="d-flex gap-1 justify-content-center flex-wrap">
                                                         <a href="{{ route('user.certificates.view', $certification->certificate_code) }}" 
                                                            class="btn btn-sm btn-outline-eco" title="Voir">
                                                             <i class="fas fa-eye"></i>
@@ -295,6 +295,12 @@
                                                         <a href="{{ route('user.certificates.download', $certification->certificate_code) }}" 
                                                            class="btn btn-sm btn-eco" title="Télécharger">
                                                             <i class="fas fa-download"></i>
+                                                        </a>
+                                                        <a href="{{ $certification->getLinkedInShareUrl() }}" 
+                                                           target="_blank" 
+                                                           class="btn btn-sm btn-outline-primary" 
+                                                           title="Partager sur LinkedIn">
+                                                            <i class="fab fa-linkedin"></i>
                                                         </a>
                                                     </div>
                                                 </div>

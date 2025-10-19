@@ -42,7 +42,7 @@ class BlogController extends Controller
     public function create()
     {
         if (Auth::user()->role !== 'organizer') {
-            abort(403, 'Vous n’êtes pas autorisé à créer un blog.');
+            abort(403, 'Vous n'êtes pas autorisé à créer un blog.');
         }
         return view('blogs.create');
     }
@@ -51,7 +51,7 @@ class BlogController extends Controller
     public function store(Request $request)
     {
         if (Auth::user()->role !== 'organizer') {
-            abort(403, 'Vous n’êtes pas autorisé à créer un blog.');
+            abort(403, 'Vous n'êtes pas autorisé à créer un blog.');
         }
 
         $validated = $request->validate([
@@ -118,7 +118,7 @@ class BlogController extends Controller
         return redirect()->route('blogs.myblogs')->with('success', 'Blog supprimé !');
     }
 
-    // Affiche le détail d’un blog
+    // Affiche le détail d'un blog
     public function show(Blog $blog)
     {
         return view('blogs.show', compact('blog'));
