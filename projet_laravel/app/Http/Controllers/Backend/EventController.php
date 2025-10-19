@@ -7,13 +7,16 @@ use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Sponsor;
+use App\Models\SponsorEvent;
+use App\Notifications\SponsorshipRequestNotification;
 
 class EventController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
- public function index(Request $request)
+    public function index(Request $request)
     {
         $query = Event::where('user_id', auth()->id())
                      ->with('location'); // Charger la relation location
@@ -23,12 +26,12 @@ class EventController extends Controller
             $searchTerm = $request->search;
             $query->where('title', 'LIKE', "%{$searchTerm}%");
         }
-        
+
         // Filter by status
         if ($request->has('status') && !empty($request->status)) {
             $query->where('status', $request->status);
         }
-        
+
         // Get all events based on filters
         $allEvents = $query->orderBy('created_at', 'desc')->get();
         
@@ -41,10 +44,12 @@ class EventController extends Controller
         // Separate pending events from others
         $pendingEvents = $allEvents->where('status', 'pending');
         $otherEvents = $allEvents->where('status', '!=', 'pending');
-        
-    
+
+
         return view('frontend.events.index', compact('otherEvents', 'pendingEvents'));
     }
+
+
 
 
 
@@ -57,6 +62,14 @@ class EventController extends Controller
             return redirect()->route('dashboard')->with('error', 'Accès non autorisé.');
         }
 
+        // Get campaigns for dropdown
+        if (Auth::user()->isAdmin()) {
+            $campaigns = \App\Models\Campaign::all();
+        } else {
+            $campaigns = \App\Models\Campaign::where('organizer_id', Auth::id())->get();
+        }
+
+        return view('frontend.events.create', compact('campaigns'));
         // Get campaigns for dropdown
         if (Auth::user()->isAdmin()) {
             $campaigns = \App\Models\Campaign::all();
@@ -88,7 +101,7 @@ $validated = $request->validate([
 
     ]);
 
-   
+
 
 
         $event = Event::create([
@@ -98,9 +111,10 @@ $validated = $request->validate([
             'max_participants' => $request->max_participants,
             'duration' => $request->duration,
             'user_id' => Auth::id(),
-            'status' => 'draft', 
-            'images' => [], 
+            'status' => 'draft',
+            'images' => [],
             'campaign_id' => $request->campaign_id,
+            'location_id' => $request->location_id,
             'location_id' => $request->location_id,
         ]);
 
@@ -137,14 +151,14 @@ if ($request->hasFile('images')) {
      * Display the specified resource.
      */
     public function show(Event $event)
-{
-    // Check if user is authorized to view this event
-    if ($event->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
-        return redirect()->route('events.index')->with('error', 'Accès non autorisé.');
-    }
+    {
+        // Check if user is authorized to view this event
+        if ($event->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
+            return redirect()->route('events.index')->with('error', 'Accès non autorisé.');
+        }
 
-    return view('frontend.events.show', compact('event'));
-}
+        return view('frontend.events.show', compact('event'));
+    }
 
     /**
      * Show the form for editing the specified resource.
@@ -153,8 +167,17 @@ if ($request->hasFile('images')) {
     {
         if ($event->user_id !== Auth::id() || !$event->canBeEdited()) {
             return redirect()->route('events.my-events')->with('error', 'Cet événement ne peut pas être modifié.');
+            return redirect()->route('events.my-events')->with('error', 'Cet événement ne peut pas être modifié.');
         }
 
+        // Get campaigns for dropdown
+        if (Auth::user()->isAdmin()) {
+            $campaigns = \App\Models\Campaign::all();
+        } else {
+            $campaigns = \App\Models\Campaign::where('organizer_id', Auth::id())->get();
+        }
+
+        return view('frontend.events.edit', compact('event', 'campaigns'));
         // Get campaigns for dropdown
         if (Auth::user()->isAdmin()) {
             $campaigns = \App\Models\Campaign::all();
@@ -172,7 +195,9 @@ if ($request->hasFile('images')) {
     {
         if ($event->user_id !== Auth::id() || !$event->canBeEdited()) {
             return redirect()->route('events.my-events')->with('error', 'Cet événement ne peut pas être modifié.');
+            return redirect()->route('events.my-events')->with('error', 'Cet événement ne peut pas être modifié.');
         }
+
 
 
         $request->validate([
@@ -180,9 +205,11 @@ if ($request->hasFile('images')) {
             'description' => 'required|string',
             'date' => 'required|date|after:now',
             'location_id' => 'required|exists:locations,id',
+            'location_id' => 'required|exists:locations,id',
             'max_participants' => 'nullable|integer|min:1',
             'duration' => 'required|string|max:50',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'campaign_id' => 'nullable|exists:campaigns,id'
             'campaign_id' => 'nullable|exists:campaigns,id'
         ]);
 
@@ -190,6 +217,7 @@ if ($request->hasFile('images')) {
             'title' => $request->title,
             'description' => $request->description,
             'date' => $request->date,
+            'location_id' => $request->location_id,
             'location_id' => $request->location_id,
             'max_participants' => $request->max_participants,
             'duration' => $request->duration,
@@ -207,6 +235,7 @@ if ($request->hasFile('images')) {
         }
 
         return redirect()->route('events.my-events')->with('success', 'Événement mis à jour avec succès.');
+        return redirect()->route('events.my-events')->with('success', 'Événement mis à jour avec succès.');
     }
 
     /**
@@ -215,6 +244,7 @@ if ($request->hasFile('images')) {
     public function destroy(Event $event)
     {
         if ($event->user_id !== Auth::id() || !$event->canBeDeleted()) {
+            return redirect()->route('events.my-events')->with('error', 'Cet événement ne peut pas être supprimé.');
             return redirect()->route('events.my-events')->with('error', 'Cet événement ne peut pas être supprimé.');
         }
 
@@ -228,41 +258,42 @@ if ($request->hasFile('images')) {
         $event->delete();
 
         return redirect()->route('events.my-events')->with('success', 'Événement supprimé avec succès.');
+        return redirect()->route('events.my-events')->with('success', 'Événement supprimé avec succès.');
     }
 
-/**
- * Remove an image from the event
- */
-public function removeImage(Request $request, Event $event)
-{
-    if ($event->user_id !== Auth::id() || !$event->canBeEdited()) {
-        return response()->json(['error' => 'Unauthorized'], 403);
-    }
-
-    $imageToRemove = $request->input('image_path');
-    
-    if ($event->images && is_array($event->images)) {
-        // Remove the image from the array
-        $updatedImages = array_filter($event->images, function($image) use ($imageToRemove) {
-            return $image !== $imageToRemove;
-        });
-        
-        // Delete the physical file from storage
-        if (Storage::disk('public')->exists($imageToRemove)) {
-            Storage::disk('public')->delete($imageToRemove);
+    /**
+     * Remove an image from the event
+     */
+    public function removeImage(Request $request, Event $event)
+    {
+        if ($event->user_id !== Auth::id() || !$event->canBeEdited()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
-        
-        // Update the event with the new images array
-        $event->update(['images' => array_values($updatedImages)]);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Image supprimée avec succès'
-        ]);
+
+        $imageToRemove = $request->input('image_path');
+
+        if ($event->images && is_array($event->images)) {
+            // Remove the image from the array
+            $updatedImages = array_filter($event->images, function ($image) use ($imageToRemove) {
+                return $image !== $imageToRemove;
+            });
+
+            // Delete the physical file from storage
+            if (Storage::disk('public')->exists($imageToRemove)) {
+                Storage::disk('public')->delete($imageToRemove);
+            }
+
+            // Update the event with the new images array
+            $event->update(['images' => array_values($updatedImages)]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Image supprimée avec succès'
+            ]);
+        }
+
+        return response()->json(['error' => 'Image non trouvée'], 404);
     }
-    
-    return response()->json(['error' => 'Image non trouvée'], 404);
-}
 
     /**
      * Submit event for admin approval
@@ -271,10 +302,12 @@ public function removeImage(Request $request, Event $event)
     {
         if ($event->user_id !== Auth::id() || !$event->isDraft()) {
             return redirect()->route('events.my-events')->with('error', 'Cet événement ne peut pas être soumis pour approbation.');
+            return redirect()->route('events.my-events')->with('error', 'Cet événement ne peut pas être soumis pour approbation.');
         }
 
         $event->submitForApproval();
 
+        return redirect()->route('events.my-events')->with('success', 'Événement soumis pour approbation. Vous serez notifié lorsque l\'admin aura pris une décision.');
         return redirect()->route('events.my-events')->with('success', 'Événement soumis pour approbation. Vous serez notifié lorsque l\'admin aura pris une décision.');
     }
 
@@ -285,10 +318,12 @@ public function removeImage(Request $request, Event $event)
     {
         if ($event->user_id !== Auth::id() || !$event->isPublished()) {
             return redirect()->route('events.my-events')->with('error', 'Cet événement ne peut pas être annulé.');
+            return redirect()->route('events.my-events')->with('error', 'Cet événement ne peut pas être annulé.');
         }
 
         $event->update(['status' => 'cancelled']);
 
+        return redirect()->route('events.my-events')->with('success', 'Événement annulé avec succès.');
         return redirect()->route('events.my-events')->with('success', 'Événement annulé avec succès.');
     }
 

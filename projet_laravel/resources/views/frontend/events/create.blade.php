@@ -1,6 +1,8 @@
 @extends('layouts.frontend')
+@extends('layouts.frontend')
 
 @section('title', 'Créer un Événement')
+
 
 
 @section('content')
@@ -13,6 +15,14 @@
                     <h4 class="mb-4">
                         <i class="fas fa-calendar-plus me-2" style="color: #2d5a27;"></i><strong>Créer un nouvel événement</strong>
                     </h4>
+                    <!-- Breadcrumb path on top right -->
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-4" style="background: transparent; padding: 0; margin: 0;">
+                            <li class="breadcrumb-item"><a href="{{ route('home') }}" style="color: #2d5a27;">Accueil</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('events.my-events') }}" style="color: #2d5a27;">Événements</a></li>
+                            <li class="breadcrumb-item active" aria-current="page" style="color: #2d5a27;"><strong>Créer</strong></li>
+                        </ol>
+                    </nav>
                     <!-- Breadcrumb path on top right -->
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-4" style="background: transparent; padding: 0; margin: 0;">
@@ -239,53 +249,53 @@
 
 @push('scripts')
 <script>
-// Drag & Drop functionality
-const dragDropArea = document.getElementById('dragDropArea');
-const fileInput = document.getElementById('images');
-const browseBtn = document.getElementById('browseBtn');
+    // Drag & Drop functionality
+    const dragDropArea = document.getElementById('dragDropArea');
+    const fileInput = document.getElementById('images');
+    const browseBtn = document.getElementById('browseBtn');
 
-// Browse button click
-browseBtn.addEventListener('click', function() {
-    fileInput.click();
-});
+    // Browse button click
+    browseBtn.addEventListener('click', function() {
+        fileInput.click();
+    });
 
-// File input change
-fileInput.addEventListener('change', function(e) {
-    handleFiles(e.target.files);
-});
+    // File input change
+    fileInput.addEventListener('change', function(e) {
+        handleFiles(e.target.files);
+    });
 
-// Drag & drop events
-['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-    dragDropArea.addEventListener(eventName, preventDefaults, false);
-});
+    // Drag & drop events
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dragDropArea.addEventListener(eventName, preventDefaults, false);
+    });
 
-function preventDefaults(e) {
-    e.preventDefault();
-    e.stopPropagation();
-}
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
 
-['dragenter', 'dragover'].forEach(eventName => {
-    dragDropArea.addEventListener(eventName, highlight, false);
-});
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dragDropArea.addEventListener(eventName, highlight, false);
+    });
 
-['dragleave', 'drop'].forEach(eventName => {
-    dragDropArea.addEventListener(eventName, unhighlight, false);
-});
+    ['dragleave', 'drop'].forEach(eventName => {
+        dragDropArea.addEventListener(eventName, unhighlight, false);
+    });
 
-function highlight() {
-    dragDropArea.classList.add('drag-over');
-}
+    function highlight() {
+        dragDropArea.classList.add('drag-over');
+    }
 
-function unhighlight() {
-    dragDropArea.classList.remove('drag-over');
-}
+    function unhighlight() {
+        dragDropArea.classList.remove('drag-over');
+    }
 
-dragDropArea.addEventListener('drop', function(e) {
-    const dt = e.dataTransfer;
-    const files = dt.files;
-    handleFiles(files);
-    fileInput.files = files;
-});
+    dragDropArea.addEventListener('drop', function(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+        fileInput.files = files;
+    });
 
 // Handle selected files
 function handleFiles(files) {
@@ -306,23 +316,27 @@ function handleFiles(files) {
                         <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 remove-new-image" data-file-name="${file.name}" style="padding: 0.25rem 0.5rem;">
                             <i class="fas fa-times"></i>
                         </button>
+                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 remove-new-image" data-file-name="${file.name}" style="padding: 0.25rem 0.5rem;">
+                            <i class="fas fa-times"></i>
+                        </button>
                         <div class="card-body p-2">
+                            <small class="text-muted d-block text-truncate">${file.name}</small>
                             <small class="text-muted d-block text-truncate">${file.name}</small>
                         </div>
                     </div>
                 `;
-                preview.appendChild(col);
-                
-                // Add remove functionality for new images
-                col.querySelector('.remove-new-image').addEventListener('click', function() {
-                    removeNewImage(this, file.name);
-                });
-            };
-            
-            reader.readAsDataURL(file);
+                    preview.appendChild(col);
+
+                    // Add remove functionality for new images
+                    col.querySelector('.remove-new-image').addEventListener('click', function() {
+                        removeNewImage(this, file.name);
+                    });
+                };
+
+                reader.readAsDataURL(file);
+            }
         }
     }
-}
 
 // Remove new image before upload
 function removeNewImage(button, fileName) {
@@ -344,34 +358,47 @@ function removeNewImage(button, fileName) {
     }
 }
 
-// Form validation
-document.getElementById('eventForm').addEventListener('submit', function(e) {
-    const title = document.getElementById('title').value;
-    const description = document.getElementById('description').value;
-    const date = document.getElementById('date').value;
-    const location = document.getElementById('location').value;
-    const duration = document.getElementById('duration').value;
+    // Form validation
+    document.getElementById('eventForm').addEventListener('submit', function(e) {
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+        const date = document.getElementById('date').value;
+        const location = document.getElementById('location_id').value;
+        const duration = document.getElementById('duration').value;
 
-    if (!title || !description || !date || !location || !duration) {
-        e.preventDefault();
-        alert('Veuillez remplir tous les champs obligatoires.');
-        return;
-    }
+        if (!title || !description || !date || !location || !duration) {
+            e.preventDefault();
+            alert('Veuillez remplir tous les champs obligatoires.');
+            return;
+        }
 
-    const selectedDate = new Date(date);
-    if (selectedDate <= new Date()) {
-        e.preventDefault();
-        alert('La date de l\'événement doit être dans le futur.');
-        return;
-    }
-});
+        const selectedDate = new Date(date);
+        if (selectedDate <= new Date()) {
+            e.preventDefault();
+            alert('La date de l\'événement doit être dans le futur.');
+            return;
+        }
+    });
 
-// Set min datetime for date field
-document.addEventListener('DOMContentLoaded', function() {
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    document.getElementById('date').min = now.toISOString().slice(0, 16);
-});
+    // Set min datetime for date field
+    document.addEventListener('DOMContentLoaded', function() {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('date').min = now.toISOString().slice(0, 16);
+        // Simple search filter for sponsors
+        const sponsorSearch = document.getElementById('sponsor_search');
+        const sponsorSelect = document.getElementById('sponsor_id');
+        if (sponsorSearch && sponsorSelect) {
+            sponsorSearch.addEventListener('input', function() {
+                const term = this.value.trim().toLowerCase();
+                Array.from(sponsorSelect.options).forEach((opt, idx) => {
+                    if (idx === 0) return; // keep placeholder
+                    const hay = (opt.getAttribute('data-search') || '').toLowerCase();
+                    opt.hidden = term && !hay.includes(term);
+                });
+            });
+        }
+    });
 </script>
 @endpush
 
@@ -398,9 +425,9 @@ document.addEventListener('DOMContentLoaded', function() {
     background-color: #e8f5e8;
 }
 
-.drag-drop-content {
-    pointer-events: none;
-}
+    .drag-drop-content {
+        pointer-events: none;
+    }
 
 .drag-drop-icon {
     font-size: 48px;
@@ -437,9 +464,9 @@ document.addEventListener('DOMContentLoaded', function() {
     color: white;
 }
 
-.card-img-top {
-    object-fit: cover;
-}
+    .card-img-top {
+        object-fit: cover;
+    }
 
 .remove-new-image {
     opacity: 0.8;

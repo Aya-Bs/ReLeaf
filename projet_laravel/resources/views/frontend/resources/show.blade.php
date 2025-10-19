@@ -4,6 +4,22 @@
 
 @section('content')
 <div class="container py-4">
+    <!-- Breadcrumb Navigation -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ route('resources.index') }}" class="text-eco">
+                            <i class="fas fa-boxes me-1"></i>Ressources
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ Str::limit($resource->name, 30) }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
     <!-- Header Section -->
     <div class="row mb-4">
         <div class="col-12">
@@ -57,8 +73,8 @@
                                 <span class="badge bg-eco fs-6">{{ $resource->progress_percentage }}%</span>
                             </div>
                             <div class="progress mb-3" style="height: 10px;">
-                                <div class="progress-bar bg-{{ $resource->progress_percentage == 100 ? 'success' : ($resource->progress_percentage > 50 ? 'warning' : 'danger') }}" 
-                                     style="width: {{ $resource->progress_percentage }}%"></div>
+                                <div class="progress-bar bg-{{ $resource->progress_percentage == 100 ? 'success' : ($resource->progress_percentage > 50 ? 'warning' : 'danger') }}"
+                                    style="width: {{ $resource->progress_percentage }}%"></div>
                             </div>
                             <div class="row text-center">
                                 <div class="col-4">
@@ -117,11 +133,11 @@
                                     <td>
                                         <span class="badge bg-{{ $resource->status == 'received' ? 'success' : ($resource->status == 'pledged' ? 'info' : ($resource->status == 'in_use' ? 'primary' : 'secondary')) }}">
                                             @switch($resource->status)
-                                                @case('needed') ⏳ @break
-                                                @case('pledged') 📋 @break
-                                                @case('received') ✅ @break
-                                                @case('in_use') 🔄 @break
-                                                @default ❓ @break
+                                            @case('needed') ⏳ @break
+                                            @case('pledged') 📋 @break
+                                            @case('received') ✅ @break
+                                            @case('in_use') 🔄 @break
+                                            @default ❓ @break
                                             @endswitch
                                             {{ ucfirst($resource->status) }}
                                         </span>
@@ -132,10 +148,10 @@
                                     <td>
                                         <span class="badge bg-{{ $resource->priority == 'urgent' ? 'danger' : ($resource->priority == 'high' ? 'warning' : ($resource->priority == 'medium' ? 'info' : 'success')) }}">
                                             @switch($resource->priority)
-                                                @case('urgent') 🚨 @break
-                                                @case('high') ⚠️ @break
-                                                @case('medium') 📊 @break
-                                                @default 📌 @break
+                                            @case('urgent') 🚨 @break
+                                            @case('high') ⚠️ @break
+                                            @case('medium') 📊 @break
+                                            @default 📌 @break
                                             @endswitch
                                             {{ ucfirst($resource->priority) }}
                                         </span>
@@ -180,32 +196,32 @@
                 </div>
                 <div class="card-body text-center">
                     @if($resource->image_url)
-                    <img src="{{ Storage::url($resource->image_url) }}" 
-                         alt="{{ $resource->name }}"
-                         class="resource-image img-fluid rounded"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <img src="{{ Storage::url($resource->image_url) }}"
+                        alt="{{ $resource->name }}"
+                        class="resource-image img-fluid rounded"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                     <div class="resource-image-placeholder" style="display: none;">
                         @switch($resource->resource_type)
-                            @case('money') <i class="fas fa-money-bill-wave fa-3x text-muted"></i> @break
-                            @case('food') <i class="fas fa-apple-alt fa-3x text-muted"></i> @break
-                            @case('clothing') <i class="fas fa-tshirt fa-3x text-muted"></i> @break
-                            @case('medical') <i class="fas fa-medkit fa-3x text-muted"></i> @break
-                            @case('equipment') <i class="fas fa-tools fa-3x text-muted"></i> @break
-                            @case('human') <i class="fas fa-users fa-3x text-muted"></i> @break
-                            @default <i class="fas fa-box fa-3x text-muted"></i> @break
+                        @case('money') <i class="fas fa-money-bill-wave fa-3x text-muted"></i> @break
+                        @case('food') <i class="fas fa-apple-alt fa-3x text-muted"></i> @break
+                        @case('clothing') <i class="fas fa-tshirt fa-3x text-muted"></i> @break
+                        @case('medical') <i class="fas fa-medkit fa-3x text-muted"></i> @break
+                        @case('equipment') <i class="fas fa-tools fa-3x text-muted"></i> @break
+                        @case('human') <i class="fas fa-users fa-3x text-muted"></i> @break
+                        @default <i class="fas fa-box fa-3x text-muted"></i> @break
                         @endswitch
                         <p class="text-muted mt-2 mb-0">Image non disponible</p>
                     </div>
                     @else
                     <div class="resource-image-placeholder">
                         @switch($resource->resource_type)
-                            @case('money') <i class="fas fa-money-bill-wave fa-3x text-muted"></i> @break
-                            @case('food') <i class="fas fa-apple-alt fa-3x text-muted"></i> @break
-                            @case('clothing') <i class="fas fa-tshirt fa-3x text-muted"></i> @break
-                            @case('medical') <i class="fas fa-medkit fa-3x text-muted"></i> @break
-                            @case('equipment') <i class="fas fa-tools fa-3x text-muted"></i> @break
-                            @case('human') <i class="fas fa-users fa-3x text-muted"></i> @break
-                            @default <i class="fas fa-box fa-3x text-muted"></i> @break
+                        @case('money') <i class="fas fa-money-bill-wave fa-3x text-muted"></i> @break
+                        @case('food') <i class="fas fa-apple-alt fa-3x text-muted"></i> @break
+                        @case('clothing') <i class="fas fa-tshirt fa-3x text-muted"></i> @break
+                        @case('medical') <i class="fas fa-medkit fa-3x text-muted"></i> @break
+                        @case('equipment') <i class="fas fa-tools fa-3x text-muted"></i> @break
+                        @case('human') <i class="fas fa-users fa-3x text-muted"></i> @break
+                        @default <i class="fas fa-box fa-3x text-muted"></i> @break
                         @endswitch
                         <p class="text-muted mt-2 mb-0">Aucune image</p>
                     </div>
@@ -225,14 +241,14 @@
                         <div class="mb-2">
                             <label class="form-label small fw-bold">Ajouter une promesse</label>
                             <div class="input-group input-group-sm">
-                                <input type="number" name="quantity" class="form-control" 
-                                       placeholder="Quantité" min="1" required>
+                                <input type="number" name="quantity" class="form-control"
+                                    placeholder="Quantité" min="1" required>
                                 <button type="submit" class="btn btn-success">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
-                            <input type="text" name="provider" class="form-control form-control-sm mt-1" 
-                                   placeholder="Fournisseur (optionnel)">
+                            <input type="text" name="provider" class="form-control form-control-sm mt-1"
+                                placeholder="Fournisseur (optionnel)">
                         </div>
                     </form>
 
@@ -244,9 +260,9 @@
                             <div class="input-group input-group-sm">
                                 <select name="status" class="form-select" required>
                                     @foreach(['needed' => '⏳ Nécessaire', 'pledged' => '📋 Promis', 'received' => '✅ Reçu', 'in_use' => '🔄 Utilisé'] as $value => $label)
-                                        <option value="{{ $value }}" {{ $resource->status == $value ? 'selected' : '' }}>
-                                            {{ $label }}
-                                        </option>
+                                    <option value="{{ $value }}" {{ $resource->status == $value ? 'selected' : '' }}>
+                                        {{ $label }}
+                                    </option>
                                     @endforeach
                                 </select>
                                 <button type="submit" class="btn btn-eco">
@@ -269,13 +285,13 @@
                             <span class="text-muted">Type:</span>
                             <span class="fw-medium">
                                 @switch($resource->resource_type)
-                                    @case('money') 💰 Argent @break
-                                    @case('food') 🍎 Nourriture @break
-                                    @case('clothing') 👕 Vêtements @break
-                                    @case('medical') 🏥 Médical @break
-                                    @case('equipment') 🛠️ Équipement @break
-                                    @case('human') 👥 Main d'œuvre @break
-                                    @default 🔧 {{ ucfirst($resource->resource_type) }} @break
+                                @case('money') 💰 Argent @break
+                                @case('food') 🍎 Nourriture @break
+                                @case('clothing') 👕 Vêtements @break
+                                @case('medical') 🏥 Médical @break
+                                @case('equipment') 🛠️ Équipement @break
+                                @case('human') 👥 Main d'œuvre @break
+                                @default 🔧 {{ ucfirst($resource->resource_type) }} @break
                                 @endswitch
                             </span>
                         </div>
@@ -297,50 +313,69 @@
 
 @push('styles')
 <style>
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0;
+    }
+
+    .breadcrumb-item a {
+        color: var(--eco-green);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .breadcrumb-item a:hover {
+        text-decoration: underline;
+    }
+
+    .breadcrumb-item.active {
+        color: #6c757d;
+    }
+
     .resource-image {
         max-height: 200px;
         object-fit: cover;
         border: 1px solid #e9ecef;
     }
-    
+
     .resource-image-placeholder {
         padding: 2rem;
         background: #f8f9fa;
         border-radius: 0.375rem;
         border: 1px dashed #dee2e6;
     }
-    
+
     .table-borderless td {
         border: none;
         padding: 0.5rem 0.25rem;
     }
-    
+
     .bg-eco {
         background-color: var(--eco-green) !important;
     }
-    
+
     .btn-eco {
         background-color: var(--eco-green);
         border-color: var(--eco-green);
         color: white;
     }
-    
+
     .btn-eco:hover {
         background-color: var(--eco-light-green);
         border-color: var(--eco-light-green);
         color: white;
     }
-    
+
     .progress {
         background-color: #e9ecef;
         border-radius: 0.25rem;
     }
-    
+
     .progress-bar {
         border-radius: 0.25rem;
         transition: width 0.6s ease;
     }
-    
+
     /* Responsive Design */
     @media (max-width: 768px) {
         .d-flex.justify-content-between.align-items-center {
@@ -348,11 +383,11 @@
             gap: 1rem;
             text-align: center;
         }
-        
+
         .btn-group {
             justify-content: center;
         }
-        
+
         .table-borderless td {
             padding: 0.25rem 0.125rem;
             font-size: 0.875rem;

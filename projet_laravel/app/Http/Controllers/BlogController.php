@@ -8,121 +8,121 @@ use Illuminate\Support\Facades\Auth;
 
 class BlogController extends Controller
 {
-    /**
-     * Affiche les blogs sous forme de cards (AllBlogs)
-     */
-    public function cards()
-    {
-        $current = Auth::user();
-        if ($current && $current->role === 'user') {
-            $blogs = Blog::latest()->get();
-        } else {
-            $blogs = Blog::where('author_id', Auth::id())->latest()->get();
-        }
-        return view('backend.blogs.cards', compact('blogs'));
-    }
-    /**
-     * Display a listing of the resource.
-     */
+    // Affiche tous les blogs (public)
     public function index()
     {
-        // Recherche par titre (affiche seulement les blogs de l'auteur connecté)
-        // Eager load author + profile to éviter N+1 et afficher prénom/nom
-        $query = Blog::with(['author.profile'])
-            ->where('author_id', Auth::id());
-        if (request()->filled('search')) {
-            $search = request('search');
-            $query->where('title', 'like', "%{$search}%");
-        }
-        $blogs = $query->get();
-        return view('backend.blogs.index', compact('blogs'));
+        $blogs = Blog::latest()->get();
+        return view('blogs.index', compact('blogs'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    // Affiche les blogs sous forme de cartes
+    public function cards()
+{
+    // Tous les blogs pour tous les utilisateurs
+    $blogs = Blog::latest()->get();
+    return view('blogs.cards', compact('blogs')); // <-- nouvelle vue pour utilisateurs
+}
+    // Affiche les blogs de l'utilisateur connecté
+    public function myBlogs()
+    {
+        $user = auth()->user();
+
+        if ($user->role === 'organizer') {
+            // L'organizer voit tous ses blogs
+            $blogs = Blog::where('user_id', $user->id)->get();
+        } else {
+            // L'utilisateur normal voit ses propres blogs
+            $blogs = Blog::where('user_id', $user->id)->get();
+        }
+
+        return view('blogs.myblogs', compact('blogs'));
+    }
+
+    // Formulaire création (seulement organizer)
     public function create()
     {
-    // Affiche le formulaire de création
-    return view('backend.blogs.create');
+        if (Auth::user()->role !== 'organizer') {
+            abort(403, 'Vous n’êtes pas autorisé à créer un blog.');
+        }
+        return view('blogs.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Stocke le blog (seulement organizer)
     public function store(Request $request)
     {
-        // Validation des champs
+        if (Auth::user()->role !== 'organizer') {
+            abort(403, 'Vous n’êtes pas autorisé à créer un blog.');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'tags' => 'required|string',
+            'tags' => 'nullable|string',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ], [
-            'title.required' => 'Le titre est obligatoire.',
-            'content.required' => 'Le contenu est obligatoire.',
-            'tags.required' => 'Les tags sont obligatoires.',
-            'image.required' => 'L\'image est obligatoire.',
-            'image.image' => 'Le fichier doit être une image.',
-            'image.mimes' => 'L\'image doit être de type jpeg, png, jpg ou gif.',
-            'image.max' => 'L\'image ne doit pas dépasser 2Mo.',
         ]);
 
-        $data = $validated;
-    $data['author_id'] = Auth::id();
-        $data['date_posted'] = now();
+        $validated['user_id'] = Auth::id();
+        $validated['date_posted'] = now();
 
-        // Gestion de l'upload d'image
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('blogs', 'public');
-            $data['image_url'] = '/storage/' . $imagePath;
+            $validated['image_url'] = '/storage/' . $imagePath;
         }
 
-        $blog = Blog::create($data);
-        return redirect()->route('auteur.blogs.index')->with('success', 'Blog créé avec succès');
+        Blog::create($validated);
+
+        return redirect()->route('blogs.myblogs')->with('success', 'Blog créé avec succès !');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Blog $blog)
-    {
-        // Affiche le détail d'un blog
-        return view('backend.blogs.show', compact('blog'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
+    // Formulaire édition
     public function edit(Blog $blog)
     {
-    // Affiche le formulaire d'édition
-    return view('backend.blogs.edit', compact('blog'));
+        if (Auth::id() !== $blog->user_id && Auth::user()->role !== 'organizer') {
+            abort(403);
+        }
+        return view('blogs.edit', compact('blog'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    // Met à jour le blog
     public function update(Request $request, Blog $blog)
     {
-        // Met à jour le blog
-        $blog->update($request->all());
-        return redirect()->route('auteur.blogs.index')->with('success', 'Blog mis à jour');
+        if (Auth::id() !== $blog->user_id && Auth::user()->role !== 'organizer') {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'tags' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('blogs', 'public');
+            $validated['image_url'] = '/storage/' . $imagePath;
+        }
+
+        $blog->update($validated);
+
+        return redirect()->route('blogs.myblogs')->with('success', 'Blog mis à jour !');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    // Supprimer un blog
     public function destroy(Blog $blog)
     {
-    // Supprime le blog
-    $blog->delete();
-    return redirect()->route('auteur.blogs.index')->with('success', 'Blog supprimé');
+        if (Auth::id() !== $blog->user_id && Auth::user()->role !== 'organizer') {
+            abort(403);
+        }
+
+        $blog->delete();
+        return redirect()->route('blogs.myblogs')->with('success', 'Blog supprimé !');
     }
 
-    // NbrBl : retourne le nombre total de blogs
-    public function nbrBl()
+    // Affiche le détail d’un blog
+    public function show(Blog $blog)
     {
-        return response()->json(['count' => Blog::count()]);
+        return view('blogs.show', compact('blog'));
     }
+
+
 }
