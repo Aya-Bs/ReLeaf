@@ -9,7 +9,7 @@
         <div class="carousel-inner">
             @forelse($featuredCampaigns as $index => $campaign)
             <div class="carousel-item {{ $index === 0 ? 'active' : '' }} position-relative">
-                <img src="{{ $campaign->image_url ? Storage::url($campaign->image_url) : 'https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?auto=format&fit=crop&w=2000&q=80' }}"
+                <img src="{{ $campaign->image_url ? asset('storage/' . $campaign->image_url) : 'https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?auto=format&fit=crop&w=2000&q=80' }}"
                     alt="{{ $campaign->name }}" class="d-block w-100 hero-carousel-image">
                 <div class="carousel-overlay"></div>
                 <div class="carousel-content position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center">
@@ -224,33 +224,4 @@
         </div>
     </div>
 </section>
-
-@push('styles')
-<style>
-/* Header hero images: fixed, consistent size across campaigns */
-.campaigns-hero-section {
-    position: relative;
-    overflow: hidden;
-}
-.hero-carousel-image {
-    height: 420px;          /* Desktop header height */
-    width: 100%;
-    object-fit: cover;      /* crop without distortion */
-    object-position: center center;
-}
-/* Tablet */
-@media (max-width: 768px) {
-    .hero-carousel-image {
-        height: 320px;
-    }
-}
-/* Mobile */
-@media (max-width: 576px) {
-    .hero-carousel-image {
-        height: 240px;
-    }
-}
-</style>
-@endpush
-
 @endsection

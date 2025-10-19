@@ -15,9 +15,9 @@
                         <div class="filter-option mb-1 {{ request('filter') === 'all' || !request('filter') ? 'active' : '' }}" data-filter="filter" data-value="all">
                             <label class="d-flex justify-content-between align-items-center cursor-pointer" style="font-size: 11px;">
                                 <span>Tous les événements</span>
-                                <span class="badge bg-light text-dark" style="font-size: 9px;">
-                                    {{ \App\Models\Event::published()->count() + \App\Models\Event::where('status', 'cancelled')->count() }}
-                                </span>
+                                    <span class="badge bg-light text-dark" style="font-size: 9px;">
+                                        {{ \App\Models\Event::published()->count() + \App\Models\Event::where('status', 'cancelled')->count() }}
+                                    </span>                            
                             </label>
                         </div>
                         <div class="filter-option mb-1 {{ request('filter') === 'upcoming' ? 'active' : '' }}" data-filter="filter" data-value="upcoming">
@@ -54,9 +54,9 @@
                             </label>
                         </div>
                         @php
-                        $locations = \App\Models\Location::whereHas('events', function($q){ $q->published(); })
-                        ->withCount(['events as events_count' => function($q){ $q->published(); }])
-                        ->get();
+                            $locations = \App\Models\Location::whereHas('events', function($q){ $q->published(); })
+                                        ->withCount(['events as events_count' => function($q){ $q->published(); }])
+                                        ->get();
                         @endphp
                         @foreach($locations as $location)
                         <div class="filter-option mb-1 {{ request('location') == $location->id ? 'active' : '' }}" data-filter="location" data-value="{{ $location->id }}">
@@ -95,7 +95,7 @@
                 </div>
 
                 @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
+                    <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
 
                 <!-- Events Grid -->
@@ -110,7 +110,7 @@
                                 <img src="{{ asset('images/event-cancelled.png') }}" alt="Événement Annulé" class="cancelled-banner">
                             </div>
                             @endif
-
+                            
                             <div class="card-header-custom d-flex justify-content-between align-items-start p-3">
                                 <div class="event-info-main flex-grow-1">
                                     <h5 class="card-title text-eco mb-2">{{ $event->title }}</h5>
@@ -126,82 +126,82 @@
 
                                         <div class="meta-item">
                                             <i class="fas fa-chair me-1"></i>
-                                            <span>Places : {{ $event->getAvailableSpots() }}/{{ $event->max_participants }} disponibles</span>
+                                            <span>Places : {{ $event->availableSeats }}/{{ $event->max_participants }} disponibles</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="event-image-small">
                                     @if($event->images && count($event->images) > 0)
-                                    @foreach($event->images as $idx => $image)
-                                    <img src="{{ asset('storage/' . $image) }}"
-                                        alt="{{ $event->title }}"
-                                        class="event-thumbnail"
-                                        data-carousel-index="{{ $idx }}">
-                                    @endforeach
+                                        @foreach($event->images as $idx => $image)
+                                            <img src="{{ asset('storage/' . $image) }}"
+                                                alt="{{ $event->title }}"
+                                                class="event-thumbnail"                                         
+                                                data-carousel-index="{{ $idx }}">
+                                        @endforeach
                                     @else
-                                    <div class="event-thumbnail-placeholder bg-eco d-flex align-items-center justify-content-center">
-                                        <i class="fas fa-calendar text-white"></i>
-                                    </div>
+                                        <div class="event-thumbnail-placeholder bg-eco d-flex align-items-center justify-content-center">
+                                            <i class="fas fa-calendar text-white"></i>
+                                        </div>
                                     @endif
                                 </div>
                             </div>
-
+                            
                             <div class="card-body d-flex flex-column pt-0">
                                 <p class="card-text flex-grow-1 mb-3">
                                     {{ Str::limit($event->description, 120) }}
                                 </p>
-
-
+                                
+                              
                                 <!-- Actions -->
                                 <div class="card-actions mt-auto">
                                     @if($event->status === 'cancelled')
-
+                                   
                                     @elseif($event->userReservation)
-                                    <a href="{{ route('reservations.confirmation', $event->userReservation) }}"
+                                        <a href="{{ route('reservations.confirmation', $event->userReservation) }}" 
                                         class="btn btn-outline-eco btn-sm w-100">
-                                        <i class="fas fa-eye me-2"></i>Voir ma réservation
-                                    </a>
+                                            <i class="fas fa-eye me-2"></i>Voir ma réservation
+                                        </a>
                                     @elseif($event->userInWaitingList)
-                                    <div class="alert alert-warning py-2 mb-2">
-                                        <small>
-                                            <i class="fas fa-clock me-1"></i>
-                                            Vous êtes dans la liste d'attente
-                                            @php
-                                            $position = \App\Models\WaitingList::getUserPosition(auth()->id(), $event->id);
-                                            @endphp
-                                            @if($position)
-                                            - Position {{ $position }}
-                                            @endif
-                                        </small>
-                                    </div>
-                                    <button class="btn btn-outline-warning w-100" disabled>
-                                        <i class="fas fa-hourglass-half me-2"></i>En liste d'attente
-                                    </button>
-                                    @elseif($event->getAvailableSpots() > 0 && auth()->check())
-                                    <a href="{{ route('events.seats', $event) }}"
-                                        class="btn btn-eco w-100">
-                                        <i class="fas fa-ticket-alt me-2"></i>Réserver une place
-                                    </a>
-                                    @elseif($event->isFull() && auth()->check())
-                                    @elseif($event->isFull() && auth()->check())
-                                    <form action="{{ route('waiting-list.join', $event) }}" method="POST" class="w-100">
-                                        @csrf
-                                        <button type="submit" class="btn btn-warning w-100">
-                                            <i class="fas fa-user-plus me-2"></i>Rejoindre la liste d'attente
+                                        <div class="alert alert-warning py-2 mb-2">
+                                            <small>
+                                                <i class="fas fa-clock me-1"></i>
+                                                Vous êtes dans la liste d'attente
+                                                @php
+                                                    $position = \App\Models\WaitingList::getUserPosition(auth()->id(), $event->id);
+                                                @endphp
+                                                @if($position)
+                                                    - Position {{ $position }}
+                                                @endif
+                                            </small>
+                                        </div>
+                                        <button class="btn btn-outline-warning w-100" disabled>
+                                            <i class="fas fa-hourglass-half me-2"></i>En liste d'attente
                                         </button>
-                                    </form>
-                                    @elseif($event->isFull())
-                                    <button class="btn btn-secondary w-100" disabled>
-                                        <i class="fas fa-times me-2"></i>Événement complet
-                                    </button>
+
+                                    @elseif($event->availableSeats > 0 && auth()->check())
+                                        <a href="{{ route('events.seats', $event) }}" 
+                                        class="btn btn-eco w-100">
+                                            <i class="fas fa-ticket-alt me-2"></i>Réserver une place
+                                        </a>
+                                    @elseif($event->isFull && auth()->check())
+                                        <form action="{{ route('waiting-list.join', $event) }}" method="POST" class="w-100">
+                                            @csrf
+                                            <button type="submit" class="btn btn-warning w-100">
+                                                <i class="fas fa-user-plus me-2"></i>Rejoindre la liste d'attente
+                                            </button>
+                                        </form>
+                                    @elseif($event->isFull)
+                                        <button class="btn btn-secondary w-100" disabled>
+                                            <i class="fas fa-times me-2"></i>Événement complet
+                                        </button>
                                     @else
-                                    <a href="{{ route('login') }}" class="btn btn-outline-eco w-100">
-                                        <i class="fas fa-sign-in-alt me-2"></i>Connectez-vous pour réserver
-                                    </a>
+                                        <a href="{{ route('login') }}" class="btn btn-outline-eco w-100">
+                                            <i class="fas fa-sign-in-alt me-2"></i>Connectez-vous pour réserver
+                                        </a>
                                     @endif
                                 </div>
                             </div>
-
+                            
                             <div class="card-footer bg-transparent">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <small class="text-muted">
@@ -221,22 +221,22 @@
                             <h4 class="text-muted">Aucun événement trouvé</h4>
                             <p class="text-muted">Il n'y a pas d'événements correspondant à vos critères.</p>
                             @auth
-                            @if(auth()->user()->role === 'admin')
-                            <a href="{{ route('backend.events.create') }}" class="btn btn-eco">
-                                <i class="fas fa-plus me-2"></i>Créer un événement
-                            </a>
-                            @endif
+                                @if(auth()->user()->role === 'admin')
+                                    <a href="{{ route('backend.events.create') }}" class="btn btn-eco">
+                                        <i class="fas fa-plus me-2"></i>Créer un événement
+                                    </a>
+                                @endif
                             @endauth
                         </div>
                     </div>
                     @endforelse
                 </div>
-
+                
                 <!-- Pagination -->
                 @if($events->hasPages())
-                <div class="pagination-container mt-4">
-                    {{ $events->withQueryString()->links('events.custom') }}
-                </div>
+                    <div class="pagination-container mt-4">
+                        {{ $events->withQueryString()->links('events.custom') }}
+                    </div>
                 @endif
             </div>
         </div>
@@ -244,671 +244,662 @@
 </div>
 
 <style>
-    /* Variables de couleurs */
-    :root {
-        --eco-primary: #2d5a27;
-        --eco-primary-dark: #234420;
-        --eco-secondary: #4a7c59;
-        --eco-light: #e8f5e8;
-    }
+/* Variables de couleurs */
+:root {
+    --eco-primary: #2d5a27;
+    --eco-primary-dark: #234420;
+    --eco-secondary: #4a7c59;
+    --eco-light: #e8f5e8;
+}
 
-    /* Couleurs Eco */
-    .bg-eco {
-        background-color: var(--eco-primary);
-    }
+/* Couleurs Eco */
+.bg-eco {
+    background-color: var(--eco-primary);
+}
+.text-eco {
+    color: var(--eco-primary);
+}
+.btn-eco {
+    background-color: var(--eco-primary);
+    border-color: var(--eco-primary);
+    color: white;
+}
+.btn-eco:hover {
+    background-color: var(--eco-primary-dark);
+    border-color: var(--eco-primary-dark);
+    color: white;
+}
+.btn-outline-eco {
+    border-color: var(--eco-primary);
+    color: var(--eco-primary);
+}
+.btn-outline-eco:hover {
+    background-color: var(--eco-primary);
+    border-color: var(--eco-primary);
+    color: white;
+}
 
-    .text-eco {
-        color: var(--eco-primary);
-    }
+/* Sidebar Filters */
+.sidebar-filters {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+}
 
-    .btn-eco {
-        background-color: var(--eco-primary);
-        border-color: var(--eco-primary);
-        color: white;
-    }
+.filter-section {
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 1.5rem;
+}
 
-    .btn-eco:hover {
-        background-color: var(--eco-primary-dark);
-        border-color: var(--eco-primary-dark);
-        color: white;
-    }
+.filter-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
 
-    .btn-outline-eco {
-        border-color: var(--eco-primary);
-        color: var(--eco-primary);
-    }
+.filter-title {
+    font-weight: 700;
+    color: var(--eco-primary);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
 
-    .btn-outline-eco:hover {
-        background-color: var(--eco-primary);
-        border-color: var(--eco-primary);
-        color: white;
-    }
+.filter-option {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+}
 
-    /* Sidebar Filters */
-    .sidebar-filters {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        height: fit-content;
-        position: sticky;
-        top: 20px;
-    }
+.filter-option:hover {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    transform: translateX(5px);
+}
 
-    .filter-section {
-        border-bottom: 1px solid #f0f0f0;
-        padding-bottom: 1.5rem;
-    }
+.filter-option.active {
+    background: linear-gradient(135deg, var(--eco-primary) 0%, var(--eco-secondary) 100%);
+    color: white;
+    border-color: var(--eco-primary);
+}
 
-    .filter-section:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-    }
+.filter-option.active .badge {
+    background: rgba(255,255,255,0.2) !important;
+    color: white !important;
+}
 
-    .filter-title {
-        font-weight: 700;
-        color: var(--eco-primary);
-        font-size: 14px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
+.filter-option label {
+    width: 100%;
+    font-size: 14px;
+    font-weight: 500;
+}
 
-    .filter-option {
-        cursor: pointer;
-        transition: all 0.3s ease;
-        padding: 8px 12px;
-        border-radius: 10px;
-        border: 1px solid transparent;
-    }
+/* Calendar Styles - SMALLER VERSION */
+.calendar-container {
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border: 1px solid var(--eco-light);
+}
 
-    .filter-option:hover {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        transform: translateX(5px);
-    }
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
 
-    .filter-option.active {
-        background: linear-gradient(135deg, var(--eco-primary) 0%, var(--eco-secondary) 100%);
-        color: white;
-        border-color: var(--eco-primary);
-    }
+.calendar-nav-btn {
+    background: linear-gradient(135deg, var(--eco-primary) 0%, var(--eco-secondary) 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
 
-    .filter-option.active .badge {
-        background: rgba(255, 255, 255, 0.2) !important;
-        color: white !important;
-    }
+.calendar-nav-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(45, 90, 39, 0.3);
+}
 
-    .filter-option label {
-        width: 100%;
-        font-size: 14px;
-        font-weight: 500;
-    }
+.calendar-title {
+    font-weight: 700;
+    color: var(--eco-primary);
+    margin: 0;
+    font-size: 12px;
+    text-align: center;
+    flex: 1;
+    padding: 0 8px;
+}
 
-    /* Calendar Styles - SMALLER VERSION */
-    .calendar-container {
-        background: white;
-        border-radius: 12px;
-        padding: 12px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-        border: 1px solid var(--eco-light);
-    }
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
 
-    .calendar-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #f0f0f0;
-    }
+.calendar-day-header {
+    text-align: center;
+    font-weight: 700;
+    font-size: 9px;
+    color: var(--eco-primary);
+    padding: 4px 2px;
+    text-transform: uppercase;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
 
-    .calendar-nav-btn {
-        background: linear-gradient(135deg, var(--eco-primary) 0%, var(--eco-secondary) 100%);
-        border: none;
-        border-radius: 8px;
-        padding: 4px 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        color: white;
-        width: 28px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 10px;
-    }
+.calendar-day {
+    text-align: center;
+    padding: 6px 2px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 10px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    background: #fafafa;
+    position: relative;
+    min-height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-    .calendar-nav-btn:hover {
-        transform: scale(1.1);
-        box-shadow: 0 2px 8px rgba(45, 90, 39, 0.3);
-    }
+.calendar-day:hover {
+    background: linear-gradient(135deg, var(--eco-primary) 0%, var(--eco-secondary) 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(45, 90, 39, 0.2);
+}
 
-    .calendar-title {
-        font-weight: 700;
-        color: var(--eco-primary);
-        margin: 0;
-        font-size: 12px;
-        text-align: center;
-        flex: 1;
-        padding: 0 8px;
-    }
+.calendar-day.empty {
+    background: none;
+    cursor: default;
+    border: none;
+}
 
-    .calendar-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 4px;
-    }
+.calendar-day.empty:hover {
+    background: none;
+    transform: none;
+    box-shadow: none;
+}
 
-    .calendar-day-header {
-        text-align: center;
-        font-weight: 700;
-        font-size: 9px;
-        color: var(--eco-primary);
-        padding: 4px 2px;
-        text-transform: uppercase;
-        background: #f8f9fa;
-        border-radius: 4px;
-    }
+.calendar-day.today {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    color: white;
+    border-color: #ff6b6b;
+}
 
-    .calendar-day {
-        text-align: center;
-        padding: 6px 2px;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 10px;
-        font-weight: 600;
-        border: 1px solid transparent;
-        background: #fafafa;
-        position: relative;
-        min-height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+.calendar-day.selected {
+    background: linear-gradient(135deg, var(--eco-primary) 0%, var(--eco-secondary) 100%);
+    color: white;
+    border-color: var(--eco-primary);
+    box-shadow: 0 2px 6px rgba(45, 90, 39, 0.3);
+}
 
-    .calendar-day:hover {
-        background: linear-gradient(135deg, var(--eco-primary) 0%, var(--eco-secondary) 100%);
-        color: white;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 6px rgba(45, 90, 39, 0.2);
-    }
+.calendar-day.has-events::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 3px;
+    background: var(--eco-primary);
+    border-radius: 50%;
+}
 
-    .calendar-day.empty {
-        background: none;
-        cursor: default;
-        border: none;
-    }
+.calendar-day.selected.has-events::after,
+.calendar-day:hover.has-events::after {
+    background: white;
+}
 
-    .calendar-day.empty:hover {
-        background: none;
-        transform: none;
-        box-shadow: none;
-    }
+/* Form Elements */
+.date-input {
+    border: 2px solid var(--eco-light);
+    border-radius: 12px;
+    padding: 10px 15px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #fafafa;
+}
 
-    .calendar-day.today {
-        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-        color: white;
-        border-color: #ff6b6b;
-    }
+.date-input:focus {
+    border-color: var(--eco-primary);
+    box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.1);
+    background: white;
+}
 
-    .calendar-day.selected {
-        background: linear-gradient(135deg, var(--eco-primary) 0%, var(--eco-secondary) 100%);
-        color: white;
-        border-color: var(--eco-primary);
-        box-shadow: 0 2px 6px rgba(45, 90, 39, 0.3);
-    }
+.clear-btn {
+    border: 2px solid #6c757d;
+    border-radius: 12px;
+    padding: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
 
-    .calendar-day.has-events::after {
-        content: '';
-        position: absolute;
-        bottom: 2px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 3px;
-        height: 3px;
-        background: var(--eco-primary);
-        border-radius: 50%;
-    }
+.clear-btn:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-2px);
+}
 
-    .calendar-day.selected.has-events::after,
-    .calendar-day:hover.has-events::after {
-        background: white;
-    }
+/* Event Cards - NEW STYLE */
+.event-card {
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid #f0f0f0;
+}
 
-    /* Form Elements */
-    .date-input {
-        border: 2px solid var(--eco-light);
-        border-radius: 12px;
-        padding: 10px 15px;
-        font-size: 14px;
-        transition: all 0.3s ease;
-        background: #fafafa;
-    }
+.event-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.15) !important;
+}
 
-    .date-input:focus {
-        border-color: var(--eco-primary);
-        box-shadow: 0 0 0 3px rgba(45, 90, 39, 0.1);
-        background: white;
-    }
+/* Make the whole card clickable while keeping internal controls clickable */
+.card-overlay-link {
+    position: absolute;
+    inset: 0; /* top:0; right:0; bottom:0; left:0; */
+    z-index: 5;
+    display: block;
+    text-indent: -9999px;
+}
 
-    .clear-btn {
-        border: 2px solid #6c757d;
-        border-radius: 12px;
-        padding: 10px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        transition: all 0.3s ease;
-    }
+/* Ensure actionable elements sit above the overlay */
+.event-card .card-actions,
+.event-card .card-footer,
+.event-card .card-body a,
+.event-card .card-body button,
+.event-card form {
+    position: relative;
+    z-index: 10;
+}
 
-    .clear-btn:hover {
-        background: #6c757d;
-        color: white;
-        transform: translateY(-2px);
-    }
+/* If event is cancelled, keep overlay but allow reservation view button to be clickable */
+.event-card.event-cancelled .card-actions {
+    z-index: 11;
+}
 
-    /* Event Cards - NEW STYLE */
-    .event-card {
-        border-radius: 20px;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        border: 1px solid #f0f0f0;
-    }
+.card-header-custom {
+    background: white;
+    border-bottom: 1px solid #f0f0f0;
+}
 
-    .event-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15) !important;
-    }
+.event-info-main {
+    padding-right: 15px;
+}
 
-    /* Make the whole card clickable while keeping internal controls clickable */
-    .card-overlay-link {
-        position: absolute;
-        inset: 0;
-        /* top:0; right:0; bottom:0; left:0; */
-        z-index: 5;
-        display: block;
-        text-indent: -9999px;
-    }
+.event-image-small {
+    flex-shrink: 0;
+}
 
-    /* Ensure actionable elements sit above the overlay */
-    .event-card .card-actions,
-    .event-card .card-footer,
-    .event-card .card-body a,
-    .event-card .card-body button,
-    .event-card form {
-        position: relative;
-        z-index: 10;
-    }
+.event-thumbnail {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 2px solid var(--eco-light);
+}
 
-    /* If event is cancelled, keep overlay but allow reservation view button to be clickable */
-    .event-card.event-cancelled .card-actions {
-        z-index: 11;
-    }
+.event-thumbnail-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
+    border: 2px solid var(--eco-light);
+}
 
-    .card-header-custom {
-        background: white;
-        border-bottom: 1px solid #f0f0f0;
-    }
+.card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--eco-primary);
+    line-height: 1.3;
+    margin-bottom: 10px;
+}
 
-    .event-info-main {
-        padding-right: 15px;
-    }
+.event-meta {
+    margin-bottom: 10px;
+}
 
-    .event-image-small {
-        flex-shrink: 0;
-    }
+.meta-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+    font-size: 13px;
+    color: #666;
+}
 
-    .event-thumbnail {
-        width: 80px;
-        height: 80px;
-        object-fit: cover;
-        border-radius: 12px;
-        border: 2px solid var(--eco-light);
-    }
+.meta-item i {
+    margin-right: 8px;
+    width: 14px;
+    color: var(--eco-primary);
+}
 
-    .event-thumbnail-placeholder {
-        width: 80px;
-        height: 80px;
-        border-radius: 12px;
-        border: 2px solid var(--eco-light);
-    }
+/* Header */
+.header-bar {
+    background: white;
+    padding: 25px 30px;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
 
-    .card-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--eco-primary);
-        line-height: 1.3;
-        margin-bottom: 10px;
-    }
+.header-title h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--eco-primary);
+    margin: 0 0 5px 0;
+}
 
-    .event-meta {
-        margin-bottom: 10px;
-    }
+.results-count {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+}
 
-    .meta-item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 4px;
-        font-size: 13px;
-        color: #666;
-    }
+/* Cancelled Event Styles */
+.event-cancelled {
+    opacity: 0.7;
+}
 
-    .meta-item i {
-        margin-right: 8px;
-        width: 14px;
-        color: var(--eco-primary);
-    }
+.cancelled-banner-container {
+    text-align: center;
+    margin-bottom: 15px;
+}
 
-    /* Header */
-    .header-bar {
-        background: white;
-        padding: 25px 30px;
-        border-radius: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        margin-bottom: 30px;
-    }
+.cancelled-banner {
+    max-width: 70%;
+    margin-bottom: -30px ;
+    margin-right: 19px ;
 
-    .header-title h1 {
-        font-size: 28px;
-        font-weight: 800;
-        color: var(--eco-primary);
-        margin: 0 0 5px 0;
-    }
+}
+.cancelled-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    background: transparent;
+}
 
-    .results-count {
-        color: #666;
-        font-size: 14px;
-        font-weight: 500;
-    }
+.cancelled-text {
+    font-weight: bold;
+    color: #dc3545;
+    font-size: 16px;
+    text-transform: uppercase;
+}
 
-    /* Cancelled Event Styles */
-    .event-cancelled {
-        opacity: 0.7;
-    }
+/* Progress Bar */
+.progress {
+    background-color: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+}
 
-    .cancelled-banner-container {
-        text-align: center;
-        margin-bottom: 15px;
-    }
+.progress-bar {
+    border-radius: 10px;
+}
+/* Pagination Styles - CONSISTENT HORIZONTAL */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+    width: 100%;
+}
 
-    .cancelled-banner {
-        max-width: 70%;
-        margin-bottom: -30px;
-        margin-right: 19px;
+.pagination {
+    display: flex !important;
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 6px !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+}
 
-    }
+.pagination li {
+    display: inline-block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
 
-    .cancelled-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 10;
-        background: transparent;
-    }
+/* TARGET ALL PAGINATION ELEMENTS - FORCE CONSISTENT STYLING */
+.pagination a,
+.pagination span,
+.pagination .page-link,
+.pagination [rel="prev"],
+.pagination [rel="next"],
+.pagination .disabled span,
+.pagination .active span {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 10px 14px !important;
+    border: 2px solid var(--eco-light) !important;
+    border-radius: 8px !important;
+    color: var(--eco-primary) !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    background: white !important;
+    transition: all 0.3s ease !important;
+    min-width: 45px !important;
+    height: 45px !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+}
 
-    .cancelled-text {
-        font-weight: bold;
-        color: #dc3545;
-        font-size: 16px;
-        text-transform: uppercase;
-    }
+/* Hover states for clickable links */
+.pagination a:hover {
+    background: linear-gradient(135deg, var(--eco-primary) 0%, var(--eco-secondary) 100%) !important;
+    color: white !important;
+    border-color: var(--eco-primary) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(45, 90, 39, 0.2) !important;
+}
 
-    /* Progress Bar */
-    .progress {
-        background-color: #e9ecef;
-        border-radius: 10px;
-        overflow: hidden;
-    }
+/* Active page */
+.pagination .active a,
+.pagination .active span,
+.pagination [aria-current="page"] {
+    background: linear-gradient(135deg, var(--eco-primary) 0%, var(--eco-secondary) 100%) !important;
+    border-color: var(--eco-primary) !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(45, 90, 39, 0.3) !important;
+}
 
-    .progress-bar {
-        border-radius: 10px;
-    }
+/* Disabled states */
+.pagination .disabled a,
+.pagination .disabled span,
+.pagination [aria-disabled="true"] {
+    background: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
 
-    /* Pagination Styles - CONSISTENT HORIZONTAL */
-    .pagination-container {
-        display: flex;
-        justify-content: center;
-        margin-top: 2rem;
-        width: 100%;
-    }
+/* Make sure all elements have the same dimensions */
+.pagination li:first-child a,
+.pagination li:first-child span,
+.pagination li:last-child a,
+.pagination li:last-child span,
+.pagination [rel="prev"],
+.pagination [rel="next"] {
+    min-width: 80px !important;
+    font-weight: 700 !important;
+}
 
+/* Page numbers - ensure consistent size */
+.pagination li:not(:first-child):not(:last-child) a,
+.pagination li:not(:first-child):not(:last-child) span {
+    min-width: 45px !important;
+}
+
+/* Hide any text elements that break the layout */
+.pagination > div:first-child {
+    display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
     .pagination {
-        display: flex !important;
-        list-style: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        gap: 6px !important;
-        align-items: center !important;
-        flex-wrap: nowrap !important;
+        gap: 4px !important;
     }
-
-    .pagination li {
-        display: inline-block !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    /* TARGET ALL PAGINATION ELEMENTS - FORCE CONSISTENT STYLING */
+    
     .pagination a,
     .pagination span,
-    .pagination .page-link,
-    .pagination [rel="prev"],
-    .pagination [rel="next"],
-    .pagination .disabled span,
-    .pagination .active span {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 10px 14px !important;
-        border: 2px solid var(--eco-light) !important;
-        border-radius: 8px !important;
-        color: var(--eco-primary) !important;
-        text-decoration: none !important;
-        font-weight: 600 !important;
-        font-size: 14px !important;
-        background: white !important;
-        transition: all 0.3s ease !important;
-        min-width: 45px !important;
-        height: 45px !important;
-        line-height: 1 !important;
-        text-align: center !important;
-        box-sizing: border-box !important;
+    .pagination .page-link {
+        padding: 8px 12px !important;
+        min-width: 40px !important;
+        height: 40px !important;
+        font-size: 13px !important;
     }
-
-    /* Hover states for clickable links */
-    .pagination a:hover {
-        background: linear-gradient(135deg, var(--eco-primary) 0%, var(--eco-secondary) 100%) !important;
-        color: white !important;
-        border-color: var(--eco-primary) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 4px 12px rgba(45, 90, 39, 0.2) !important;
-    }
-
-    /* Active page */
-    .pagination .active a,
-    .pagination .active span,
-    .pagination [aria-current="page"] {
-        background: linear-gradient(135deg, var(--eco-primary) 0%, var(--eco-secondary) 100%) !important;
-        border-color: var(--eco-primary) !important;
-        color: white !important;
-        transform: translateY(-1px) !important;
-        box-shadow: 0 4px 12px rgba(45, 90, 39, 0.3) !important;
-    }
-
-    /* Disabled states */
-    .pagination .disabled a,
-    .pagination .disabled span,
-    .pagination [aria-disabled="true"] {
-        background: #f8f9fa !important;
-        border-color: #dee2e6 !important;
-        color: #6c757d !important;
-        cursor: not-allowed !important;
-        opacity: 0.6 !important;
-        transform: none !important;
-        box-shadow: none !important;
-    }
-
-    /* Make sure all elements have the same dimensions */
+    
     .pagination li:first-child a,
     .pagination li:first-child span,
     .pagination li:last-child a,
-    .pagination li:last-child span,
-    .pagination [rel="prev"],
-    .pagination [rel="next"] {
-        min-width: 80px !important;
-        font-weight: 700 !important;
+    .pagination li:last-child span {
+        min-width: 70px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .pagination a,
+    .pagination span,
+    .pagination .page-link {
+        padding: 6px 10px !important;
+        min-width: 35px !important;
+        height: 35px !important;
+        font-size: 12px !important;
+    }
+    
+    .pagination li:first-child a,
+    .pagination li:first-child span,
+    .pagination li:last-child a,
+    .pagination li:last-child span {
+        min-width: 60px !important;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar-filters {
+        margin-bottom: 2rem;
+    }
+    
+    .header-bar {
+        padding: 20px;
+    }
+    
+    .calendar-grid {
+        gap: 3px;
+    }
+    
+    .calendar-day {
+        padding: 4px 1px;
+        font-size: 9px;
+        min-height: 20px;
+    }
+    
+    .event-thumbnail,
+    .event-thumbnail-placeholder {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .card-header-custom {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .event-image-small {
+        margin-top: 10px;
+        align-self: flex-end;
     }
 
-    /* Page numbers - ensure consistent size */
-    .pagination li:not(:first-child):not(:last-child) a,
-    .pagination li:not(:first-child):not(:last-child) span {
-        min-width: 45px !important;
+    /* Responsive pagination */
+    .pagination {
+        gap: 4px !important;
     }
-
-    /* Hide any text elements that break the layout */
-    .pagination>div:first-child {
-        display: none !important;
+    
+    .pagination .page-link,
+    .pagination span {
+        padding: 6px 8px !important;
+        min-width: 35px !important;
+        font-size: 12px !important;
     }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .pagination {
-            gap: 4px !important;
-        }
-
-        .pagination a,
-        .pagination span,
-        .pagination .page-link {
-            padding: 8px 12px !important;
-            min-width: 40px !important;
-            height: 40px !important;
-            font-size: 13px !important;
-        }
-
-        .pagination li:first-child a,
-        .pagination li:first-child span,
-        .pagination li:last-child a,
-        .pagination li:last-child span {
-            min-width: 70px !important;
-        }
+    
+    .pagination li:first-child .page-link,
+    .pagination li:last-child .page-link {
+        padding: 6px 12px !important;
+        min-width: 60px !important;
     }
-
-    @media (max-width: 576px) {
-
-        .pagination a,
-        .pagination span,
-        .pagination .page-link {
-            padding: 6px 10px !important;
-            min-width: 35px !important;
-            height: 35px !important;
-            font-size: 12px !important;
-        }
-
-        .pagination li:first-child a,
-        .pagination li:first-child span,
-        .pagination li:last-child a,
-        .pagination li:last-child span {
-            min-width: 60px !important;
-        }
+    
+    .pagination li:not(:first-child):not(:last-child) .page-link {
+        min-width: 30px !important;
+        padding: 6px 8px !important;
     }
+}
 
-    /* Responsive */
-    @media (max-width: 768px) {
-        .sidebar-filters {
-            margin-bottom: 2rem;
-        }
-
-        .header-bar {
-            padding: 20px;
-        }
-
-        .calendar-grid {
-            gap: 3px;
-        }
-
-        .calendar-day {
-            padding: 4px 1px;
-            font-size: 9px;
-            min-height: 20px;
-        }
-
-        .event-thumbnail,
-        .event-thumbnail-placeholder {
-            width: 60px;
-            height: 60px;
-        }
-
-        .card-header-custom {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .event-image-small {
-            margin-top: 10px;
-            align-self: flex-end;
-        }
-
-        /* Responsive pagination */
-        .pagination {
-            gap: 4px !important;
-        }
-
-        .pagination .page-link,
-        .pagination span {
-            padding: 6px 8px !important;
-            min-width: 35px !important;
-            font-size: 12px !important;
-        }
-
-        .pagination li:first-child .page-link,
-        .pagination li:last-child .page-link {
-            padding: 6px 12px !important;
-            min-width: 60px !important;
-        }
-
-        .pagination li:not(:first-child):not(:last-child) .page-link {
-            min-width: 30px !important;
-            padding: 6px 8px !important;
-        }
-    }
-
-    /* Cursor pointer */
-    .cursor-pointer {
-        cursor: pointer;
-    }
+/* Cursor pointer */
+.cursor-pointer {
+    cursor: pointer;
+}
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize calendar
-        initializeCalendar();
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize calendar
+    initializeCalendar();
+    
+    // Calendar functionality
+    function initializeCalendar() {
+        const calendarElement = document.getElementById('mini-calendar');
+        if (!calendarElement) return;
 
-        // Calendar functionality
-        function initializeCalendar() {
-            const calendarElement = document.getElementById('mini-calendar');
-            if (!calendarElement) return;
+        let currentDate = new Date();
+        let currentYear = currentDate.getFullYear();
+        let currentMonth = currentDate.getMonth();
 
-            let currentDate = new Date();
-            let currentYear = currentDate.getFullYear();
-            let currentMonth = currentDate.getMonth();
+        function renderCalendar(year, month) {
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDay = firstDay.getDay();
 
-            function renderCalendar(year, month) {
-                const firstDay = new Date(year, month, 1);
-                const lastDay = new Date(year, month + 1, 0);
-                const daysInMonth = lastDay.getDate();
-                const startingDay = firstDay.getDay();
+            const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+                "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+            ];
 
-                const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-                    "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
-                ];
-
-                // Calendar header
-                let calendarHTML = `
+            // Calendar header
+            let calendarHTML = `
                 <div class="calendar-container">
                     <div class="calendar-header">
                         <button class="calendar-nav-btn prev-month" data-action="prev">
@@ -929,185 +920,184 @@
                         <div class="calendar-day-header">S</div>
             `;
 
-                // Empty cells for days before the first day of the month
-                for (let i = 0; i < startingDay; i++) {
-                    calendarHTML += `<div class="calendar-day empty"></div>`;
-                }
-
-                // Days of the month
-                const today = new Date();
-                const selectedDate = new URLSearchParams(window.location.search).get('date');
-
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const isToday = today.getDate() === day &&
-                        today.getMonth() === month &&
-                        today.getFullYear() === year;
-                    const isSelected = selectedDate === dateStr;
-
-                    let dayClass = 'calendar-day';
-                    if (isToday) dayClass += ' today';
-                    if (isSelected) dayClass += ' selected';
-                    if (hasEventsOnDate(dateStr)) dayClass += ' has-events';
-
-                    calendarHTML += `<div class="${dayClass}" data-date="${dateStr}">${day}</div>`;
-                }
-
-                calendarHTML += '</div></div>';
-                calendarElement.innerHTML = calendarHTML;
-
-                // Add event listeners
-                document.querySelector('.prev-month').addEventListener('click', () => {
-                    currentMonth--;
-                    if (currentMonth < 0) {
-                        currentMonth = 11;
-                        currentYear--;
-                    }
-                    renderCalendar(currentYear, currentMonth);
-                });
-
-                document.querySelector('.next-month').addEventListener('click', () => {
-                    currentMonth++;
-                    if (currentMonth > 11) {
-                        currentMonth = 0;
-                        currentYear++;
-                    }
-                    renderCalendar(currentYear, currentMonth);
-                });
-
-                // Add click events to calendar days
-                document.querySelectorAll('.calendar-day[data-date]').forEach(day => {
-                    day.addEventListener('click', function() {
-                        const date = this.dataset.date;
-                        applyDateFilter(date);
-                    });
-                });
+            // Empty cells for days before the first day of the month
+            for (let i = 0; i < startingDay; i++) {
+                calendarHTML += `<div class="calendar-day empty"></div>`;
             }
 
-            // Use server-provided dates for which published events exist
-            const eventDates = @json($allEventDates ?? []);
-
-            function hasEventsOnDate(dateStr) {
-                return eventDates.includes(dateStr);
+            // Days of the month
+            const today = new Date();
+            const selectedDate = new URLSearchParams(window.location.search).get('date');
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = today.getDate() === day && 
+                               today.getMonth() === month && 
+                               today.getFullYear() === year;
+                const isSelected = selectedDate === dateStr;
+                
+                let dayClass = 'calendar-day';
+                if (isToday) dayClass += ' today';
+                if (isSelected) dayClass += ' selected';
+                if (hasEventsOnDate(dateStr)) dayClass += ' has-events';
+                
+                calendarHTML += `<div class="${dayClass}" data-date="${dateStr}">${day}</div>`;
             }
 
-            renderCalendar(currentYear, currentMonth);
-        }
+            calendarHTML += '</div></div>';
+            calendarElement.innerHTML = calendarHTML;
 
-        // Filter functionality
-        function initializeFilters() {
-            const clearAllFilters = document.getElementById('clear-all-filters');
-
-            // Filter options - click to apply
-            const filterOptions = document.querySelectorAll('.filter-option');
-            filterOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    const filterType = this.dataset.filter;
-                    const filterValue = this.dataset.value;
-
-                    // Remove active class from siblings
-                    const siblings = this.parentElement.querySelectorAll('.filter-option');
-                    siblings.forEach(sib => sib.classList.remove('active'));
-
-                    // Add active class to clicked option
-                    this.classList.add('active');
-
-                    applyFilters();
-                });
+            // Add event listeners
+            document.querySelector('.prev-month').addEventListener('click', () => {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                renderCalendar(currentYear, currentMonth);
             });
 
-            // Clear all filters
-            if (clearAllFilters) {
-                clearAllFilters.addEventListener('click', function() {
-                    // Clear URL parameters
-                    window.location.href = "{{ route('events.index') }}";
-                });
-            }
-
-            // Initialize active states
-            function initializeActiveStates() {
-                const urlParams = new URLSearchParams(window.location.search);
-
-                // Set active filter options
-                ['filter', 'location'].forEach(filterType => {
-                    const value = urlParams.get(filterType);
-                    if (value) {
-                        const activeOption = document.querySelector(`.filter-option[data-filter="${filterType}"][data-value="${value}"]`);
-                        if (activeOption) {
-                            activeOption.classList.add('active');
-                        }
-                    }
-                });
-            }
-
-            initializeActiveStates();
-        }
-
-        // Apply filters function
-        function applyFilters() {
-            const url = new URL(window.location.href);
-
-            // Get active filters
-            const activeFilters = document.querySelectorAll('.filter-option.active');
-            activeFilters.forEach(filter => {
-                const type = filter.dataset.filter;
-                const value = filter.dataset.value;
-                if (value !== 'all') {
-                    url.searchParams.set(type, value);
-                } else {
-                    url.searchParams.delete(type);
+            document.querySelector('.next-month').addEventListener('click', () => {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
                 }
+                renderCalendar(currentYear, currentMonth);
             });
 
-            // Remove page parameter when filters change
-            url.searchParams.delete('page');
-
-            // Navigate to new URL
-            window.location.href = url.toString();
+            // Add click events to calendar days
+            document.querySelectorAll('.calendar-day[data-date]').forEach(day => {
+                day.addEventListener('click', function() {
+                    const date = this.dataset.date;
+                    applyDateFilter(date);
+                });
+            });
         }
 
-        // Apply date filter function
-        function applyDateFilter(date) {
-            const url = new URL(window.location.href);
+        // Use server-provided dates for which published events exist
+        const eventDates = @json($allEventDates ?? []);
+        function hasEventsOnDate(dateStr) {
+            return eventDates.includes(dateStr);
+        }
 
-            if (date) {
-                url.searchParams.set('date', date);
+        renderCalendar(currentYear, currentMonth);
+    }
+
+    // Filter functionality
+    function initializeFilters() {
+        const clearAllFilters = document.getElementById('clear-all-filters');
+
+        // Filter options - click to apply
+        const filterOptions = document.querySelectorAll('.filter-option');
+        filterOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const filterType = this.dataset.filter;
+                const filterValue = this.dataset.value;
+                
+                // Remove active class from siblings
+                const siblings = this.parentElement.querySelectorAll('.filter-option');
+                siblings.forEach(sib => sib.classList.remove('active'));
+                
+                // Add active class to clicked option
+                this.classList.add('active');
+                
+                applyFilters();
+            });
+        });
+
+        // Clear all filters
+        if (clearAllFilters) {
+            clearAllFilters.addEventListener('click', function() {
+                // Clear URL parameters
+                window.location.href = "{{ route('events.index') }}";
+            });
+        }
+
+        // Initialize active states
+        function initializeActiveStates() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Set active filter options
+            ['filter', 'location'].forEach(filterType => {
+                const value = urlParams.get(filterType);
+                if (value) {
+                    const activeOption = document.querySelector(`.filter-option[data-filter="${filterType}"][data-value="${value}"]`);
+                    if (activeOption) {
+                        activeOption.classList.add('active');
+                    }
+                }
+            });
+        }
+
+        initializeActiveStates();
+    }
+
+    // Apply filters function
+    function applyFilters() {
+        const url = new URL(window.location.href);
+        
+        // Get active filters
+        const activeFilters = document.querySelectorAll('.filter-option.active');
+        activeFilters.forEach(filter => {
+            const type = filter.dataset.filter;
+            const value = filter.dataset.value;
+            if (value !== 'all') {
+                url.searchParams.set(type, value);
             } else {
-                url.searchParams.delete('date');
+                url.searchParams.delete(type);
             }
+        });
 
-            // Remove page parameter when filters change
-            url.searchParams.delete('page');
+        // Remove page parameter when filters change
+        url.searchParams.delete('page');
 
-            // Navigate to new URL
-            window.location.href = url.toString();
+        // Navigate to new URL
+        window.location.href = url.toString();
+    }
+
+    // Apply date filter function
+    function applyDateFilter(date) {
+        const url = new URL(window.location.href);
+        
+        if (date) {
+            url.searchParams.set('date', date);
+        } else {
+            url.searchParams.delete('date');
         }
 
-        // Initialize everything
-        initializeFilters();
-    });
+        // Remove page parameter when filters change
+        url.searchParams.delete('page');
 
-    // Force consistent pagination styling
-    document.addEventListener('DOMContentLoaded', function() {
-        function forceConsistentPagination() {
-            const paginations = document.querySelectorAll('.pagination');
+        // Navigate to new URL
+        window.location.href = url.toString();
+    }
 
-            paginations.forEach(pagination => {
-                const items = pagination.querySelectorAll('li');
+    // Initialize everything
+    initializeFilters();
+});
 
-                items.forEach(item => {
-                    // Force inline display
-                    item.style.cssText = `
+// Force consistent pagination styling
+document.addEventListener('DOMContentLoaded', function() {
+    function forceConsistentPagination() {
+        const paginations = document.querySelectorAll('.pagination');
+        
+        paginations.forEach(pagination => {
+            const items = pagination.querySelectorAll('li');
+            
+            items.forEach(item => {
+                // Force inline display
+                item.style.cssText = `
                     display: inline-block !important;
                     margin: 0 3px !important;
                     padding: 0 !important;
                     vertical-align: middle !important;
                 `;
-
-                    // Style all links and spans
-                    const elements = item.querySelectorAll('a, span');
-                    elements.forEach(el => {
-                        el.style.cssText = `
+                
+                // Style all links and spans
+                const elements = item.querySelectorAll('a, span');
+                elements.forEach(el => {
+                    el.style.cssText = `
                         display: inline-flex !important;
                         align-items: center !important;
                         justify-content: center !important;
@@ -1126,21 +1116,21 @@
                         text-align: center !important;
                         box-sizing: border-box !important;
                     `;
-
-                        // Check if it's active
-                        if (item.classList.contains('active') || el.getAttribute('aria-current') === 'page') {
-                            el.style.cssText += `
+                    
+                    // Check if it's active
+                    if (item.classList.contains('active') || el.getAttribute('aria-current') === 'page') {
+                        el.style.cssText += `
                             background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%) !important;
                             border-color: #2d5a27 !important;
                             color: white !important;
                             transform: translateY(-1px) !important;
                             box-shadow: 0 4px 12px rgba(45, 90, 39, 0.3) !important;
                         `;
-                        }
-
-                        // Check if it's disabled
-                        if (item.classList.contains('disabled') || el.getAttribute('aria-disabled') === 'true') {
-                            el.style.cssText += `
+                    }
+                    
+                    // Check if it's disabled
+                    if (item.classList.contains('disabled') || el.getAttribute('aria-disabled') === 'true') {
+                        el.style.cssText += `
                             background: #f8f9fa !important;
                             border-color: #dee2e6 !important;
                             color: #6c757d !important;
@@ -1149,35 +1139,35 @@
                             transform: none !important;
                             box-shadow: none !important;
                         `;
-                        }
-
-                        // Style previous/next buttons
-                        const text = el.textContent?.trim().toLowerCase() || '';
-                        if (text.includes('prev') || text.includes('next') || text.includes('‹') || text.includes('›')) {
-                            el.style.cssText += `
+                    }
+                    
+                    // Style previous/next buttons
+                    const text = el.textContent?.trim().toLowerCase() || '';
+                    if (text.includes('prev') || text.includes('next') || text.includes('‹') || text.includes('›')) {
+                        el.style.cssText += `
                             min-width: 80px !important;
                             font-weight: 700 !important;
                         `;
-                        }
-
-                        // Add hover effect for clickable links
-                        if (el.tagName === 'A' && !item.classList.contains('disabled')) {
-                            el.addEventListener('mouseenter', function() {
-                                if (!item.classList.contains('active')) {
-                                    this.style.cssText += `
+                    }
+                    
+                    // Add hover effect for clickable links
+                    if (el.tagName === 'A' && !item.classList.contains('disabled')) {
+                        el.addEventListener('mouseenter', function() {
+                            if (!item.classList.contains('active')) {
+                                this.style.cssText += `
                                     background: linear-gradient(135deg, #2d5a27 0%, #4a7c59 100%) !important;
                                     color: white !important;
                                     border-color: #2d5a27 !important;
                                     transform: translateY(-2px) !important;
                                     box-shadow: 0 4px 12px rgba(45, 90, 39, 0.2) !important;
                                 `;
-                                }
-                            });
-
-                            el.addEventListener('mouseleave', function() {
-                                if (!item.classList.contains('active')) {
-                                    const isNav = text.includes('prev') || text.includes('next') || text.includes('‹') || text.includes('›');
-                                    this.style.cssText = `
+                            }
+                        });
+                        
+                        el.addEventListener('mouseleave', function() {
+                            if (!item.classList.contains('active')) {
+                                const isNav = text.includes('prev') || text.includes('next') || text.includes('‹') || text.includes('›');
+                                this.style.cssText = `
                                     display: inline-flex !important;
                                     align-items: center !important;
                                     justify-content: center !important;
@@ -1196,18 +1186,20 @@
                                     text-align: center !important;
                                     box-sizing: border-box !important;
                                 `;
-                                }
-                            });
-                        }
-                    });
+                            }
+                        });
+                    }
                 });
             });
-        }
+        });
+    }
+    
+    // Run multiple times
+    forceConsistentPagination();
+    setTimeout(forceConsistentPagination, 100);
+    setTimeout(forceConsistentPagination, 500);
+});
 
-        // Run multiple times
-        forceConsistentPagination();
-        setTimeout(forceConsistentPagination, 100);
-        setTimeout(forceConsistentPagination, 500);
-    });
+
 </script>
 @endsection
