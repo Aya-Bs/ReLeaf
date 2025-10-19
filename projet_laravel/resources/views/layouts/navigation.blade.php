@@ -2,7 +2,7 @@
     <div class="container">
         <!-- Logo -->
         <a class="navbar-brand" href="{{ route('home') }}">
-            <img src="{{ asset('images/eco-logo.png') }}" alt="EcoEvents" height="40">
+            <img src="{{ asset('images/eco-logo.png') }}" alt="{{ config('app.name', 'ReLeaf') }}" height="40">
         </a>
 
         <!-- Toggle Button -->
