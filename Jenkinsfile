@@ -261,13 +261,13 @@ EOF
             steps {
                 script {
                     try {
-                        sh """
+                        sh '''
                             cat > docker-compose.yml << 'EOF'
 version: '3.8'
 services:
   app:
-    image: ${REGISTRY}/${IMAGE_NAME}
-    container_name: releaf-app-${env.BUILD_NUMBER}
+    image: ''' + REGISTRY + '/' + IMAGE_NAME + '''
+    container_name: releaf-app-''' + env.BUILD_NUMBER + '''
     ports:
       - "9000:9000"
     environment:
@@ -292,7 +292,7 @@ services:
 
   mysql:
     image: mysql:8.0
-    container_name: releaf-mysql-${env.BUILD_NUMBER}
+    container_name: releaf-mysql-''' + env.BUILD_NUMBER + '''
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: laravel
@@ -305,7 +305,7 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: releaf-nginx-${env.BUILD_NUMBER}
+    container_name: releaf-nginx-''' + env.BUILD_NUMBER + '''
     ports:
       - "80:80"
     volumes:
@@ -332,13 +332,13 @@ server {
     index index.php;
 
     location / {
-        try_files \$uri \$uri/ /index.php?\$query_string;
+        try_files $uri $uri/ /index.php?$query_string;
     }
 
     location ~ \\.php$ {
         fastcgi_pass app:9000;
         fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
     }
 }
@@ -351,7 +351,7 @@ EOF
                             sleep 30
                             
                             docker-compose ps
-                        """
+                        '''
                     } catch (Exception e) {
                         echo "Docker Compose deployment failed: ${e.getMessage()}"
                         currentBuild.result = 'UNSTABLE'
