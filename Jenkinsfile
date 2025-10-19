@@ -256,6 +256,109 @@ EOF
                 }
             }
         }
+
+        stage('Docker Compose Deploy') {
+            steps {
+                script {
+                    try {
+                        sh """
+                            cat > docker-compose.yml << 'EOF'
+version: '3.8'
+services:
+  app:
+    image: ${REGISTRY}/${IMAGE_NAME}
+    container_name: releaf-app-${env.BUILD_NUMBER}
+    ports:
+      - "9000:9000"
+    environment:
+      - APP_NAME=Laravel
+      - APP_ENV=local
+      - APP_KEY=base64:k9Cux5xfRvnkAMGToE3IX0w87nnVntiVqpfO2Ni8GAM=
+      - APP_DEBUG=true
+      - APP_URL=http://localhost
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=laravel
+      - DB_USERNAME=root
+      - DB_PASSWORD=rootpassword
+      - CACHE_STORE=file
+      - SESSION_DRIVER=database
+      - QUEUE_CONNECTION=database
+    depends_on:
+      - mysql
+    networks:
+      - releaf-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: releaf-mysql-${env.BUILD_NUMBER}
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: laravel
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - releaf-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: releaf-nginx-${env.BUILD_NUMBER}
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./projet_laravel/public:/var/www/html/public
+    depends_on:
+      - app
+    networks:
+      - releaf-network
+
+volumes:
+  mysql-data:
+
+networks:
+  releaf-network:
+    driver: bridge
+EOF
+
+                            cat > nginx.conf << 'EOF'
+server {
+    listen 80;
+    server_name localhost;
+    root /var/www/html/public;
+    index index.php;
+
+    location / {
+        try_files \$uri \$uri/ /index.php?\$query_string;
+    }
+
+    location ~ \\.php$ {
+        fastcgi_pass app:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
+        include fastcgi_params;
+    }
+}
+EOF
+
+                            docker-compose down --remove-orphans || true
+                            docker-compose up -d
+                            
+                            echo "Waiting for services to start..."
+                            sleep 30
+                            
+                            docker-compose ps
+                        """
+                    } catch (Exception e) {
+                        echo "Docker Compose deployment failed: ${e.getMessage()}"
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
+            }
+        }
     }
 
     post {
