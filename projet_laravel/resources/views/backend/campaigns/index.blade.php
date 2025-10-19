@@ -306,14 +306,21 @@
 
                 <div class="card-body">
                     @php
-                        // Récupérer les demandes directement dans la vue si nécessaire
-                        $deletionRequests = \App\Models\CampaignDeletionRequest::with(['campaign', 'user'])
-                            ->pending()
-                            ->latest()
-                            ->paginate(10);
+                        // Prefer controller-provided $deletionRequests. Fall back to querying here only if missing.
+                        if (!isset($deletionRequests)) {
+                            try {
+                                $deletionRequests = \App\Models\CampaignDeletionRequest::with(['campaign', 'user'])
+                                    ->pending()
+                                    ->latest()
+                                    ->paginate(10);
+                            } catch (\Throwable $e) {
+                                // If the model/table is missing or any error occurs, set an empty paginator
+                                $deletionRequests = collect([]);
+                            }
+                        }
                     @endphp
 
-                    @if($deletionRequests->count() > 0)
+                    @if($deletionRequests && $deletionRequests->count() > 0)
                     <div class="row g-3">
                         @foreach($deletionRequests as $request)
                         <div class="col-md-6 col-lg-4">
@@ -346,66 +353,22 @@
                                     </div>
 
                                     <div class="d-flex gap-2">
-                                        <button type="button" class="btn btn-success btn-sm flex-fill" data-bs-toggle="modal" data-bs-target="#approveModal{{ $request->id }}">
-                                            <i class="fas fa-check me-1"></i> Approuver
-                                        </button>
-                                        <button type="button" class="btn btn-danger btn-sm flex-fill" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $request->id }}">
+                                        {{-- Approve: simple inline form to avoid modal UI blocking --}}
+                                        <form action="{{ route('backend.campaigns.process-deletion-request', $request->id) }}" method="POST" class="d-inline-block">
+                                            @csrf
+                                            <input type="hidden" name="action" value="approve">
+                                            <button type="submit" class="btn btn-success btn-sm flex-fill">
+                                                <i class="fas fa-check me-1"></i> Approuver
+                                            </button>
+                                        </form>
+
+                                        {{-- Reject: open backend modal (filled dynamically) --}}
+                                        <button type="button"
+                                            class="btn btn-danger btn-sm flex-fill btn-reject"
+                                            data-action="{{ route('backend.campaigns.process-deletion-request', $request->id) }}"
+                                            data-campaign-name="{{ e($request->campaign->name) }}">
                                             <i class="fas fa-times me-1"></i> Rejeter
                                         </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Modal pour l'approbation -->
-                            <div class="modal fade" id="approveModal{{ $request->id }}" tabindex="-1">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Approuver la suppression</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <form action="{{ url('admin/campaigns/deletion-requests/'.$request->id.'/process') }}" method="POST">
-                                            @csrf
-                                            <div class="modal-body">
-                                                <p>Êtes-vous sûr de vouloir approuver la suppression de la campagne <strong>"{{ $request->campaign->name }}"</strong> ?</p>
-                                                <div class="mb-3">
-                                                    <label for="admin_notes_approve{{ $request->id }}" class="form-label">Notes (optionnel)</label>
-                                                    <textarea class="form-control" id="admin_notes_approve{{ $request->id }}" name="admin_notes" rows="3" placeholder="Notes pour le demandeur..."></textarea>
-                                                </div>
-                                                <input type="hidden" name="action" value="approve">
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                                <button type="submit" class="btn btn-success">Confirmer l'approbation</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Modal pour le rejet -->
-                            <div class="modal fade" id="rejectModal{{ $request->id }}" tabindex="-1">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Rejeter la demande</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <form action="{{ url('admin/campaigns/deletion-requests/'.$request->id.'/process') }}" method="POST">
-                                            @csrf
-                                            <div class="modal-body">
-                                                <p>Êtes-vous sûr de vouloir rejeter la demande de suppression pour la campagne <strong>"{{ $request->campaign->name }}"</strong> ?</p>
-                                                <div class="mb-3">
-                                                    <label for="admin_notes_reject{{ $request->id }}" class="form-label">Raison du rejet</label>
-                                                    <textarea class="form-control" id="admin_notes_reject{{ $request->id }}" name="admin_notes" rows="3" placeholder="Pourquoi rejetez-vous cette demande ?" required></textarea>
-                                                </div>
-                                                <input type="hidden" name="action" value="reject">
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                                <button type="submit" class="btn btn-danger">Confirmer le rejet</button>
-                                            </div>
-                                        </form>
                                     </div>
                                 </div>
                             </div>
@@ -538,5 +501,194 @@
 
         function titleCase(s) { return (s || '').toString().replace(/_/g,' ').replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1).toLowerCase()); }
     })();
+</script>
+<script>
+    // Floating reject form: show a small floating panel (not a modal) to enter reason and submit
+    (function(){
+        function createFloatingPanel(){
+            var panel = document.createElement('div');
+            panel.id = 'rejectFloatingPanel';
+            panel.style.position = 'absolute';
+            panel.style.zIndex = 99999;
+            panel.style.display = 'none';
+            panel.style.width = '340px';
+            panel.style.padding = '12px';
+            panel.style.background = '#fff';
+            panel.style.boxShadow = '0 6px 18px rgba(0,0,0,0.12)';
+            panel.style.borderRadius = '8px';
+            panel.style.border = '1px solid rgba(0,0,0,0.06)';
+            panel.innerHTML = `
+                <div style="font-weight:600; margin-bottom:8px;">Raison du rejet</div>
+                <textarea id="rejectFloatingTextarea" rows="4" style="width:100%; padding:8px; border:1px solid #e9ecef; border-radius:6px; resize:vertical;"></textarea>
+                <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
+                    <button id="rejectFloatingCancel" type="button" class="btn btn-secondary btn-sm">Annuler</button>
+                    <button id="rejectFloatingConfirm" type="button" class="btn btn-danger btn-sm">Confirmer le rejet</button>
+                </div>
+            `;
+            document.body.appendChild(panel);
+            return panel;
+        }
+
+        document.addEventListener('DOMContentLoaded', function(){
+            var panel = document.getElementById('rejectFloatingPanel') || createFloatingPanel();
+            var textarea = panel.querySelector('#rejectFloatingTextarea');
+            var btnCancel = panel.querySelector('#rejectFloatingCancel');
+            var btnConfirm = panel.querySelector('#rejectFloatingConfirm');
+            var activeForm = null;
+
+            function showPanelNear(button, form){
+                activeForm = form;
+                // copy existing notes if any
+                var notesInput = form.querySelector('.admin-notes-input');
+                textarea.value = notesInput ? notesInput.value : '';
+
+                var rect = button.getBoundingClientRect();
+                var top = rect.bottom + window.scrollY + 8;
+                var left = rect.left + window.scrollX;
+                // ensure within viewport
+                var panelWidth = 340;
+                if (left + panelWidth > window.scrollX + window.innerWidth) {
+                    left = window.scrollX + window.innerWidth - panelWidth - 12;
+                }
+                panel.style.left = left + 'px';
+                panel.style.top = top + 'px';
+                panel.style.display = 'block';
+                textarea.focus();
+            }
+
+            function hidePanel(){
+                panel.style.display = 'none';
+                activeForm = null;
+            }
+
+            // Attach handlers to reject buttons
+            document.querySelectorAll('.btn-reject').forEach(function(btn){
+                btn.addEventListener('click', function(e){
+                    var form = btn.closest('form');
+                    if (!form) return;
+                    showPanelNear(btn, form);
+                });
+            });
+
+            btnCancel.addEventListener('click', function(){ hidePanel(); });
+
+            btnConfirm.addEventListener('click', function(){
+                if (!activeForm) { hidePanel(); return; }
+                var notesInput = activeForm.querySelector('.admin-notes-input');
+                if (notesInput) notesInput.value = textarea.value || '';
+                // submit the underlying form normally (will redirect back)
+                activeForm.submit();
+                hidePanel();
+            });
+
+            // Click outside to close
+            document.addEventListener('click', function(e){
+                if (!panel.contains(e.target) && !e.target.classList.contains('btn-reject')) {
+                    hidePanel();
+                }
+            });
+        });
+        })();
+
+        // Backend rejection modal (shared)
+        (function(){
+                document.addEventListener('DOMContentLoaded', function(){
+                        // Create modal markup and append to body
+                        var modalHtml = `
+                        <div class="modal fade" id="backendRejectModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Rejeter la demande</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p id="backendRejectModalText">Êtes-vous sûr de vouloir rejeter cette demande ?</p>
+                                        <div class="mb-3">
+                                            <label for="backendRejectNotes" class="form-label">Raison (optionnel)</label>
+                                            <textarea id="backendRejectNotes" class="form-control" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="button" id="backendRejectConfirm" class="btn btn-danger">Confirmer le rejet</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+
+                        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+                        var backendRejectModalEl = document.getElementById('backendRejectModal');
+                        var backendReject = new bootstrap.Modal(backendRejectModalEl);
+                        var modalText = document.getElementById('backendRejectModalText');
+                        var notesInput = document.getElementById('backendRejectNotes');
+                        var confirmBtn = document.getElementById('backendRejectConfirm');
+                        var currentAction = null;
+
+                        document.querySelectorAll('.btn-reject').forEach(function(btn){
+                                btn.addEventListener('click', function(){
+                                        currentAction = btn.getAttribute('data-action');
+                                        var cname = btn.getAttribute('data-campaign-name') || 'cette campagne';
+                                        modalText.textContent = 'Êtes-vous sûr de vouloir rejeter la demande pour "' + cname + '" ?';
+                                        notesInput.value = '';
+                                        backendReject.show();
+                                });
+                        });
+
+                        confirmBtn.addEventListener('click', function(){
+                                if (!currentAction) return;
+                                // create a form and submit
+                                var f = document.createElement('form');
+                                f.method = 'POST';
+                                f.action = currentAction;
+                                f.style.display = 'none';
+                                // csrf
+                                var token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                                var inputToken = document.createElement('input');
+                                inputToken.type = 'hidden'; inputToken.name = '_token'; inputToken.value = token; f.appendChild(inputToken);
+                                // action
+                                var inputAction = document.createElement('input'); inputAction.type = 'hidden'; inputAction.name = 'action'; inputAction.value = 'reject'; f.appendChild(inputAction);
+                                // notes
+                                var inputNotes = document.createElement('input'); inputNotes.type = 'hidden'; inputNotes.name = 'admin_notes'; inputNotes.value = notesInput.value || ''; f.appendChild(inputNotes);
+                                document.body.appendChild(f);
+                                f.submit();
+                        });
+                });
+        })();
+</script>
+<script>
+(async function(){
+  try {
+    const forms = document.querySelectorAll('.deletion-process-form');
+    console.log('forms found:', forms.length);
+    if (!forms.length) { console.warn('Aucun formulaire .deletion-process-form trouvé'); return; }
+    const f = forms[0]; // changer l'indice si besoin
+    console.log('Using form action:', f.getAttribute('action'));
+    // log fields
+    const fd = new FormData(f);
+    for (const pair of fd.entries()) console.log('field', pair[0], '=', pair[1]);
+    // send the request directly (même format que le script)
+    const res = await fetch(f.getAttribute('action'), {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: fd
+    });
+    console.log('fetch status', res.status);
+    const text = await res.text();
+    try {
+      console.log('response json', JSON.parse(text));
+    } catch(e) {
+      console.log('response text', text);
+    }
+  } catch (err) {
+    console.error('Test submit error', err);
+  }
+})();
+</script>
+<script>
+console.log('URL:', location.href);
+console.log('Found forms count:', document.querySelectorAll('.deletion-process-form').length);
+document.querySelectorAll('.deletion-process-form').forEach((f,i)=>console.log(i, f.getAttribute('action')));
 </script>
 @endpush

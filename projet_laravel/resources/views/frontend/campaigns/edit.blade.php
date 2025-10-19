@@ -44,7 +44,7 @@
             <!-- Main Form Card -->
             <div class="campaign-form-card">
                 <div class="form-content">
-                    <form action="{{ route('campaigns.update', $campaign) }}" method="POST" enctype="multipart/form-data">
+                    <form id="campaignForm" action="{{ route('campaigns.update', $campaign) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         
@@ -533,5 +533,116 @@
             });
         });
     });
+</script>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('campaignForm');
+    if (!form) return;
+
+    function clearErrors() {
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+    }
+
+    function showError(input, message) {
+        input.classList.add('is-invalid');
+        const fb = document.createElement('div');
+        fb.className = 'invalid-feedback';
+        fb.textContent = message;
+        if (input.parentElement) input.parentElement.appendChild(fb);
+    }
+
+    // validate on submit
+    form.addEventListener('submit', function(e) {
+        clearErrors();
+        let hasError = false;
+
+        const name = form.querySelector('[name="name"]');
+        const start_date = form.querySelector('[name="start_date"]');
+        const end_date = form.querySelector('[name="end_date"]');
+        const category = form.querySelector('[name="category"]');
+        const status = form.querySelector('[name="status"]');
+        const goal = form.querySelector('[name="goal"]');
+        const image = form.querySelector('[name="image"]');
+
+        if (!name || !name.value.trim()) {
+            showError(name || form, 'Le nom de la campagne est requis.');
+            hasError = true;
+        } else if (name.value.length > 255) {
+            showError(name, 'Le nom ne peut pas dépasser 255 caractères.');
+            hasError = true;
+        }
+
+        if (!category || !category.value) {
+            showError(category || form, 'Veuillez choisir une catégorie pour votre campagne.');
+            hasError = true;
+        }
+
+        if (!status || !status.value) {
+            showError(status || form, 'Indiquez le statut de la campagne.');
+            hasError = true;
+        }
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (!start_date || !start_date.value) {
+            showError(start_date || form, 'Veuillez saisir la date de début.');
+            hasError = true;
+        } else if (start_date.value < todayStr) {
+            showError(start_date, 'La date de début ne peut pas être antérieure à aujourd\'hui.');
+            hasError = true;
+        }
+
+        if (!end_date || !end_date.value) {
+            showError(end_date || form, 'Veuillez saisir la date de fin.');
+            hasError = true;
+        }
+
+        if (start_date && end_date && start_date.value && end_date.value && start_date.value > end_date.value) {
+            showError(end_date, 'La date de fin doit être après la date de début.');
+            hasError = true;
+        }
+
+        if (goal && goal.value) {
+            const n = Number(goal.value);
+            if (isNaN(n) || n < 0) {
+                showError(goal, 'L\'objectif doit être un nombre positif.');
+                hasError = true;
+            }
+        }
+
+        if (image && image.files && image.files[0]) {
+            const file = image.files[0];
+            const maxSize = 2 * 1024 * 1024; // 2MB
+            if (file.size > maxSize) {
+                showError(image, 'L\'image doit faire moins de 2MB.');
+                hasError = true;
+            }
+        }
+
+        if (hasError) {
+            e.preventDefault();
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) firstInvalid.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }
+    });
+
+    // validate fields on blur and show custom messages
+    ['name','category','status','start_date','end_date'].forEach(function(fieldName) {
+        const field = form.querySelector('[name="' + fieldName + '"]');
+        if (!field) return;
+        field.addEventListener('blur', function() {
+            clearErrors();
+            if (!field.value || !String(field.value).trim()) {
+                showError(field, 'Ce champ est obligatoire.');
+            } else if (fieldName === 'start_date') {
+                const todayStr = new Date().toISOString().split('T')[0];
+                if (field.value < todayStr) showError(field, 'La date de début ne peut pas être antérieure à aujourd\'hui.');
+            }
+        });
+    });
+});
 </script>
 @endpush

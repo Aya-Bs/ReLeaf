@@ -41,7 +41,7 @@
             <!-- Main Form Card -->
             <div class="campaign-form-card">
                 <div class="form-content">
-                    <form action="{{ route('campaigns.store') }}" method="POST" enctype="multipart/form-data">
+                    <form id="campaignForm" novalidate action="{{ route('campaigns.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         
                         <div class="row">
@@ -50,9 +50,9 @@
                                     <label for="name" class="form-label fw-bold">
                                         <i class="fas fa-tag me-2 text-eco"></i>Nom de la campagne *
                                     </label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                                           id="name" name="name" value="{{ old('name') }}" 
-                                           placeholder="ex: Nettoyage des plages de Marseille" required>
+                     <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                         id="name" name="name" value="{{ old('name') }}" 
+                         placeholder="ex: Nettoyage des plages de Marseille">
                                     @error('name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -76,8 +76,8 @@
                                             <label for="category" class="form-label fw-bold">
                                                 <i class="fas fa-folder me-2 text-eco"></i>Catégorie *
                                             </label>
-                                            <select class="form-select @error('category') is-invalid @enderror" 
-                                                    id="category" name="category" required>
+                        <select class="form-select @error('category') is-invalid @enderror" 
+                            id="category" name="category">
                                                 <option value="">🌱 Sélectionnez une catégorie</option>
                                                 @foreach(['reforestation' => '🌲 Reforestation', 'nettoyage' => '🧹 Nettoyage', 'sensibilisation' => '📢 Sensibilisation', 'recyclage' => '♻️ Recyclage', 'biodiversite' => '🦋 Biodiversité', 'energie_renouvelable' => '⚡ Énergie Renouvelable', 'autre' => '🔧 Autre'] as $value => $label)
                                                     <option value="{{ $value }}" {{ old('category') == $value ? 'selected' : '' }}>
@@ -95,8 +95,8 @@
                                             <label for="status" class="form-label fw-bold">
                                                 <i class="fas fa-toggle-on me-2 text-eco"></i>Statut *
                                             </label>
-                                            <select class="form-select @error('status') is-invalid @enderror" 
-                                                    id="status" name="status" required>
+                        <select class="form-select @error('status') is-invalid @enderror" 
+                            id="status" name="status">
                                                 @foreach(['active' => '🟢 Active', 'inactive' => '🔴 Inactive', 'completed' => '✅ Terminée', 'cancelled' => '❌ Annulée'] as $value => $label)
                                                     <option value="{{ $value }}" {{ old('status') == $value ? 'selected' : '' }}>
                                                         {{ $label }}
@@ -116,8 +116,8 @@
                                             <label for="start_date" class="form-label fw-bold">
                                                 <i class="fas fa-calendar-plus me-2 text-eco"></i>Date de début *
                                             </label>
-                                            <input type="date" class="form-control @error('start_date') is-invalid @enderror" 
-                                                   id="start_date" name="start_date" value="{{ old('start_date') }}" required>
+                          <input type="date" class="form-control @error('start_date') is-invalid @enderror" 
+                              id="start_date" name="start_date" value="{{ old('start_date') }}">
                                             @error('start_date')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -128,8 +128,8 @@
                                             <label for="end_date" class="form-label fw-bold">
                                                 <i class="fas fa-calendar-check me-2 text-eco"></i>Date de fin *
                                             </label>
-                                            <input type="date" class="form-control @error('end_date') is-invalid @enderror" 
-                                                   id="end_date" name="end_date" value="{{ old('end_date') }}" required>
+                          <input type="date" class="form-control @error('end_date') is-invalid @enderror" 
+                              id="end_date" name="end_date" value="{{ old('end_date') }}">
                                             @error('end_date')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -560,5 +560,124 @@
             });
         });
     });
+</script>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('campaignForm');
+    if (!form) return;
+
+    function clearErrors() {
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+    }
+
+    function showError(input, message) {
+        input.classList.add('is-invalid');
+        const fb = document.createElement('div');
+        fb.className = 'invalid-feedback';
+        fb.textContent = message;
+        if (input.parentElement) input.parentElement.appendChild(fb);
+    }
+
+    form.addEventListener('submit', function(e) {
+        clearErrors();
+        let hasError = false;
+
+        const name = form.querySelector('[name="name"]');
+        const start_date = form.querySelector('[name="start_date"]');
+        const end_date = form.querySelector('[name="end_date"]');
+        const category = form.querySelector('[name="category"]');
+        const status = form.querySelector('[name="status"]');
+        const goal = form.querySelector('[name="goal"]');
+        const image = form.querySelector('[name="image"]');
+
+        if (!name || !name.value.trim()) {
+            showError(name || form, 'Le nom de la campagne est requis.');
+            hasError = true;
+        } else if (name.value.length > 255) {
+            showError(name, 'Le nom ne peut pas dépasser 255 caractères.');
+            hasError = true;
+        }
+
+        if (!category || !category.value) {
+            showError(category || form, 'Veuillez choisir une catégorie pour votre campagne.');
+            hasError = true;
+        }
+
+        if (!status || !status.value) {
+            showError(status || form, 'Indiquez le statut de la campagne.');
+            hasError = true;
+        }
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (!start_date || !start_date.value) {
+            showError(start_date || form, 'Veuillez saisir la date de début.');
+            hasError = true;
+        } else if (start_date.value < todayStr) {
+            showError(start_date, 'La date de début ne peut pas être antérieure à aujourd\'hui.');
+            hasError = true;
+        }
+
+        if (!end_date || !end_date.value) {
+            showError(end_date || form, 'Veuillez saisir la date de fin.');
+            hasError = true;
+        }
+
+        if (start_date && end_date && start_date.value && end_date.value && start_date.value > end_date.value) {
+            showError(end_date, 'La date de fin doit être après la date de début.');
+            hasError = true;
+        }
+
+        if (goal && goal.value) {
+            const n = Number(goal.value);
+            if (isNaN(n) || n < 0) {
+                showError(goal, 'L\'objectif doit être un nombre positif.');
+                hasError = true;
+            }
+        }
+
+        if (image && image.files && image.files[0]) {
+            const file = image.files[0];
+            const maxSize = 2 * 1024 * 1024; // 2MB
+            if (file.size > maxSize) {
+                showError(image, 'L\'image doit faire moins de 2MB.');
+                hasError = true;
+            }
+        }
+
+        if (hasError) {
+            e.preventDefault();
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) firstInvalid.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }
+    });
+
+    // validate on blur for required fields
+    ['name','category','status','start_date','end_date'].forEach(function(fieldName) {
+        const field = form.querySelector('[name="' + fieldName + '"]');
+        if (!field) return;
+        field.addEventListener('blur', function() {
+            // clear only this field errors
+            if (field.classList.contains('is-invalid')) {
+                field.classList.remove('is-invalid');
+                const fb = field.parentElement && field.parentElement.querySelector('.invalid-feedback');
+                if (fb) fb.remove();
+            }
+            if (!field.value || !String(field.value).trim()) {
+                showError(field, 'Ce champ est obligatoire.');
+                return;
+            }
+            if (fieldName === 'start_date') {
+                const todayStr = new Date().toISOString().split('T')[0];
+                if (field.value < todayStr) {
+                    showError(field, 'La date de début ne peut pas être antérieure à aujourd\'hui.');
+                }
+            }
+        });
+    });
+});
 </script>
 @endpush

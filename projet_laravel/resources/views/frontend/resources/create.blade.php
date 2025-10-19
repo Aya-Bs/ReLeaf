@@ -41,7 +41,7 @@
             <!-- Main Form Card -->
             <div class="resource-form-card">
                 <div class="form-content">
-                    <form action="{{ route('resources.store') }}" method="POST" enctype="multipart/form-data">
+                    <form id="resourceForm" novalidate action="{{ route('resources.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         
                         <div class="row">
@@ -50,9 +50,9 @@
                                     <label for="name" class="form-label fw-bold">
                                         <i class="fas fa-tag me-2 text-eco"></i>Nom de la ressource *
                                     </label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                                           id="name" name="name" value="{{ old('name') }}" 
-                                           placeholder="ex: Plants d'arbres, Gants de protection..." required>
+                     <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                         id="name" name="name" value="{{ old('name') }}" 
+                         placeholder="ex: Plants d'arbres, Gants de protection...">
                                     @error('name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -76,8 +76,8 @@
                                             <label for="campaign_id" class="form-label fw-bold">
                                                 <i class="fas fa-leaf me-2 text-eco"></i>Campagne associée *
                                             </label>
-                                            <select class="form-select @error('campaign_id') is-invalid @enderror" 
-                                                    id="campaign_id" name="campaign_id" required>
+                                                <select class="form-select @error('campaign_id') is-invalid @enderror" 
+                                                        id="campaign_id" name="campaign_id">
                                                 <option value="">🌱 Sélectionnez une campagne</option>
                                                 @foreach($campaigns as $campaign)
                                                     <option value="{{ $campaign->id }}" {{ old('campaign_id', request('campaign_id')) == $campaign->id ? 'selected' : '' }}>
@@ -109,9 +109,9 @@
                                     <div class="col-md-4">
                                         <div class="mb-3">
                                             <label for="quantity_needed" class="form-label">Quantité nécessaire *</label>
-                                            <input type="number" class="form-control @error('quantity_needed') is-invalid @enderror" 
-                                                   id="quantity_needed" name="quantity_needed" 
-                                                   value="{{ old('quantity_needed', 1) }}" min="1" required>
+                                                <input type="number" class="form-control @error('quantity_needed') is-invalid @enderror" 
+                                                       id="quantity_needed" name="quantity_needed" 
+                                                       value="{{ old('quantity_needed', 1) }}" min="1">
                                             @error('quantity_needed')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -592,6 +592,132 @@ document.addEventListener('DOMContentLoaded', function() {
         control.addEventListener('blur', function() {
             if (!this.value) {
                 this.parentElement.classList.remove('focused');
+            }
+        });
+    });
+});
+</script>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('resourceForm');
+    if (!form) return;
+
+    function clearErrors() {
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+    }
+
+    function showError(input, message) {
+        if (!input) return;
+        input.classList.add('is-invalid');
+        const fb = document.createElement('div');
+        fb.className = 'invalid-feedback';
+        fb.textContent = message;
+        if (input.parentElement) input.parentElement.appendChild(fb);
+    }
+
+    form.addEventListener('submit', function(e) {
+        clearErrors();
+        let hasError = false;
+
+        const name = form.querySelector('[name="name"]');
+        const campaign_id = form.querySelector('[name="campaign_id"]');
+        const quantity_needed = form.querySelector('[name="quantity_needed"]');
+        const quantity_pledged = form.querySelector('[name="quantity_pledged"]');
+        const unit = form.querySelector('[name="unit"]');
+        const resource_type = form.querySelector('[name="resource_type"]');
+        const category = form.querySelector('[name="category"]');
+        const priority = form.querySelector('[name="priority"]');
+        const status = form.querySelector('[name="status"]');
+        const image = form.querySelector('[name="image"]');
+
+        if (!name || !name.value.trim()) {
+            showError(name || form, 'Le nom de la ressource est requis.');
+            hasError = true;
+        }
+
+        if (!campaign_id || !campaign_id.value) {
+            showError(campaign_id || form, 'Veuillez sélectionner une campagne.');
+            hasError = true;
+        }
+
+        if (!quantity_needed || !quantity_needed.value || Number(quantity_needed.value) < 1) {
+            showError(quantity_needed || form, 'La quantité nécessaire doit être au moins 1.');
+            hasError = true;
+        }
+
+        if (quantity_pledged && quantity_pledged.value && Number(quantity_pledged.value) < 0) {
+            showError(quantity_pledged, 'La quantité promise doit être positive.');
+            hasError = true;
+        }
+
+        if (!unit || !unit.value.trim()) {
+            showError(unit || form, 'L\'unité est requise.');
+            hasError = true;
+        }
+
+        if (!resource_type || !resource_type.value) {
+            showError(resource_type || form, 'Le type de ressource est requis.');
+            hasError = true;
+        }
+
+        if (!category || !category.value) {
+            showError(category || form, 'La catégorie est requise.');
+            hasError = true;
+        }
+
+        if (!priority || !priority.value) {
+            showError(priority || form, 'La priorité est requise.');
+            hasError = true;
+        }
+
+        if (!status || !status.value) {
+            showError(status || form, 'Le statut est requis.');
+            hasError = true;
+        }
+
+        if (image && image.files && image.files[0]) {
+            const file = image.files[0];
+            const maxSize = 2 * 1024 * 1024; // 2MB
+            if (file.size > maxSize) {
+                showError(image, 'L\'image doit faire moins de 2MB.');
+                hasError = true;
+            }
+        }
+
+        if (hasError) {
+            e.preventDefault();
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) firstInvalid.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }
+    });
+
+    // blur validation for required fields with custom messages
+    ['name','campaign_id','quantity_needed','unit','resource_type','category','priority','status'].forEach(function(fieldName) {
+        const field = form.querySelector('[name="' + fieldName + '"]');
+        if (!field) return;
+        field.addEventListener('blur', function() {
+            // remove existing error for this field
+            if (field.classList.contains('is-invalid')) {
+                field.classList.remove('is-invalid');
+                const fb = field.parentElement && field.parentElement.querySelector('.invalid-feedback');
+                if (fb) fb.remove();
+            }
+            if (!field.value || String(field.value).trim() === '') {
+                const messages = {
+                    name: 'Le nom de la ressource est requis.',
+                    campaign_id: 'Veuillez sélectionner la campagne associée.',
+                    quantity_needed: 'La quantité nécessaire doit être au moins 1.',
+                    unit: 'Indiquez l\'unité (ex: kg, litre).',
+                    resource_type: 'Sélectionnez un type de ressource.',
+                    category: 'Sélectionnez une catégorie.',
+                    priority: 'Choisissez la priorité.',
+                    status: 'Choisissez le statut initial.'
+                };
+                showError(field, messages[fieldName] || 'Ce champ est requis.');
             }
         });
     });

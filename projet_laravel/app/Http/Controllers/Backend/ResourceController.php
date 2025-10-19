@@ -54,7 +54,12 @@ class ResourceController extends Controller
         }
 
         $resources = $query->paginate(15);
-        $campaigns = Campaign::where('status', 'active')->get();
+        // If the current user is an organizer, only show their campaigns in dropdowns/filters
+        $campaignsQuery = Campaign::where('status', 'active');
+        if (auth()->check() && auth()->user()->isOrganizer()) {
+            $campaignsQuery->where('organizer_id', auth()->id());
+        }
+        $campaigns = $campaignsQuery->get();
 
         // Statistiques
         $totalResources = Resource::count();
@@ -117,7 +122,12 @@ class ResourceController extends Controller
         }
 
         $resources = $query->paginate(16);
-        $campaigns = Campaign::where('status', 'active')->get();
+        // For the public "all" resources page, if user is organizer limit campaigns in the selector
+        $campaignsQuery = Campaign::where('status', 'active');
+        if (auth()->check() && auth()->user()->isOrganizer()) {
+            $campaignsQuery->where('organizer_id', auth()->id());
+        }
+        $campaigns = $campaignsQuery->get();
 
         return view('frontend.resources.all', compact('resources', 'campaigns'));
     }

@@ -268,11 +268,6 @@ class CampaignController extends Controller
 
     public function processDeletionRequest(Request $request, CampaignDeletionRequest $deletionRequest)
     {
-        \Log::info('Process deletion request called', [
-        'deletion_request_id' => $deletionRequest->id,
-        'action' => $request->action,
-        'user_id' => Auth::id()
-    ]);
     
         if (!Auth::user()->isAdmin()) {
             return redirect()->route('dashboard')->with('error', 'Accès non autorisé.');
@@ -306,8 +301,12 @@ class CampaignController extends Controller
                 }
             });
 
-            return redirect()->route('backend.campaigns.deletion-requests')
-                ->with('success', 'Demande de suppression approuvée et campagne supprimée.');
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['status' => 'ok', 'message' => 'Demande approuvée et campagne supprimée.']);
+            }
+
+            // Retourner à la page précédente au lieu d'une route spécifique pour éviter les 404
+            return redirect()->back()->with('success', 'Demande de suppression approuvée et campagne supprimée.');
         } else {
             // Rejeter la demande
             $deletionRequest->update([
@@ -317,8 +316,12 @@ class CampaignController extends Controller
                 'processed_at' => now()
             ]);
 
-            return redirect()->route('backend.campaigns.deletion-requests')
-                ->with('success', 'Demande de suppression rejetée.');
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['status' => 'ok', 'message' => 'Demande rejetée.']);
+            }
+
+            // Retourner à la page précédente afin de simplement rafraîchir l'interface
+            return redirect()->back()->with('success', 'Demande de suppression rejetée.');
         }
     }
 

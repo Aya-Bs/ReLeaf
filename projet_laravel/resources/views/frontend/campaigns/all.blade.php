@@ -16,12 +16,7 @@
         </div>
     </div>
 
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
+    <!-- Alerts handled in layout -->
 
     <!-- Search and Filters Section (same UI as index) -->
     <div class="row mb-4">
@@ -81,7 +76,7 @@
                 @foreach($displayCampaigns as $campaign)
                 <div class="campaign-card">
                     <div class="card">
-                        <img src="{{ $campaign->image_url ? Storage::url($campaign->image_url) : 'placeholder.jpg' }}" class="card-img-top" alt="{{ $campaign->name }}">
+                        <img src="{{ $campaign->image_url ? Storage::url($campaign->image_url) : asset('images/events/jardin-urbain.svg') }}" class="card-img-top" alt="{{ $campaign->name }}">
                         <div class="card-body">
                             <h5 class="card-title">{{ $campaign->name }}</h5>
                             <p class="card-text">{{ ucfirst($campaign->category) }}</p>

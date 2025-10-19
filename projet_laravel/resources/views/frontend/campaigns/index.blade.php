@@ -16,13 +16,7 @@
         </div>
     </div>
 
-    <!-- Alerts Section -->
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
+    <!-- Alerts handled in layout -->
 
     <!-- Search and Filters Section -->
     <div class="row mb-4">
@@ -104,7 +98,8 @@
     @php
         $userCampaigns = $campaigns->filter(function($campaign) {
             return $campaign->organizer_id === auth()->id();
-        });
+        })->values();
+        $userCampaignsCount = $userCampaigns->count();
     @endphp
 
     <!-- Updated Campaigns Carousel -->
@@ -113,7 +108,7 @@
             <button id="prevButton" class="carousel-nav left">&#8249;</button>
             <div id="campaignsCarousel" class="carousel-container">
                 @php $lastCampaign = $userCampaigns->last(); $firstCampaign = $userCampaigns->first(); @endphp
-                @if($lastCampaign)
+                @if($userCampaignsCount > 1 && $lastCampaign)
                 <div class="campaign-card clone">
                     <div class="card">
                         <img src="{{ $lastCampaign->image_url ? Storage::url($lastCampaign->image_url) : asset('images/events/jardin-urbain.svg') }}" class="card-img-top" alt="{{ $lastCampaign->name }}">
@@ -144,7 +139,7 @@
                     </div>
                 </div>
                 @endforeach
-                @if($firstCampaign)
+                @if($userCampaignsCount > 1 && $firstCampaign)
                 <div class="campaign-card clone">
                     <div class="card">
                         <img src="{{ $firstCampaign->image_url ? Storage::url($firstCampaign->image_url) : asset('images/events/jardin-urbain.svg') }}" class="card-img-top" alt="{{ $firstCampaign->name }}">

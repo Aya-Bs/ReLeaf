@@ -44,7 +44,7 @@
             <!-- Main Form Card -->
             <div class="resource-form-card">
                 <div class="form-content">
-                    <form action="{{ route('resources.update', $resource) }}" method="POST" enctype="multipart/form-data">
+                    <form id="resourceForm" novalidate action="{{ route('resources.update', $resource) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         
@@ -52,8 +52,8 @@
                             <div class="col-md-8">
                                 <div class="mb-3">
                                     <label for="name" class="form-label">Nom de la ressource *</label>
-                                    <input type="text" class="form-control form-control-sm @error('name') is-invalid @enderror" 
-                                           id="name" name="name" value="{{ old('name', $resource->name) }}" required>
+                     <input type="text" class="form-control form-control-sm @error('name') is-invalid @enderror" 
+                         id="name" name="name" value="{{ old('name', $resource->name) }}">
                                     @error('name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -72,8 +72,8 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="campaign_id" class="form-label">Campagne associée *</label>
-                                            <select class="form-control form-control-sm @error('campaign_id') is-invalid @enderror" 
-                                                    id="campaign_id" name="campaign_id" required>
+                        <select class="form-control form-control-sm @error('campaign_id') is-invalid @enderror" 
+                            id="campaign_id" name="campaign_id">
                                                 <option value="">Sélectionnez une campagne</option>
                                                 @foreach($campaigns as $campaign)
                                                     <option value="{{ $campaign->id }}" {{ old('campaign_id', $resource->campaign_id) == $campaign->id ? 'selected' : '' }}>
@@ -102,9 +102,9 @@
                                     <div class="col-md-4">
                                         <div class="mb-3">
                                             <label for="quantity_needed" class="form-label">Quantité nécessaire *</label>
-                                            <input type="number" class="form-control form-control-sm @error('quantity_needed') is-invalid @enderror" 
-                                                   id="quantity_needed" name="quantity_needed" 
-                                                   value="{{ old('quantity_needed', $resource->quantity_needed) }}" min="1" required>
+                          <input type="number" class="form-control form-control-sm @error('quantity_needed') is-invalid @enderror" 
+                              id="quantity_needed" name="quantity_needed" 
+                              value="{{ old('quantity_needed', $resource->quantity_needed) }}" min="1">
                                             @error('quantity_needed')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -124,8 +124,8 @@
                                     <div class="col-md-4">
                                         <div class="mb-3">
                                             <label for="unit" class="form-label">Unité *</label>
-                                            <input type="text" class="form-control form-control-sm @error('unit') is-invalid @enderror" 
-                                                   id="unit" name="unit" value="{{ old('unit', $resource->unit) }}" required>
+                          <input type="text" class="form-control form-control-sm @error('unit') is-invalid @enderror" 
+                              id="unit" name="unit" value="{{ old('unit', $resource->unit) }}">
                                             @error('unit')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -137,8 +137,8 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="resource_type" class="form-label">Type de ressource *</label>
-                                            <select class="form-control form-control-sm @error('resource_type') is-invalid @enderror" 
-                                                    id="resource_type" name="resource_type" required>
+                        <select class="form-control form-control-sm @error('resource_type') is-invalid @enderror" 
+                            id="resource_type" name="resource_type">
                                                 @foreach(['money' => 'Argent', 'food' => 'Nourriture', 'clothing' => 'Vêtements', 'medical' => 'Médical', 'equipment' => 'Équipement', 'human' => 'Main d\'œuvre', 'other' => 'Autre'] as $value => $label)
                                                     <option value="{{ $value }}" {{ old('resource_type', $resource->resource_type) == $value ? 'selected' : '' }}>
                                                         {{ $label }}
@@ -153,8 +153,8 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="category" class="form-label">Catégorie *</label>
-                                            <select class="form-control form-control-sm @error('category') is-invalid @enderror" 
-                                                    id="category" name="category" required>
+                        <select class="form-control form-control-sm @error('category') is-invalid @enderror" 
+                            id="category" name="category">
                                                 @foreach(['materiel' => 'Matériel', 'financier' => 'Financier', 'humain' => 'Humain', 'technique' => 'Technique'] as $value => $label)
                                                     <option value="{{ $value }}" {{ old('category', $resource->category) == $value ? 'selected' : '' }}>
                                                         {{ $label }}
@@ -172,8 +172,8 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="priority" class="form-label">Priorité *</label>
-                                    <select class="form-control form-control-sm @error('priority') is-invalid @enderror" 
-                                            id="priority" name="priority" required>
+                    <select class="form-control form-control-sm @error('priority') is-invalid @enderror" 
+                        id="priority" name="priority">
                                         @foreach(['low' => 'Basse', 'medium' => 'Moyenne', 'high' => 'Haute', 'urgent' => 'Urgente'] as $value => $label)
                                             <option value="{{ $value }}" {{ old('priority', $resource->priority) == $value ? 'selected' : '' }}>
                                                 {{ $label }}
@@ -187,8 +187,8 @@
 
                                 <div class="mb-3">
                                     <label for="status" class="form-label">Statut *</label>
-                                    <select class="form-control form-control-sm @error('status') is-invalid @enderror" 
-                                            id="status" name="status" required>
+                    <select class="form-control form-control-sm @error('status') is-invalid @enderror" 
+                        id="status" name="status">
                                         @foreach(['needed' => 'Nécessaire', 'pledged' => 'Promis', 'received' => 'Reçu', 'in_use' => 'En utilisation'] as $value => $label)
                                             <option value="{{ $value }}" {{ old('status', $resource->status) == $value ? 'selected' : '' }}>
                                                 {{ $label }}
@@ -515,6 +515,105 @@
         font-weight: 600 !important;
     }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('resourceForm');
+    if (!form) return;
+
+    function clearErrors() {
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+    }
+
+    function showError(input, message) {
+        if (!input) return;
+        input.classList.add('is-invalid');
+        const fb = document.createElement('div');
+        fb.className = 'invalid-feedback';
+        fb.textContent = message;
+        if (input.parentElement) input.parentElement.appendChild(fb);
+    }
+
+    form.addEventListener('submit', function(e) {
+        clearErrors();
+        let hasError = false;
+
+        const name = form.querySelector('[name="name"]');
+        const campaign_id = form.querySelector('[name="campaign_id"]');
+        const quantity_needed = form.querySelector('[name="quantity_needed"]');
+        const quantity_pledged = form.querySelector('[name="quantity_pledged"]');
+        const unit = form.querySelector('[name="unit"]');
+        const resource_type = form.querySelector('[name="resource_type"]');
+        const category = form.querySelector('[name="category"]');
+        const priority = form.querySelector('[name="priority"]');
+        const status = form.querySelector('[name="status"]');
+        const image = form.querySelector('[name="image"]');
+
+        if (!name || !name.value.trim()) {
+            showError(name || form, 'Le nom de la ressource est requis.');
+            hasError = true;
+        }
+
+        if (!campaign_id || !campaign_id.value) {
+            showError(campaign_id || form, 'Veuillez sélectionner une campagne.');
+            hasError = true;
+        }
+
+        if (!quantity_needed || !quantity_needed.value || Number(quantity_needed.value) < 1) {
+            showError(quantity_needed || form, 'La quantité nécessaire doit être au moins 1.');
+            hasError = true;
+        }
+
+        if (quantity_pledged && quantity_pledged.value && Number(quantity_pledged.value) < 0) {
+            showError(quantity_pledged, 'La quantité promise doit être positive.');
+            hasError = true;
+        }
+
+        if (!unit || !unit.value.trim()) {
+            showError(unit || form, 'L\'unité est requise.');
+            hasError = true;
+        }
+
+        if (!resource_type || !resource_type.value) {
+            showError(resource_type || form, 'Le type de ressource est requis.');
+            hasError = true;
+        }
+
+        if (!category || !category.value) {
+            showError(category || form, 'La catégorie est requise.');
+            hasError = true;
+        }
+
+        if (!priority || !priority.value) {
+            showError(priority || form, 'La priorité est requise.');
+            hasError = true;
+        }
+
+        if (!status || !status.value) {
+            showError(status || form, 'Le statut est requis.');
+            hasError = true;
+        }
+
+        if (image && image.files && image.files[0]) {
+            const file = image.files[0];
+            const maxSize = 2 * 1024 * 1024; // 2MB
+            if (file.size > maxSize) {
+                showError(image, 'L\'image doit faire moins de 2MB.');
+                hasError = true;
+            }
+        }
+
+        if (hasError) {
+            e.preventDefault();
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) firstInvalid.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }
+    });
+});
+</script>
 @endpush
 
 @push('scripts')
