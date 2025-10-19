@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\User;
 use App\Models\Campaign;
+use App\Services\SponsorRewardService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +16,7 @@ class HomeController extends Controller
     /**
      * Landing page accessible to guests with home-like features.
      */
-    public function landing(): View
+    public function landing(SponsorRewardService $rewards): View
     {
         $stats = [
             'total_users' => User::where('role', 'user')->count(),
@@ -43,12 +44,13 @@ class HomeController extends Controller
             ->take(5)
             ->get();
 
-        return view('frontend.landing', compact('stats', 'recentEvents', 'ecoAmbassadors', 'featuredCampaigns'));
+        $topSponsors = $rewards->topSponsors(10, 90);
+        return view('frontend.landing', compact('stats', 'recentEvents', 'ecoAmbassadors', 'featuredCampaigns', 'topSponsors'));
     }
     /**
      * Afficher la page d'accueil EcoEvents.
      */
-    public function index(): View
+    public function index(SponsorRewardService $rewards): View
     {
         // Récupérer les statistiques pour le dashboard
         $stats = [
@@ -90,7 +92,8 @@ class HomeController extends Controller
             ->take(5)
             ->get();
 
-        return view('frontend.home', compact('stats', 'recentEvents', 'ecoAmbassadors', 'featuredCampaigns'));
+        $topSponsors = $rewards->topSponsors(10, 90);
+        return view('frontend.home', compact('stats', 'recentEvents', 'ecoAmbassadors', 'featuredCampaigns', 'topSponsors'));
     }
 
     /**

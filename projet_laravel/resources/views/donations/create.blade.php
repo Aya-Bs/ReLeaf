@@ -152,13 +152,16 @@ $collected = \App\Models\Donation::where('event_id', $event->id)
                                         </div>
                                     </div>
 
-                                    <!-- Submit Button -->
+                                    <!-- Submit Buttons -->
                                     <div class="row">
                                         <div class="col-12 text-center">
-                                            <button type="submit" class="btn btn-success btn-lg px-5">
+                                            <button type="submit" class="btn btn-success btn-lg px-5 js-donate-submit" data-default-label="Faire le don" data-card-label="Payer par carte">
                                                 <i class="fas fa-heart me-2"></i>
-                                                Faire le don
+                                                <span class="js-donate-label">Faire le don</span>
                                             </button>
+                                            <div class="form-text mt-2" id="card-hint" style="display:none;">
+                                                Vous serez redirigé vers une page de paiement sécurisée Stripe.
+                                            </div>
                                         </div>
                                     </div>
                                 </form>
@@ -182,6 +185,22 @@ $collected = \App\Models\Donation::where('event_id', $event->id)
         const hiddenType = form.querySelector('input[name="type"]').value;
         if (hiddenType === 'sponsor' && sponsorNameField) {
             sponsorNameField.style.display = 'flex';
+        }
+
+        // Toggle button label when card is selected
+        const method = document.getElementById('payment_method');
+        const labelSpan = document.querySelector('.js-donate-label');
+        const hint = document.getElementById('card-hint');
+
+        function refreshLabel() {
+            if (!method || !labelSpan) return;
+            const isCard = method.value === 'card';
+            labelSpan.textContent = isCard ? 'Payer par carte' : 'Faire le don';
+            if (hint) hint.style.display = isCard ? 'block' : 'none';
+        }
+        if (method) {
+            method.addEventListener('change', refreshLabel);
+            refreshLabel();
         }
     });
 </script>

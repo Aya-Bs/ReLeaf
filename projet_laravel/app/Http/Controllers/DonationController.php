@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
+use App\Services\Payments\StripePaymentService;
 
 class DonationController extends Controller
 {
@@ -104,14 +105,37 @@ class DonationController extends Controller
             'donated_at' => now(),
         ]);
 
-        // Send confirmation email
+        // Send confirmation email to donor
         try {
             Mail::to($donation->donor_email)->queue(new DonationReceivedMail($donation));
         } catch (\Throwable $e) {
             // Fail silently (could log later)
         }
 
-        // Redirect to the success page with the newly created donation
+        // Notify organizer (event owner) of a new donation
+        try {
+            $organizer = $event->user;
+            if ($organizer && $organizer->email) {
+                Mail::to($organizer->email)->queue(new \App\Mail\OrganizerDonationAlert($donation));
+            }
+        } catch (\Throwable $e) {
+            // Fail silently
+        }
+
+        // If user selected card, create Stripe Checkout and redirect there.
+        if ($donation->payment_method === 'card') {
+            $stripe = new StripePaymentService();
+            try {
+                $session = $stripe->createCheckoutSession($donation);
+                // For non-AJAX form, do a 303 redirect to Checkout URL
+                return redirect()->away($session['url']);
+            } catch (\Throwable $e) {
+                return redirect()->route('donations.success', $donation)
+                    ->with('error', "Impossible de démarrer le paiement par carte: " . $e->getMessage());
+            }
+        }
+
+        // Redirect to the success page with the newly created donation (offline methods)
         return redirect()->route('donations.success', $donation)
             ->with('success', 'Votre don a été enregistré avec succès. Merci pour votre soutien!');
     }
@@ -121,6 +145,15 @@ class DonationController extends Controller
      */
     public function success(Donation $donation): View
     {
+        // If returning from Stripe, try to finalize if session_id provided
+        if (request()->has('session_id') && $donation->stripe_session_id) {
+            try {
+                $service = new StripePaymentService();
+                $service->finalizeDonationFromSession($donation, request('session_id'));
+            } catch (\Throwable $e) {
+                // non-blocking
+            }
+        }
         return view('donations.success', compact('donation'));
     }
 

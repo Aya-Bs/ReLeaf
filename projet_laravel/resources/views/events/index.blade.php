@@ -199,6 +199,13 @@
                                             <i class="fas fa-sign-in-alt me-2"></i>Connectez-vous pour réserver
                                         </a>
                                     @endif
+
+                                    {{-- Donation: always available for published/not cancelled events --}}
+                                    @if($event->status !== 'cancelled')
+                                    <a href="{{ route('donations.create', $event) }}" class="btn btn-success mt-2 w-100">
+                                        <i class="fas fa-donate me-2"></i>Faire un don
+                                    </a>
+                                    @endif
                                 </div>
                             </div>
                             
