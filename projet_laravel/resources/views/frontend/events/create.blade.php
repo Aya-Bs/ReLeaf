@@ -160,28 +160,48 @@
                                         @enderror
 
                                     </div>
-                                    <!-- Sponsor selectable with search -->
+                                    <!-- Sponsor combobox (single field: type to filter, empty shows all) -->
                                     <div class="row mb-3">
                                         <div class="col-md-12">
-                                            <label for="sponsor_search" class="form-label">
+                                            <label for="sponsor_input" class="form-label">
                                                 <i class="fas fa-handshake me-2" style="color: #2d5a27;"></i>Sélectionner un sponsor (optionnel)
                                             </label>
                                             @php
                                             $sponsors = \App\Models\Sponsor::validated()->with('user')->get();
+                                            $selectedSponsor = null;
+                                            if (old('sponsor_id')) {
+                                            $selectedSponsor = $sponsors->firstWhere('id', old('sponsor_id'));
+                                            }
+                                            $selectedDisplay = $selectedSponsor ? (($selectedSponsor->company_name ?? ($selectedSponsor->user->name ?? 'Sponsor')) . ($selectedSponsor->city ? ' - ' . $selectedSponsor->city : '')) : '';
                                             @endphp
-                                            <div class="input-group mb-2">
-                                                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                                <input type="text" id="sponsor_search" class="form-control" placeholder="Rechercher par nom/entreprise...">
+                                            <div class="position-relative" id="sponsor-combobox">
+                                                <div class="input-group">
+                                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                                    <input type="text" id="sponsor_input" class="form-control" placeholder="Tapez pour chercher un sponsor..." autocomplete="off" value="{{ $selectedDisplay }}">
+                                                    <button class="btn btn-outline-secondary" type="button" id="sponsor_clear" title="Effacer">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                                <input type="hidden" name="sponsor_id" id="sponsor_id" value="{{ old('sponsor_id') }}">
+                                                <div id="sponsor_dropdown" class="dropdown-menu w-100" style="max-height: 240px; overflow-y: auto;">
+                                                    <button type="button" class="dropdown-item" data-id="" data-label="Aucun sponsor (désélectionner)">
+                                                        Aucun sponsor
+                                                    </button>
+                                                    <div class="dropdown-divider"></div>
+                                                    @foreach($sponsors as $s)
+                                                    @php
+                                                    $label = ($s->company_name ?? ($s->user->name ?? 'Sponsor')) . ($s->city ? ' - ' . $s->city : '');
+                                                    $search = strtolower(($s->company_name ?? '') . ' ' . ($s->user->name ?? '') . ' ' . ($s->city ?? ''));
+                                                    @endphp
+                                                    <button type="button" class="dropdown-item sponsor-option" data-id="{{ $s->id }}" data-search="{{ $search }}" data-label="{{ $label }}">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fas fa-building me-2 text-muted"></i>
+                                                            <span>{{ $label }}</span>
+                                                        </div>
+                                                    </button>
+                                                    @endforeach
+                                                </div>
                                             </div>
-                                            <select class="form-select" id="sponsor_id" name="sponsor_id">
-                                                <option value="">Aucun sponsor</option>
-                                                @foreach($sponsors as $s)
-                                                <option value="{{ $s->id }}" data-search="{{ strtolower(($s->company_name ?? '') . ' ' . ($s->user->name ?? '') . ' ' . ($s->city ?? '') ) }}" {{ old('sponsor_id') == $s->id ? 'selected' : '' }}>
-                                                    {{ $s->company_name ?? ($s->user->name ?? 'Sponsor') }}
-                                                    @if($s->city) - {{ $s->city }} @endif
-                                                </option>
-                                                @endforeach
-                                            </select>
                                             <small class="text-muted">Le sponsor choisi recevra une demande pour parrainer cet événement et pourra l'accepter ou la refuser.</small>
                                         </div>
                                     </div>
@@ -396,19 +416,73 @@
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         document.getElementById('date').min = now.toISOString().slice(0, 16);
-        // Simple search filter for sponsors
-        const sponsorSearch = document.getElementById('sponsor_search');
-        const sponsorSelect = document.getElementById('sponsor_id');
-        if (sponsorSearch && sponsorSelect) {
-            sponsorSearch.addEventListener('input', function() {
-                const term = this.value.trim().toLowerCase();
-                Array.from(sponsorSelect.options).forEach((opt, idx) => {
-                    if (idx === 0) return; // keep placeholder
-                    const hay = (opt.getAttribute('data-search') || '').toLowerCase();
-                    opt.hidden = term && !hay.includes(term);
-                });
-            });
+
+        // Sponsor combobox logic
+        const cb = document.getElementById('sponsor-combobox');
+        const input = document.getElementById('sponsor_input');
+        const hiddenId = document.getElementById('sponsor_id');
+        const dropdown = document.getElementById('sponsor_dropdown');
+        const clearBtn = document.getElementById('sponsor_clear');
+
+        function openDropdown() {
+            dropdown.classList.add('show');
+            dropdown.style.display = 'block';
         }
+
+        function closeDropdown() {
+            dropdown.classList.remove('show');
+            dropdown.style.display = 'none';
+        }
+
+        function filterOptions(term) {
+            const t = (term || '').trim().toLowerCase();
+            const opts = dropdown.querySelectorAll('.sponsor-option');
+            let visibleCount = 0;
+            opts.forEach(btn => {
+                const hay = (btn.getAttribute('data-search') || '').toLowerCase();
+                const show = !t || hay.includes(t);
+                btn.style.display = show ? '' : 'none';
+                if (show) visibleCount++;
+            });
+            // Show/hide divider depending on availability
+            const divider = dropdown.querySelector('.dropdown-divider');
+            if (divider) divider.style.display = visibleCount > 0 ? '' : 'none';
+        }
+
+        function setSelection(id, label) {
+            hiddenId.value = id || '';
+            input.value = label || '';
+            closeDropdown();
+        }
+
+        // Show all on focus/empty
+        input.addEventListener('focus', () => {
+            filterOptions('');
+            openDropdown();
+        });
+        input.addEventListener('input', () => {
+            filterOptions(input.value);
+            openDropdown();
+        });
+
+        // Click options
+        dropdown.addEventListener('click', (e) => {
+            const item = e.target.closest('.dropdown-item');
+            if (!item) return;
+            const id = item.getAttribute('data-id') || '';
+            const label = item.getAttribute('data-label') || item.textContent.trim();
+            setSelection(id, id ? label : '');
+        });
+
+        // Clear selection
+        clearBtn.addEventListener('click', () => setSelection('', ''));
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (!cb.contains(e.target)) {
+                closeDropdown();
+            }
+        });
     });
 </script>
 @endpush
@@ -496,6 +570,14 @@
 
     .alert-info i {
         color: #055160;
+    }
+
+    /* Sponsor combobox */
+    #sponsor-combobox .dropdown-menu {
+        display: none;
+        max-height: 240px;
+        overflow-y: auto;
+        z-index: 1050;
     }
 
     /* Responsive adjustments */

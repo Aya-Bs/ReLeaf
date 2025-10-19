@@ -223,6 +223,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/my-events/{event}/submit', [\App\Http\Controllers\Backend\EventController::class, 'submitForApproval'])->name('events.submit');
         Route::post('/my-events/{event}/cancel', [\App\Http\Controllers\Backend\EventController::class, 'cancel'])->name('events.cancel');
         Route::post('/my-events/{event}/remove-image', [\App\Http\Controllers\Backend\EventController::class, 'removeImage'])->name('events.remove-image');
+
+        // Flyer actions
+        Route::post('/my-events/{event}/flyer/generate', [\App\Http\Controllers\Backend\EventFlyerController::class, 'generate'])->name('events.flyer.generate');
+        Route::get('/my-events/{event}/flyer/image', [\App\Http\Controllers\Backend\EventFlyerController::class, 'downloadImage'])->name('events.flyer.image');
+        Route::get('/my-events/{event}/flyer/pdf', [\App\Http\Controllers\Backend\EventFlyerController::class, 'downloadPdf'])->name('events.flyer.pdf');
     });
 
     // Gestion des lieux (locations)
@@ -236,6 +241,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::get('/events/{event}/donate', [DonationController::class, 'create'])->name('donations.create');
 Route::post('/events/{event}/donate', [DonationController::class, 'store'])->name('donations.store');
 Route::get('/donations/{donation}/success', [DonationController::class, 'success'])->name('donations.success');
+// Stripe webhook endpoint (public)
+Route::post('/stripe/webhook', [\App\Http\Controllers\StripeWebhookController::class, 'handle'])->name('stripe.webhook');
 // Authenticated user/sponsor donation management
 Route::middleware(['auth'])->group(function () {
     Route::get('/mes-dons', [DonationController::class, 'index'])->name('donations.list');
