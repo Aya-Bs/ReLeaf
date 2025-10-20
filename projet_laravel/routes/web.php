@@ -18,7 +18,6 @@ use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
 use App\Http\Controllers\Frontend\SponsorController as FrontendSponsorController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Sponsor\DashboardController as SponsorDashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Backend\CampaignController;
