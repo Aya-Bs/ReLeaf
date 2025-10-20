@@ -6,15 +6,50 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\User;
 use App\Models\Campaign;
+use App\Services\SponsorRewardService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
     /**
+     * Landing page accessible to guests with home-like features.
+     */
+    public function landing(SponsorRewardService $rewards): View
+    {
+        $stats = [
+            'total_users' => User::where('role', 'user')->count(),
+            'total_events' => 0,
+            'eco_ambassadors' => User::whereHas('profile', function ($query) {
+                $query->where('is_eco_ambassador', true);
+            })->count(),
+        ];
+
+        $recentEvents = Event::where('status', 'published')
+            ->where('date', '>=', now())
+            ->orderBy('created_at', 'desc')
+            ->take(12)
+            ->get();
+
+        $ecoAmbassadors = User::whereHas('profile', function ($query) {
+            $query->where('is_eco_ambassador', true);
+        })->with('profile')->limit(6)->get();
+
+        $featuredCampaigns = Campaign::where('visibility', true)
+            ->where('status', 'active')
+            ->where('end_date', '>', now())
+            ->with('organizer')
+            ->orderBy('start_date', 'asc')
+            ->take(5)
+            ->get();
+
+        $topSponsors = $rewards->topSponsors(10, 90);
+        return view('frontend.landing', compact('stats', 'recentEvents', 'ecoAmbassadors', 'featuredCampaigns', 'topSponsors'));
+    }
+    /**
      * Afficher la page d'accueil EcoEvents.
      */
-    public function index(): View
+    public function index(SponsorRewardService $rewards): View
     {
         // Récupérer les statistiques pour le dashboard
         $stats = [
@@ -56,7 +91,8 @@ class HomeController extends Controller
                                     ->take(5)
                                     ->get();
 
-        return view('frontend.home', compact('stats', 'recentEvents', 'ecoAmbassadors', 'featuredCampaigns'));
+        $topSponsors = $rewards->topSponsors(10, 90);
+        return view('frontend.home', compact('stats', 'recentEvents', 'ecoAmbassadors', 'featuredCampaigns', 'topSponsors'));
     }
 
     /**

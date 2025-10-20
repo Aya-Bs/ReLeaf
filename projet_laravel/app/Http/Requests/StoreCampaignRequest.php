@@ -21,7 +21,7 @@ class StoreCampaignRequest extends FormRequest
             'end_date' => 'required|date|after:start_date',
             'goal' => 'nullable|numeric|min:0',
             'environmental_impact' => 'nullable|string',
-            'image_url' => 'nullable|url',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
             'visibility' => 'boolean',
             'tags' => 'nullable|string|max:500',
             'status' => 'required|in:active,inactive,completed,cancelled'

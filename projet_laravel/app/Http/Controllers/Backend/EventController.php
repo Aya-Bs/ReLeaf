@@ -7,42 +7,45 @@ use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Sponsor;
+use App\Models\SponsorEvent;
+use App\Notifications\SponsorshipRequestNotification;
 
 class EventController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
- public function index(Request $request)
+    public function index(Request $request)
     {
         $query = Event::where('user_id', auth()->id())
-                     ->with('location'); // Charger la relation location
-        
+            ->with('location'); // Charger la relation location
+
         // Search by title
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = $request->search;
             $query->where('title', 'LIKE', "%{$searchTerm}%");
         }
-        
+
         // Filter by status
         if ($request->has('status') && !empty($request->status)) {
             $query->where('status', $request->status);
         }
-        
+
         // Get all events based on filters
         $allEvents = $query->orderBy('created_at', 'desc')->get();
-        
+
         // Pour chaque événement, charger la réservation de l'utilisateur connecté (s'il n'est pas l'organisateur)
-        $allEvents->load(['reservations' => function($query) {
+        $allEvents->load(['reservations' => function ($query) {
             $query->where('user_id', auth()->id())
-                  ->whereIn('status', ['pending', 'confirmed']);
+                ->whereIn('status', ['pending', 'confirmed']);
         }]);
-        
+
         // Separate pending events from others
         $pendingEvents = $allEvents->where('status', 'pending');
         $otherEvents = $allEvents->where('status', '!=', 'pending');
-        
-    
+
+
         return view('frontend.events.index', compact('otherEvents', 'pendingEvents'));
     }
 
@@ -73,22 +76,41 @@ class EventController extends Controller
     public function store(Request $request)
     {
         if (!Auth::user()->isOrganizer()) {
-            return redirect()->route('dashboard')->with('error', 'Accès non autorisé.');
-        }
+        return redirect()->route('dashboard')->with('error', 'Accès non autorisé.');
+    }
 
-$validated = $request->validate([
-        'title' => 'required|string|max:255',
-        'description' => 'required|string',
-        'date' => 'required|date|after:now',
-        'duration' => 'required|string',
+    $validated = $request->validate([
+        'title' => 'required|string|min:3|max:255',
+        'description' => 'required|string|min:3',
+        'date' => 'required|date|after_or_equal:today',
+        'duration' => 'required|string|max:50',
         'max_participants' => 'nullable|integer|min:1',
         'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        'campaign_id' => 'nullable|exists:campaigns,id',
-        'location_id' => 'nullable|exists:locations,id' 
-
+        'campaign_id' => 'required|exists:campaigns,id',
+        'location_id' => 'required|exists:locations,id', 
+        'sponsor_id' => 'nullable|exists:sponsors,id'
+    ], [
+        'title.required' => 'Le titre de l\'événement est obligatoire.',
+        'title.min' => 'Le titre doit comporter au moins 3 caractères.',
+        'title.max' => 'Le titre ne doit pas dépasser 255 caractères.',
+        'description.required' => 'La description de l\'événement est requise.',
+        'description.min' => 'La description doit comporter au moins 3 caractères.',
+        'date.required' => 'La date de l\'événement est obligatoire.',
+        'date.date' => 'La date doit être une date valide.',
+        'date.after_or_equal' => 'La date doit être aujourd\'hui ou une date future.',
+        'duration.required' => 'La durée de l\'événement est obligatoire.',
+        'duration.max' => 'La durée ne doit pas dépasser 50 caractères.',
+        'max_participants.integer' => 'Le nombre maximum de participants doit être un nombre entier.',
+        'max_participants.min' => 'Le nombre maximum de participants doit être au moins 1.',
+        'images.*.image' => 'Les fichiers doivent être des images.',
+        'images.*.mimes' => 'Les images doivent être au format JPEG, PNG, JPG ou GIF.',
+        'images.*.max' => 'Chaque image ne doit pas dépasser 2 Mo.',
+        'location_id.required' => 'La sélection d\'un lieu est obligatoire.',
+        'location_id.exists' => 'Le lieu sélectionné n\'existe pas.',
+        'campaign_id.required' => 'La sélection d\'une campagne est obligatoire.',
+        'campaign_id.exists' => 'La campagne sélectionnée n\'existe pas.',
+        'sponsor_id.exists' => 'Le sponsor sélectionné n\'existe pas.'
     ]);
-
-   
 
 
         $event = Event::create([
@@ -98,8 +120,8 @@ $validated = $request->validate([
             'max_participants' => $request->max_participants,
             'duration' => $request->duration,
             'user_id' => Auth::id(),
-            'status' => 'draft', 
-            'images' => [], 
+            'status' => 'draft',
+            'images' => [],
             'campaign_id' => $request->campaign_id,
             'location_id' => $request->location_id,
         ]);
@@ -113,38 +135,51 @@ $validated = $request->validate([
             }
         }
 
-if ($request->hasFile('images')) {
-    $imagePaths = [];
-    
-    foreach ($request->file('images') as $image) {
-        // Stockez l'image correctement
-        $path = $image->store('events/' . $event->id, 'public');
-        
-        // Assurez-vous que le chemin utilise des slashs normaux
-        $cleanPath = str_replace('\\', '/', $path);
-        $imagePaths[] = $cleanPath;
-    }
-    
-    $event->images = $imagePaths;
-    $event->save();
+        // If sponsor selected, create pending sponsorship request and notify sponsor
+        if ($request->filled('sponsor_id')) {
+            $sponsor = Sponsor::validated()->find($request->sponsor_id);
+            if ($sponsor) {
+                $se = SponsorEvent::firstOrCreate(
+                    ['sponsor_id' => $sponsor->id, 'event_id' => $event->id],
+                    ['status' => 'pending', 'amount' => 0]
+                );
+                // notify sponsor user if available
+                if ($sponsor->user) {
+                    $sponsor->user->notify(new SponsorshipRequestNotification($se));
+                }
+            }
+        }
 
-    }
-    return redirect()->route('events.my-events')->with('success', 'Événement créé avec succès !');
+        if ($request->hasFile('images')) {
+            $imagePaths = [];
 
-}
+            foreach ($request->file('images') as $image) {
+                // Stockez l'image correctement
+                $path = $image->store('events/' . $event->id, 'public');
+
+                // Assurez-vous que le chemin utilise des slashs normaux
+                $cleanPath = str_replace('\\', '/', $path);
+                $imagePaths[] = $cleanPath;
+            }
+
+            $event->images = $imagePaths;
+            $event->save();
+        }
+        return redirect()->route('events.my-events')->with('success', 'Événement créé avec succès !');
+    }
 
     /**
      * Display the specified resource.
      */
     public function show(Event $event)
-{
-    // Check if user is authorized to view this event
-    if ($event->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
-        return redirect()->route('events.index')->with('error', 'Accès non autorisé.');
-    }
+    {
+        // Check if user is authorized to view this event
+        if ($event->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
+            return redirect()->route('events.index')->with('error', 'Accès non autorisé.');
+        }
 
-    return view('frontend.events.show', compact('event'));
-}
+        return view('frontend.events.show', compact('event'));
+    }
 
     /**
      * Show the form for editing the specified resource.
@@ -174,17 +209,38 @@ if ($request->hasFile('images')) {
             return redirect()->route('events.my-events')->with('error', 'Cet événement ne peut pas être modifié.');
         }
 
-
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'date' => 'required|date|after:now',
-            'location_id' => 'required|exists:locations,id',
-            'max_participants' => 'nullable|integer|min:1',
-            'duration' => 'required|string|max:50',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'campaign_id' => 'nullable|exists:campaigns,id'
-        ]);
+    $validated = $request->validate([
+        'title' => 'required|string|min:3|max:255',
+        'description' => 'required|string|min:3',
+        'date' => 'required|date|after_or_equal:today',
+        'duration' => 'required|string|max:50',
+        'max_participants' => 'nullable|integer|min:1',
+        'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'campaign_id' => 'required|exists:campaigns,id',
+        'location_id' => 'required|exists:locations,id', 
+        'sponsor_id' => 'nullable|exists:sponsors,id'
+    ], [
+        'title.required' => 'Le titre de l\'événement est obligatoire.',
+        'title.min' => 'Le titre doit comporter au moins 3 caractères.',
+        'title.max' => 'Le titre ne doit pas dépasser 255 caractères.',
+        'description.required' => 'La description de l\'événement est requise.',
+        'description.min' => 'La description doit comporter au moins 3 caractères.',
+        'date.required' => 'La date de l\'événement est obligatoire.',
+        'date.date' => 'La date doit être une date valide.',
+        'date.after_or_equal' => 'La date doit être aujourd\'hui ou une date future.',
+        'duration.required' => 'La durée de l\'événement est obligatoire.',
+        'duration.max' => 'La durée ne doit pas dépasser 50 caractères.',
+        'max_participants.integer' => 'Le nombre maximum de participants doit être un nombre entier.',
+        'max_participants.min' => 'Le nombre maximum de participants doit être au moins 1.',
+        'images.*.image' => 'Les fichiers doivent être des images.',
+        'images.*.mimes' => 'Les images doivent être au format JPEG, PNG, JPG ou GIF.',
+        'images.*.max' => 'Chaque image ne doit pas dépasser 2 Mo.',
+        'location_id.required' => 'La sélection d\'un lieu est obligatoire.',
+        'location_id.exists' => 'Le lieu sélectionné n\'existe pas.',
+        'campaign_id.required' => 'La sélection d\'une campagne est obligatoire.',
+        'campaign_id.exists' => 'La campagne sélectionnée n\'existe pas.',
+        'sponsor_id.exists' => 'Le sponsor sélectionné n\'existe pas.'
+    ]);
 
         $event->update([
             'title' => $request->title,
@@ -230,39 +286,39 @@ if ($request->hasFile('images')) {
         return redirect()->route('events.my-events')->with('success', 'Événement supprimé avec succès.');
     }
 
-/**
- * Remove an image from the event
- */
-public function removeImage(Request $request, Event $event)
-{
-    if ($event->user_id !== Auth::id() || !$event->canBeEdited()) {
-        return response()->json(['error' => 'Unauthorized'], 403);
-    }
-
-    $imageToRemove = $request->input('image_path');
-    
-    if ($event->images && is_array($event->images)) {
-        // Remove the image from the array
-        $updatedImages = array_filter($event->images, function($image) use ($imageToRemove) {
-            return $image !== $imageToRemove;
-        });
-        
-        // Delete the physical file from storage
-        if (Storage::disk('public')->exists($imageToRemove)) {
-            Storage::disk('public')->delete($imageToRemove);
+    /**
+     * Remove an image from the event
+     */
+    public function removeImage(Request $request, Event $event)
+    {
+        if ($event->user_id !== Auth::id() || !$event->canBeEdited()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
-        
-        // Update the event with the new images array
-        $event->update(['images' => array_values($updatedImages)]);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Image supprimée avec succès'
-        ]);
+
+        $imageToRemove = $request->input('image_path');
+
+        if ($event->images && is_array($event->images)) {
+            // Remove the image from the array
+            $updatedImages = array_filter($event->images, function ($image) use ($imageToRemove) {
+                return $image !== $imageToRemove;
+            });
+
+            // Delete the physical file from storage
+            if (Storage::disk('public')->exists($imageToRemove)) {
+                Storage::disk('public')->delete($imageToRemove);
+            }
+
+            // Update the event with the new images array
+            $event->update(['images' => array_values($updatedImages)]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Image supprimée avec succès'
+            ]);
+        }
+
+        return response()->json(['error' => 'Image non trouvée'], 404);
     }
-    
-    return response()->json(['error' => 'Image non trouvée'], 404);
-}
 
     /**
      * Submit event for admin approval
@@ -291,6 +347,4 @@ public function removeImage(Request $request, Event $event)
 
         return redirect()->route('events.my-events')->with('success', 'Événement annulé avec succès.');
     }
-
-
 }

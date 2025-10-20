@@ -106,14 +106,14 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-info">
             <div class="inner">
-                <h3>{{ $stats['pending_assignments'] }}</h3>
-                <p>Missions en attente</p>
+                <h3>{{ \App\Models\Campaign::count() }}</h3>
+                <p>Campagnes</p>
             </div>
             <div class="icon">
-                <i class="fas fa-clock"></i>
+                <i class="fas fa-leaf"></i>
             </div>
-            <a href="{{ route('backend.assignments.index') }}" class="small-box-footer">
-                Plus d'infos <i class="fas fa-arrow-circle-right"></i>
+            <a href="{{ route('backend.campaigns.index') }}" class="small-box-footer">
+                Voir les campagnes <i class="fas fa-arrow-circle-right"></i>
             </a>
         </div>
     </div>

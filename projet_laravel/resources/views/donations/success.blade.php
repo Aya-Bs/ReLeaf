@@ -52,6 +52,14 @@
                                 {{ $donation->donated_at ? $donation->donated_at->format('d/m/Y à H:i') : 'N/A' }}
                             </div>
                         </div>
+                        @if(!empty($donation->receipt_url))
+                        <div class="row text-start mt-2">
+                            <div class="col-12">
+                                <strong>Reçu :</strong><br>
+                                <a href="{{ $donation->receipt_url }}" target="_blank" rel="noopener" class="link-success">Télécharger le reçu Stripe</a>
+                            </div>
+                        </div>
+                        @endif
                     </div>
 
                     <div class="alert alert-info">

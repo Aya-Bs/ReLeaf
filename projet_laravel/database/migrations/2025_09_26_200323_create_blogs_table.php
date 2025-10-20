@@ -13,13 +13,16 @@ return new class extends Migration
     {
         Schema::create('blogs', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id'); // <--- ajouter user_id
             $table->string('title');
             $table->text('content');
-            $table->unsignedBigInteger('author_id');
             $table->timestamp('date_posted')->nullable();
             $table->string('image_url')->nullable();
             $table->string('tags')->nullable();
             $table->timestamps();
+
+            // clé étrangère vers users
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
@@ -28,6 +31,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('blogs', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+            $table->dropColumn('user_id');
+        });
+
         Schema::dropIfExists('blogs');
     }
 };

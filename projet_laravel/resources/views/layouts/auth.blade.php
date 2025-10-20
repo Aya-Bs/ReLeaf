@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'EcoEvents') }} - @yield('title')</title>
+    <title>{{ config('app.name', 'ReLeaf') }} - @yield('title')</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -232,7 +232,7 @@
                 <div class="col-lg-6 auth-left">
                     <div>
                         <div class="auth-logo">
-                            <i class="fas fa-leaf me-2"></i>EcoEvents
+                            <i class="fas fa-leaf me-2"></i>{{ config('app.name', 'ReLeaf') }}
                         </div>
                         <p class="auth-tagline">
                             Ensemble pour un avenir plus vert.<br>

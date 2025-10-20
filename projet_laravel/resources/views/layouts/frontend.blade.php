@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'EcoEvents') }} - @yield('title', 'Événements Écologiques')</title>
+    <title>{{ config('app.name', 'ReLeaf') }} - @yield('title', 'Événements Écologiques')</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -182,28 +182,30 @@ body {
 }
     </style>
 
+    @stack('styles')
+
     <!-- Scripts -->
     {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
 </head>
 <body class="font-sans antialiased">
     <!-- Navigation -->
-   <!-- Navigation -->
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-    <div class="container">
-        <a class="navbar-brand" href="{{ route('home') }}">
-            <i class="fas fa-leaf me-2"></i>EcoEvents
-        </a>
-        
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('home') }}">Accueil</a>
-                </li>
-                @auth
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="{{ route('home') }}">
+                <i class="fas fa-leaf me-2"></i>{{ config('app.name', 'ReLeaf') }}
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('home') }}">Accueil</a>
+                    </li>
+                    @auth
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('about') }}">À propos</a>
                     </li>
@@ -422,11 +424,11 @@ body {
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <h5><i class="fas fa-leaf me-2"></i>EcoEvents</h5>
+            <h5><i class="fas fa-leaf me-2"></i>{{ config('app.name', 'ReLeaf') }}</h5>
                     <p class="mb-0">Ensemble pour un avenir plus vert</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <p class="mb-0">&copy; {{ date('Y') }} EcoEvents. Tous droits réservés.</p>
+                    <p class="mb-0">&copy; {{ date('Y') }} {{ config('app.name', 'ReLeaf') }}. Tous droits réservés.</p>
                 </div>
             </div>
         </div>

@@ -90,14 +90,17 @@
                                 <div class="col-md-8">
                                     <h5 class="text-eco">{{ $certification->reservation->event->title }}</h5>
                                     <div class="event-meta">
-                                        <span class="me-3">
+                                        <div class="mb-2">
                                             <i class="fas fa-calendar text-eco me-1"></i>
-                                            {{ $certification->reservation->event->date->format('d/m/Y à H:i') }}
-                                        </span>
-                                        <span>
+                                            <strong>{{ $certification->reservation->event->date->format('d/m/Y à H:i') }}</strong>
+                                        </div>
+                                        <div>
                                             <i class="fas fa-map-marker-alt text-eco me-1"></i>
-                                            {{ $certification->reservation->event->location }}
-                                        </span>
+                                            <span class="fw-bold">{{ $certification->reservation->event->location->name ?? 'Lieu non défini' }}</span>
+                                            @if($certification->reservation->event->location && $certification->reservation->event->location->address)
+                                                <br><small class="text-muted ms-3">{{ $certification->reservation->event->location->address }}, {{ $certification->reservation->event->location->city ?? '' }}</small>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-4 text-end">

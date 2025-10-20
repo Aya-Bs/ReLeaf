@@ -58,7 +58,7 @@
                         <a href="#" class="btn btn-eco">
                             <i class="fas fa-calendar-plus me-2"></i>Créer un événement
                         </a>
-                        <a href="#" class="btn btn-outline-eco">
+                        <a href="{{ route('events.index') }}" class="btn btn-outline-eco">
                             <i class="fas fa-search me-2"></i>Découvrir les événements
                         </a>
                     </div>
@@ -82,13 +82,13 @@
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Authentification à deux facteurs
                             @if($user->two_factor_enabled)
-                                <span class="badge bg-success rounded-pill">
-                                    <i class="fas fa-check"></i>
-                                </span>
+                            <span class="badge bg-success rounded-pill">
+                                <i class="fas fa-check"></i>
+                            </span>
                             @else
-                                <a href="{{ route('2fa.setup') }}" class="btn btn-sm btn-outline-primary">
-                                    Activer
-                                </a>
+                            <a href="{{ route('2fa.setup') }}" class="btn btn-sm btn-outline-primary">
+                                Activer
+                            </a>
                             @endif
                         </li>
                     </ul>

@@ -12,6 +12,7 @@ Route::get('/volunteers/available-missions', [\App\Http\Controllers\VolunteerMis
 use App\Http\Controllers\Backend\AdminController;
 use App\Http\Controllers\Backend\SponsorController as BackendSponsorController;
 use App\Http\Controllers\Backend\UserController as BackendUserController;
+use App\Http\Controllers\CertificateVerificationController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
@@ -25,6 +26,8 @@ use App\Http\Controllers\Backend\EventController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\VolunteerController;
 use App\Http\Controllers\AssignmentController; 
+use App\Http\Controllers\SocialShareController; 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes - EcoEvents
@@ -230,6 +233,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/my-events/{event}/submit', [\App\Http\Controllers\Backend\EventController::class, 'submitForApproval'])->name('events.submit');
         Route::post('/my-events/{event}/cancel', [\App\Http\Controllers\Backend\EventController::class, 'cancel'])->name('events.cancel');
         Route::post('/my-events/{event}/remove-image', [\App\Http\Controllers\Backend\EventController::class, 'removeImage'])->name('events.remove-image');
+
+        // Flyer actions
+        Route::post('/my-events/{event}/flyer/generate', [\App\Http\Controllers\Backend\EventFlyerController::class, 'generate'])->name('events.flyer.generate');
+        Route::get('/my-events/{event}/flyer/image', [\App\Http\Controllers\Backend\EventFlyerController::class, 'downloadImage'])->name('events.flyer.image');
+        Route::get('/my-events/{event}/flyer/pdf', [\App\Http\Controllers\Backend\EventFlyerController::class, 'downloadPdf'])->name('events.flyer.pdf');
     });
 
      // Gestion des lieux (locations)
@@ -237,12 +245,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Routes pour les dons d'événements
     Route::get('/events/{event}/donations', [DonationController::class, 'eventDonations'])->name('events.donations');
+    
 });
 
 // Routes pour les dons (accessibles à tous)
 Route::get('/events/{event}/donate', [DonationController::class, 'create'])->name('donations.create');
 Route::post('/events/{event}/donate', [DonationController::class, 'store'])->name('donations.store');
 Route::get('/donations/{donation}/success', [DonationController::class, 'success'])->name('donations.success');
+// Stripe webhook endpoint (public)
+Route::post('/stripe/webhook', [\App\Http\Controllers\StripeWebhookController::class, 'handle'])->name('stripe.webhook');
 // Authenticated user/sponsor donation management
 Route::middleware(['auth'])->group(function () {
     Route::get('/mes-dons', [DonationController::class, 'index'])->name('donations.list');
@@ -495,8 +506,75 @@ Route::middleware(['auth'])->group(function () {
         ->name('volunteers.mission-details');
 });
 
+
+
+
+// Routes pour les APIs carbone
+Route::get('/carbon/apis/test', [CampaignController::class, 'testApis'])
+    ->name('carbon.apis.test');
+    
+Route::get('/campaigns/{campaign}/carbon-report', [CampaignController::class, 'carbonReport'])
+    ->name('campaigns.carbon-report');
+    
+Route::get('/resources/{resource}/carbon-footprint', function($resourceId) {
+    $resource = \App\Models\Resource::findOrFail($resourceId);
+    $calculator = new \App\Services\CarbonCalculatorService();
+    
+    $footprint = $calculator->calculateResourceFootprint($resource);
+    $method = config('services.carbon_interface.api_key') ? 'carbon_interface' : 'ademe';
+    
+    return response()->json([
+        'resource_id' => $resource->id,
+        'resource_name' => $resource->name,
+        'carbon_footprint_kg' => $footprint,
+        'calculation_method' => $method,
+        'calculated_at' => now()->toISOString()
+    ]);
+})->name('resources.carbon-footprint');
+
+
+
+
+
+
+
+
 // Route de test
 Route::get('/test', 'App\Http\Controllers\TestController@test');
+
+// 🤖 Route de test pour les recommandations IA
+Route::get('/test-ai-recommendations', function() {
+    if (!auth()->check()) {
+        return redirect()->route('login')->with('error', 'Vous devez être connecté pour tester les recommandations IA.');
+    }
+    
+    $recommendationService = app(\App\Services\EventRecommendationService::class);
+    $result = $recommendationService->testRecommendations(auth()->user());
+    
+    return response()->json($result, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+})->name('test.ai.recommendations');
+
+// Routes de vérification des certificats (publiques)
+Route::get('/certificates/verify/{token}', [CertificateVerificationController::class, 'verify'])
+    ->name('certificates.verify');
+Route::post('/api/certificates/verify', [CertificateVerificationController::class, 'apiVerify'])
+    ->name('certificates.api.verify');
+
+
+
+
+        Route::get('/events/{event}/share/test', [SocialShareController::class, 'testShare'])
+    ->name('events.social-share.test')
+    ->middleware('auth');
+    
+// Social sharing routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/events/{event}/share', [SocialShareController::class, 'create'])->name('events.social-share.create');
+    Route::post('/events/{event}/share', [SocialShareController::class, 'store'])->name('events.social-share.store');
+    Route::get('/events/{event}/share/statistics', [SocialShareController::class, 'statistics'])->name('events.social-share.statistics');
+
+
+});
 
 // Routes pour les badges volontaires
 Route::middleware(['auth'])->group(function () {

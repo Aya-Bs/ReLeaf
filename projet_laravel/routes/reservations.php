@@ -9,6 +9,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/events/{event}/reserve', [ReservationController::class, 'store'])->name('reservations.store');
     Route::get('/reservations/{reservation}/confirmation', [ReservationController::class, 'confirmation'])->name('reservations.confirmation');
     Route::post('/reservations/{reservation}/cancel', [ReservationController::class, 'cancel'])->name('reservations.cancel');
+    
+    // 🤖 Routes IA pour les suggestions de places
+    Route::get('/events/{event}/suggest-seat', [ReservationController::class, 'suggestSeat'])->name('events.suggest-seat');
+    Route::post('/events/{event}/reserve-suggested', [ReservationController::class, 'reserveSuggestedSeat'])->name('reservations.reserve-suggested');
 });
 
 // Routes pour les admins

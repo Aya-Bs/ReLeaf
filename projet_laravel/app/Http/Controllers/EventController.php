@@ -3,10 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Services\EventRecommendationService;
 use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
+    private EventRecommendationService $recommendationService;
+
+    public function __construct(EventRecommendationService $recommendationService)
+    {
+        $this->recommendationService = $recommendationService;
+    }
+
     /**
      * Afficher la liste des événements selon le rôle de l'utilisateur
      */
@@ -91,6 +99,25 @@ class EventController extends Controller
             return $event;
         });
 
+        // 🤖 IA : Recommandations d'événements basées sur la géolocalisation
+        $aiRecommendations = null;
+        if (auth()->check() && !$request->has('search') && !$request->has('filter')) {
+            try {
+                // Obtenir tous les événements pour l'analyse IA
+                $allEventsForAI = Event::whereIn('status', ['published'])
+                    ->with(['user', 'location'])
+                    ->orderBy('date', 'asc')
+                    ->get();
+                
+                $aiRecommendations = $this->recommendationService->getRecommendedEvents(
+                    auth()->user(), 
+                    $allEventsForAI
+                );
+            } catch (\Exception $e) {
+                \Log::error('AI Recommendations Error: ' . $e->getMessage());
+            }
+        }
+
         // Provide a list of published AND cancelled event dates for the calendar (YYYY-MM-DD)
         $allEventDates = Event::whereIn('status', ['published', 'cancelled'])
             ->pluck('date')
@@ -101,7 +128,7 @@ class EventController extends Controller
             ->values()
             ->toArray();
 
-        return view('events.index', compact('events', 'allEventDates'));
+        return view('events.index', compact('events', 'allEventDates', 'aiRecommendations'));
     }
 
 

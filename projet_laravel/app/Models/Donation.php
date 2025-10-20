@@ -24,6 +24,9 @@ class Donation extends Model
         'type',
         'status',
         'payment_method',
+        'stripe_session_id',
+        'stripe_payment_intent_id',
+        'receipt_url',
         'notes',
         'donated_at',
     ];

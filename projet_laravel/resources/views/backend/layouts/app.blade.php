@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Admin - {{ config('app.name', 'EcoEvents') }} - @yield('title', 'Administration')</title>
+    <title>Admin - {{ config('app.name', 'ReLeaf') }} - @yield('title', 'Administration')</title>
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -127,7 +127,7 @@
             <!-- Brand Logo -->
             <a href="{{ route('backend.dashboard') }}" class="brand-link">
                 <i class="fas fa-leaf brand-image img-circle elevation-3 ml-3 mr-2" style="color: var(--eco-accent);"></i>
-                <span class="brand-text font-weight-light">EcoEvents Admin</span>
+                <span class="brand-text font-weight-light">{{ config('app.name', 'ReLeaf') }} Admin</span>
             </a>
 
             <!-- Sidebar -->
@@ -335,7 +335,7 @@
 
         <!-- Footer -->
         <footer class="main-footer">
-            <strong>Copyright &copy; {{ date('Y') }} <a href="{{ route('home') }}">EcoEvents</a>.</strong>
+            <strong>Copyright &copy; {{ date('Y') }} <a href="{{ route('home') }}">{{ config('app.name', 'ReLeaf') }}</a>.</strong>
             Tous droits réservés.
             <div class="float-right d-none d-sm-inline-block">
                 <b>Version</b> 1.0.0

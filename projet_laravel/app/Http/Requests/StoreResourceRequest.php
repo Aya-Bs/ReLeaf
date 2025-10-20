@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreResourceRequest extends FormRequest
 {
@@ -23,8 +24,8 @@ class StoreResourceRequest extends FormRequest
             'category' => 'required|in:materiel,financier,humain,technique',
             'priority' => 'required|in:low,medium,high,urgent',
             'notes' => 'nullable|string',
-            'image_url' => 'nullable|url',
-            'campaign_id' => 'required|exists:campaigns,id'
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:2048',
+            'campaign_id' => ['required', Rule::exists('campaigns', 'id')->where(fn($q) => $q->where('organizer_id', auth()->id()))]
         ];
     }
 }
