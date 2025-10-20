@@ -5,9 +5,12 @@
 @section('content')
 <div class="container mt-6">
 
+<div class="container mt-6">
+
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="page-title">Mes Événements</h1>
                 <h1 class="page-title">Mes Événements</h1>
                 <div class="d-flex align-items-center gap-3">
                     <!-- Search Input -->
@@ -18,10 +21,12 @@
                             placeholder="Recherche..."
                             value="{{ request('search') }}">
                         <i class="fas fa-search search-icon"></i>
+                        <i class="fas fa-search search-icon"></i>
                     </div>
 
                     <!-- Status Filter -->
                     <div class="me-2">
+                        <select id="statusFilter" class="form-select form-select-sm filter-select">
                         <select id="statusFilter" class="form-select form-select-sm filter-select">
                             <option value="">Tous les statuts</option>
                             <option value="draft">Brouillon</option>
@@ -34,12 +39,14 @@
 
                     <!-- Create Event Button -->
                     <a href="{{ route('events.create') }}" class="btn btn-eco btn-create">
+                    <a href="{{ route('events.create') }}" class="btn btn-eco btn-create">
                         <i class="fas fa-plus me-2"></i>Créer un événement
                     </a>
                 </div>
             </div>
 
             <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="loading-indicator" style="display: none;">
             <div id="loadingIndicator" class="loading-indicator" style="display: none;">
                 <div class="spinner-border text-eco" role="status">
                     <span class="visually-hidden">Chargement...</span>
@@ -97,8 +104,14 @@
                         @if($otherEvents->count() > 0)
                         <div class="table-responsive">
                             <table class="table cute-table">
+                            <table class="table cute-table">
                                 <thead>
                                     <tr>
+                                        <th class="col-title">Titre</th>
+                                        <th class="col-date">Date</th>
+                                        <th class="col-location">Lieu</th>
+                                        <th class="col-status">Statut</th>
+                                        <th class="col-actions">Actions</th>
                                         <th class="col-title">Titre</th>
                                         <th class="col-date">Date</th>
                                         <th class="col-location">Lieu</th>
@@ -108,6 +121,25 @@
                                 </thead>
                                 <tbody>
                                     @foreach($otherEvents as $event)
+                                    <tr class="event-row">
+                                        <td class="event-title">
+                                            <div class="title-wrapper">
+                                                <span class="title-text">{{ $event->title }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="event-date">
+                                            <div class="date-wrapper">
+                                                <i class="fas fa-calendar me-1"></i>
+                                                <span>{{ $event->date->format('d/m/Y H:i') }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="event-location">
+                                            <div class="location-wrapper">
+                                                <i class="fas fa-map-marker-alt me-1"></i>
+                                                <span>{{ $event->location ? $event->location->name : 'Non spécifié' }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="event-status">
                                     <tr class="event-row">
                                         <td class="event-title">
                                             <div class="title-wrapper">
@@ -141,7 +173,10 @@
                                         </td>
                                         <td class="event-actions">
                                             <div class="action-buttons">
+                                        <td class="event-actions">
+                                            <div class="action-buttons">
                                                 <!-- View Button - Always visible -->
+                                                <a href="{{ route('events.show', $event) }}" class="btn btn-sm btn-action btn-view" title="Voir">
                                                 <a href="{{ route('events.show', $event) }}" class="btn btn-sm btn-action btn-view" title="Voir">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
@@ -149,6 +184,7 @@
 
                                                 <!-- Edit Button - Only show for draft and pending status -->
                                                 @if($event->isDraft() || $event->isPending())
+                                                <a href="{{ route('events.edit', $event) }}" class="btn btn-sm btn-action btn-edit" title="Modifier">
                                                 <a href="{{ route('events.edit', $event) }}" class="btn btn-sm btn-action btn-edit" title="Modifier">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
@@ -159,6 +195,7 @@
                                                 <form action="{{ route('events.submit', $event) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     <button type="submit" class="btn btn-sm btn-action btn-submit" title="Soumettre">
+                                                    <button type="submit" class="btn btn-sm btn-action btn-submit" title="Soumettre">
                                                         <i class="fas fa-paper-plane"></i>
                                                     </button>
                                                 </form>
@@ -168,6 +205,7 @@
                                                 @if($event->isPublished())
                                                 <form action="{{ route('events.cancel', $event) }}" method="POST" class="d-inline">
                                                     @csrf
+                                                    <button type="submit" class="btn btn-sm btn-action btn-cancel" title="Annuler">
                                                     <button type="submit" class="btn btn-sm btn-action btn-cancel" title="Annuler">
                                                         <i class="fas fa-times"></i>
                                                     </button>
@@ -218,6 +256,9 @@
                             </table>
                         </div>
                         @else
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-times empty-icon"></i>
+                            <p class="empty-message" id="emptyMessage">
                         <div class="empty-state">
                             <i class="fas fa-calendar-times empty-icon"></i>
                             <p class="empty-message" id="emptyMessage">

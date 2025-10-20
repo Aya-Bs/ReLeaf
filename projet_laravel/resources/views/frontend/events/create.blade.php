@@ -1,4 +1,5 @@
 @extends('layouts.frontend')
+@extends('layouts.frontend')
 
 @section('title', 'Créer un Événement')
 
@@ -11,6 +12,14 @@
                     <h4 class="mb-4">
                         <i class="fas fa-calendar-plus me-2" style="color: #2d5a27;"></i><strong>Créer un nouvel événement</strong>
                     </h4>
+                    <!-- Breadcrumb path on top right -->
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-4" style="background: transparent; padding: 0; margin: 0;">
+                            <li class="breadcrumb-item"><a href="{{ route('home') }}" style="color: #2d5a27;">Accueil</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('events.my-events') }}" style="color: #2d5a27;">Événements</a></li>
+                            <li class="breadcrumb-item active" aria-current="page" style="color: #2d5a27;"><strong>Créer</strong></li>
+                        </ol>
+                    </nav>
                     <!-- Breadcrumb path on top right -->
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-4" style="background: transparent; padding: 0; margin: 0;">
@@ -1118,24 +1127,24 @@
         object-fit: cover;
     }
 
-    .remove-new-image {
-        opacity: 0.8;
-        transition: opacity 0.3s ease;
-    }
+.remove-new-image {
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
 
-    .remove-new-image:hover {
-        opacity: 1;
-    }
+.remove-new-image:hover {
+    opacity: 1;
+}
 
-    .alert-info {
-        background-color: #e8f4f8;
-        border-color: #b3e0f0;
-        color: #055160;
-    }
+.alert-info {
+    background-color: #e8f4f8;
+    border-color: #b3e0f0;
+    color: #055160;
+}
 
-    .alert-info i {
-        color: #055160;
-    }
+.alert-info i {
+    color: #055160;
+}
 
     /* Sponsor combobox */
     #sponsor-combobox .dropdown-menu {

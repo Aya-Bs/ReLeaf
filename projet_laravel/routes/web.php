@@ -18,6 +18,7 @@ use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController;
 use App\Http\Controllers\Frontend\SponsorController as FrontendSponsorController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Sponsor\DashboardController as SponsorDashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Backend\CampaignController;
@@ -457,35 +458,35 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/events/{event}/waiting-list/leave', [App\Http\Controllers\WaitingListController::class, 'leave'])->name('waiting-list.leave');
 });
 
-// Routes admin pour les listes d'attente
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/waiting-lists', [App\Http\Controllers\WaitingListController::class, 'adminIndex'])->name('waiting-lists.index');
-    Route::post('/waiting-lists/{waitingList}/promote', [App\Http\Controllers\WaitingListController::class, 'promote'])->name('waiting-lists.promote');
-});
+    // Routes admin pour les listes d'attente
+    Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/waiting-lists', [App\Http\Controllers\WaitingListController::class, 'adminIndex'])->name('waiting-lists.index');
+        Route::post('/waiting-lists/{waitingList}/promote', [App\Http\Controllers\WaitingListController::class, 'promote'])->name('waiting-lists.promote');
+    });
 
-// Routes pour les certifications utilisateur
-Route::middleware(['auth'])->prefix('my-certificates')->name('user.certificates.')->group(function () {
-    Route::get('/', [App\Http\Controllers\CertificateController::class, 'index'])->name('index');
-    Route::get('/{code}', [App\Http\Controllers\CertificateController::class, 'show'])->name('show');
-    Route::get('/{code}/download', [App\Http\Controllers\CertificateController::class, 'download'])->name('download');
-    Route::get('/{code}/view', [App\Http\Controllers\CertificateController::class, 'view'])->name('view');
-});
+    // Routes pour les certifications utilisateur
+    Route::middleware(['auth'])->prefix('my-certificates')->name('user.certificates.')->group(function () {
+        Route::get('/', [App\Http\Controllers\CertificateController::class, 'index'])->name('index');
+        Route::get('/{code}', [App\Http\Controllers\CertificateController::class, 'show'])->name('show');
+        Route::get('/{code}/download', [App\Http\Controllers\CertificateController::class, 'download'])->name('download');
+        Route::get('/{code}/view', [App\Http\Controllers\CertificateController::class, 'view'])->name('view');
+    });
 
-// Route publique pour la vérification des certificats
-Route::get('/verify-certificate', [App\Http\Controllers\CertificateController::class, 'verify'])->name('certificates.verify');
-Route::get('/verify-certificate/{code}', [App\Http\Controllers\CertificateController::class, 'verify'])->name('certificates.verify.code');
+    // Route publique pour la vérification des certificats
+    Route::get('/verify-certificate', [App\Http\Controllers\CertificateController::class, 'verify'])->name('certificates.verify');
+    Route::get('/verify-certificate/{code}', [App\Http\Controllers\CertificateController::class, 'verify'])->name('certificates.verify.code');
 
-// Routes du Chatbot IA
-Route::get('/chatbot', [App\Http\Controllers\ChatbotController::class, 'index'])->name('chatbot.index');
-Route::post('/chatbot/message', [App\Http\Controllers\ChatbotController::class, 'processMessage'])->name('chatbot.message');
-Route::delete('/chatbot/clear', [App\Http\Controllers\ChatbotController::class, 'clearConversation'])->name('chatbot.clear');
-Route::get('/chatbot/suggestions', [App\Http\Controllers\ChatbotController::class, 'getSuggestions'])->name('chatbot.suggestions');
+    // Routes du Chatbot IA
+    Route::get('/chatbot', [App\Http\Controllers\ChatbotController::class, 'index'])->name('chatbot.index');
+    Route::post('/chatbot/message', [App\Http\Controllers\ChatbotController::class, 'processMessage'])->name('chatbot.message');
+    Route::delete('/chatbot/clear', [App\Http\Controllers\ChatbotController::class, 'clearConversation'])->name('chatbot.clear');
+    Route::get('/chatbot/suggestions', [App\Http\Controllers\ChatbotController::class, 'getSuggestions'])->name('chatbot.suggestions');
 
-// Routes admin pour les certifications
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/certificates', [App\Http\Controllers\CertificateController::class, 'adminIndex'])->name('certificates.index');
-    Route::post('/certificates/grant/{reservation}', [App\Http\Controllers\CertificateController::class, 'grantCertificate'])->name('certificates.grant');
-});
+    // Routes admin pour les certifications
+    Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/certificates', [App\Http\Controllers\CertificateController::class, 'adminIndex'])->name('certificates.index');
+        Route::post('/certificates/grant/{reservation}', [App\Http\Controllers\CertificateController::class, 'grantCertificate'])->name('certificates.grant');
+    });
 
 // Admin routes for reservations & waiting reservations management (expected by views: admin.reservations.*)
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {

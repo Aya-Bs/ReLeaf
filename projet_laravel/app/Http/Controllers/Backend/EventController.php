@@ -347,4 +347,6 @@ class EventController extends Controller
 
         return redirect()->route('events.my-events')->with('success', 'Événement annulé avec succès.');
     }
+
+
 }

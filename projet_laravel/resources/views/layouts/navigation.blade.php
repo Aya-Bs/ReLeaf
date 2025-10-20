@@ -20,6 +20,8 @@
                 </li>
 
                 @auth
+
+                @auth
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('events.*') ? 'active' : '' }}" href="{{ route('events.index') }}">
                         <i class="fas fa-calendar-alt me-1"></i>Événements
@@ -80,7 +82,24 @@
                         <i class="fas fa-user-plus me-1"></i>Inscription
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('login') }}">
+                        <i class="fas fa-sign-in-alt me-1"></i>Connexion
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('register') }}">
+                        <i class="fas fa-user-plus me-1"></i>Inscription
+                    </a>
+                </li>
                 @else
+                <!-- Notifications -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge bg-danger">0</span>
+                    </a>
+                </li>
                 <!-- Notifications -->
                 <li class="nav-item">
                     <a class="nav-link" href="#">

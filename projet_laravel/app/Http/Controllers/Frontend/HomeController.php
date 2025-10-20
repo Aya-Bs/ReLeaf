@@ -90,6 +90,7 @@ class HomeController extends Controller
                                     ->orderBy('start_date', 'asc')
                                     ->take(5)
                                     ->get();
+                                    
 
         $topSponsors = $rewards->topSponsors(10, 90);
         return view('frontend.home', compact('stats', 'recentEvents', 'ecoAmbassadors', 'featuredCampaigns', 'topSponsors'));

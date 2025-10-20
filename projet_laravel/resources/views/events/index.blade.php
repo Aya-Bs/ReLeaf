@@ -193,7 +193,7 @@
                                         </div>
                                         <div class="meta-item">
                                             <i class="fas fa-map-marker-alt me-1"></i>
-                                            <span>{{ Str::limit($event->location->name, 30) }}</span>
+                                            {{ Str::limit($event->location, 30) }}
                                         </div>
 
                                         <div class="meta-item">
@@ -310,10 +310,10 @@
                     @endforelse
                 </div>
 
-                <!-- Pagination -->
-                @if($events->hasPages())
-                <div class="pagination-container mt-4">
-                    {{ $events->withQueryString()->links('events.custom') }}
+            <!-- Pagination -->
+            @if($events->hasPages())
+                <div class="d-flex justify-content-center mt-4">
+                    {{ $events->withQueryString()->links() }}
                 </div>
                 @endif
             </div>
