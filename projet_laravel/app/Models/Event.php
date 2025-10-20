@@ -279,6 +279,29 @@ class Event extends Model
             ->where('status', 'pending')
             ->with('volunteer.user');
     }
+
+
+    public function socialShares()
+{
+    return $this->hasMany(SocialShare::class);
+}
+
+// Add this method to check if event was shared recently
+public function hasBeenSharedRecently($hours = 24)
+{
+    return $this->socialShares()
+        ->where('shared_at', '>=', now()->subHours($hours))
+        ->exists();
+}
+
+// Add share statistics
+public function getShareStatsAttribute()
+{
+    return [
+        'total' => $this->socialShares()->count(),
+        'facebook' => $this->socialShares()->where('platform', 'facebook')->count(),
+    ];
+}
 }
 
 /**

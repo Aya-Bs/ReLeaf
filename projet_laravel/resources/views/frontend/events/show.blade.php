@@ -24,8 +24,23 @@
                             </li>
                         </ol>
                     </nav>
+
+
+
+                                <div class="flex gap-3 mt-6">
+    <a href="{{ route('events.social-share.create', $event) }}" 
+       class="flex items-center gap-2 px-4 py-2 bg-[#2d5a27] text-white rounded-lg hover:bg-[#234420] transition-colors">
+        <i class="fas fa-share-alt"></i>
+        Partager l'événement
+    </a>
+</div>
             </div>
+
+
         </div>
+
+        <!-- Add this near your event action buttons -->
+
         
         <div class="container mx-auto px-4 py-12">
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch">
@@ -1103,28 +1118,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-<!-- Leaflet and routing script -->
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Event coordinates from server - properly escaped
+    // Event coordinates from server
     const eventLat = {!! json_encode($event->location->latitude ?? null) !!};
     const eventLng = {!! json_encode($event->location->longitude ?? null) !!};
-
+    
     const mapEl = document.getElementById('route-map');
     if (!mapEl || !eventLat || !eventLng) {
         document.getElementById('map-status').textContent = 'Coordonnées de l\'événement manquantes.';
         return;
     }
 
-    // Initialize map
+    // Initialize map with better tiles
     const map = L.map('route-map').setView([eventLat, eventLng], 13);
+    
+    // Use different tile providers for better reliability
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        attribution: '\u00A9 OpenStreetMap contributors'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Create custom icons
+    // Add event marker
     const eventIcon = L.divIcon({
         className: 'custom-event-marker',
         html: '<div style="background:#2d5a27; border:3px solid white; border-radius:50%; width:20px; height:20px; box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
@@ -1132,22 +1151,61 @@ document.addEventListener('DOMContentLoaded', function() {
         iconAnchor: [10, 10]
     });
 
-    const userIcon = L.divIcon({
-        className: 'custom-user-marker',
-        html: '<div style="background:#dc2626; border:3px solid white; border-radius:50%; width:16px; height:16px; box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
-    });
-
-    // Add event marker
     const eventMarker = L.marker([eventLat, eventLng], { icon: eventIcon })
         .addTo(map)
-        .bindPopup({!! json_encode($event->title) !!})
+        .bindPopup('<strong>' + {!! json_encode($event->title) !!} + '</strong>')
         .openPopup();
 
     let userMarker = null;
     let routeLayer = null;
     let watchId = null;
+
+    // Improved routing with fallbacks
+    async function calculateRoute(userLat, userLng) {
+        try {
+            // Try OSRM first (most reliable)
+            const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${userLng},${userLat};${eventLng},${eventLat}?overview=full&geometries=geojson`);
+            
+            if (!response.ok) throw new Error('OSRM failed');
+            
+            const data = await response.json();
+            
+            if (data.routes && data.routes.length > 0) {
+                return {
+                    success: true,
+                    route: data.routes[0],
+                    geometry: data.routes[0].geometry
+                };
+            }
+        } catch (error) {
+            console.log('OSRM failed, using straight line');
+        }
+
+        // Fallback: straight line with estimated time
+        const straightDistance = calculateStraightDistance(userLat, userLng, eventLat, eventLng);
+        const estimatedTime = straightDistance / 50000 * 3600; // Rough estimate: 50km/h
+        
+        return {
+            success: false,
+            straightDistance: straightDistance,
+            estimatedTime: estimatedTime
+        };
+    }
+
+    function calculateStraightDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371e3; // Earth radius in meters
+        const φ1 = lat1 * Math.PI / 180;
+        const φ2 = lat2 * Math.PI / 180;
+        const Δφ = (lat2 - lat1) * Math.PI / 180;
+        const Δλ = (lng2 - lng1) * Math.PI / 180;
+
+        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+        return R * c;
+    }
 
     function formatDistance(meters) {
         if (meters < 1000) {
@@ -1168,42 +1226,70 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function fetchRoute(fromLat, fromLng, toLat, toLng) {
-        const url = `https://router.project-osrm.org/route/v1/driving/${fromLng},${fromLat};${toLng},${toLng}?overview=full&geometries=geojson`;
-        return fetch(url).then(r => r.json());
-    }
-
     function drawRoute(geojson, routeData) {
+        // Clear existing route
         if (routeLayer) {
             map.removeLayer(routeLayer);
-            routeLayer = null;
         }
-        
-        routeLayer = L.geoJSON(geojson, { 
-            style: { 
-                color: '#2d5a27', 
-                weight: 6, 
-                opacity: 0.8,
-                lineCap: 'round',
-                lineJoin: 'round'
-            } 
-        }).addTo(map);
-        
-        // Update route info
-        if (routeData && routeData.routes && routeData.routes[0]) {
-            const route = routeData.routes[0];
-            document.getElementById('distance-info').textContent = 'Distance: ' + formatDistance(route.distance);
-            document.getElementById('time-info').textContent = 'Temps estimé: ' + formatTime(route.duration);
+
+        if (geojson) {
+            routeLayer = L.geoJSON(geojson, {
+                style: {
+                    color: '#2d5a27',
+                    weight: 6,
+                    opacity: 0.8,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                }
+            }).addTo(map);
         }
-        
-        // Fit map to show both markers and route
-        const group = new L.featureGroup([eventMarker, userMarker, routeLayer]);
+
+        // Update display
+        if (routeData && routeData.success) {
+            document.getElementById('distance-info').textContent = 'Distance: ' + formatDistance(routeData.route.distance);
+            document.getElementById('time-info').textContent = 'Temps estimé: ' + formatTime(routeData.route.duration);
+        } else if (routeData) {
+            document.getElementById('distance-info').textContent = 'Distance: ~' + formatDistance(routeData.straightDistance);
+            document.getElementById('time-info').textContent = 'Temps estimé: ~' + formatTime(routeData.estimatedTime);
+        }
+    }
+
+    async function updateUserPosition(position) {
+        const userLat = position.coords.latitude;
+        const userLng = position.coords.longitude;
+
+        // Update user marker
+        if (!userMarker) {
+            const userIcon = L.divIcon({
+                className: 'custom-user-marker',
+                html: '<div style="background:#dc2626; border:3px solid white; border-radius:50%; width:16px; height:16px; box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
+                iconSize: [16, 16],
+                iconAnchor: [8, 8]
+            });
+
+            userMarker = L.marker([userLat, userLng], { icon: userIcon })
+                .addTo(map)
+                .bindPopup('Votre position actuelle')
+                .openPopup();
+        } else {
+            userMarker.setLatLng([userLat, userLng]);
+        }
+
+        // Calculate route
+        const routeResult = await calculateRoute(userLat, userLng);
+        drawRoute(routeResult.geometry, routeResult);
+
+        // Fit map to show both markers
+        const group = new L.featureGroup([eventMarker, userMarker]);
+        if (routeLayer) {
+            group.addLayer(routeLayer);
+        }
         map.fitBounds(group.getBounds(), { padding: [20, 20] });
     }
 
     function startNavigation() {
         if (!navigator.geolocation) {
-            document.getElementById('map-status').textContent = 'Géolocalisation non supportée par ce navigateur.';
+            document.getElementById('map-status').textContent = 'Géolocalisation non supportée.';
             return;
         }
 
@@ -1212,52 +1298,30 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('map-status').textContent = 'Navigation en cours...';
         document.getElementById('map-status').className = 'text-xs text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-200';
 
-        // Watch position and update route
-        watchId = navigator.geolocation.watchPosition(async (pos) => {
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-
-            if (userMarker) {
-                userMarker.setLatLng([lat, lng]);
-            } else {
-                userMarker = L.marker([lat, lng], { icon: userIcon })
-                    .addTo(map)
-                    .bindPopup('Votre position actuelle')
-                    .openPopup();
+        // Get initial position
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                updateUserPosition(position);
+                
+                // Start watching position
+                watchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        updateUserPosition(position);
+                    },
+                    (error) => {
+                        handleGeolocationError(error);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        maximumAge: 10000,
+                        timeout: 15000
+                    }
+                );
+            },
+            (error) => {
+                handleGeolocationError(error);
             }
-
-            try {
-                const data = await fetchRoute(lat, lng, eventLat, eventLng);
-                if (data && data.routes && data.routes.length) {
-                    drawRoute(data.routes[0].geometry, data);
-                }
-            } catch (err) {
-                console.error('Routing error', err);
-                document.getElementById('map-status').textContent = 'Erreur de calcul d\'itinéraire';
-                document.getElementById('map-status').className = 'text-xs text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-200';
-            }
-        }, (err) => {
-            let errorMessage = 'Erreur de géolocalisation: ';
-            switch(err.code) {
-                case err.PERMISSION_DENIED:
-                    errorMessage += 'Accès refusé';
-                    break;
-                case err.POSITION_UNAVAILABLE:
-                    errorMessage += 'Position indisponible';
-                    break;
-                case err.TIMEOUT:
-                    errorMessage += 'Timeout';
-                    break;
-                default:
-                    errorMessage += 'Erreur inconnue';
-            }
-            document.getElementById('map-status').textContent = errorMessage;
-            document.getElementById('map-status').className = 'text-xs text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-200';
-        }, { 
-            enableHighAccuracy: true, 
-            maximumAge: 10000, 
-            timeout: 15000 
-        });
+        );
     }
 
     function stopNavigation() {
@@ -1265,17 +1329,13 @@ document.addEventListener('DOMContentLoaded', function() {
             navigator.geolocation.clearWatch(watchId);
             watchId = null;
         }
-        
+
         document.getElementById('start-navigation').classList.remove('hidden');
         document.getElementById('stop-navigation').classList.add('hidden');
         document.getElementById('map-status').textContent = 'Navigation arrêtée';
         document.getElementById('map-status').className = 'text-xs text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-200';
-        
-        // Clear route info
-        document.getElementById('distance-info').textContent = 'Distance: --';
-        document.getElementById('time-info').textContent = 'Temps estimé: --';
-        
-        // Remove route and user marker
+
+        // Clear route and user marker
         if (routeLayer) {
             map.removeLayer(routeLayer);
             routeLayer = null;
@@ -1284,11 +1344,36 @@ document.addEventListener('DOMContentLoaded', function() {
             map.removeLayer(userMarker);
             userMarker = null;
         }
-        
-        // Reset map view to event
+
+        // Reset info
+        document.getElementById('distance-info').textContent = 'Distance: --';
+        document.getElementById('time-info').textContent = 'Temps estimé: --';
+
+        // Reset map view
         map.setView([eventLat, eventLng], 13);
     }
 
+    function handleGeolocationError(error) {
+        let errorMessage = 'Erreur de géolocalisation: ';
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+                errorMessage = 'Accès à la localisation refusé. Autorisez la géolocalisation dans les paramètres de votre navigateur.';
+                break;
+            case error.POSITION_UNAVAILABLE:
+                errorMessage = 'Position indisponible. Vérifiez votre connexion internet.';
+                break;
+            case error.TIMEOUT:
+                errorMessage = 'Délai de localisation dépassé. Réessayez.';
+                break;
+            default:
+                errorMessage = 'Erreur inconnue lors de la localisation.';
+        }
+        
+        document.getElementById('map-status').textContent = errorMessage;
+        document.getElementById('map-status').className = 'text-xs text-red-600 bg-red-50 px-3 py-1 rounded-full border border-red-200';
+    }
+
+    // Bind buttons
     document.getElementById('start-navigation').addEventListener('click', startNavigation);
     document.getElementById('stop-navigation').addEventListener('click', stopNavigation);
 });

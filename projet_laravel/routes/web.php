@@ -26,6 +26,8 @@ use App\Http\Controllers\Backend\EventController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\VolunteerController;
 use App\Http\Controllers\AssignmentController; 
+use App\Http\Controllers\SocialShareController; 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes - EcoEvents
@@ -551,6 +553,22 @@ Route::get('/certificates/verify/{token}', [CertificateVerificationController::c
     ->name('certificates.verify');
 Route::post('/api/certificates/verify', [CertificateVerificationController::class, 'apiVerify'])
     ->name('certificates.api.verify');
+
+
+
+
+        Route::get('/events/{event}/share/test', [SocialShareController::class, 'testShare'])
+    ->name('events.social-share.test')
+    ->middleware('auth');
+    
+// Social sharing routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/events/{event}/share', [SocialShareController::class, 'create'])->name('events.social-share.create');
+    Route::post('/events/{event}/share', [SocialShareController::class, 'store'])->name('events.social-share.store');
+    Route::get('/events/{event}/share/statistics', [SocialShareController::class, 'statistics'])->name('events.social-share.statistics');
+
+
+});
 
 require __DIR__ . '/auth.php';
 require __DIR__ . '/2fa.php';
