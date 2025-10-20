@@ -21,7 +21,7 @@
                     </nav>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('events.update', $event) }}" method="POST" enctype="multipart/form-data" id="eventForm" novalidate >
+                    <form action="{{ route('events.update', $event) }}" method="POST" enctype="multipart/form-data" id="eventForm">
                         @csrf
                         @method('PUT')
 
@@ -85,7 +85,7 @@
 
 <div class="col-md-6">
     <label for="campaign_id" class="form-label">
-        <i class="fas fa-bullhorn me-2" style="color: #2d5a27;"></i>Campagne <span class="text-danger">*</span>
+        <i class="fas fa-bullhorn me-2" style="color: #2d5a27;"></i>Campagne    
     </label>
     @php
         $campaigns = \App\Models\Campaign::all();

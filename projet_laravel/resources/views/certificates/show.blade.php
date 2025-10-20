@@ -111,13 +111,22 @@
                             <i class="fas fa-share-alt fa-2x text-eco mb-3"></i>
                             <h6>Partager votre certificat</h6>
                             <p class="text-muted small">Partagez votre réussite sur les réseaux sociaux</p>
-                            <div class="btn-group">
-                                <button class="btn btn-outline-primary btn-sm" onclick="shareOnLinkedIn()">
-                                    <i class="fab fa-linkedin"></i> LinkedIn
-                                </button>
-                                <button class="btn btn-outline-info btn-sm" onclick="shareOnTwitter()">
-                                    <i class="fab fa-twitter"></i> Twitter
-                                </button>
+                            <div class="d-grid gap-2">
+                                <a href="{{ $certification->getLinkedInShareUrl() }}" 
+                                   target="_blank" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fab fa-linkedin me-2"></i>Partager sur LinkedIn
+                                </a>
+                                <a href="{{ $certification->getTwitterShareUrl() }}" 
+                                   target="_blank" 
+                                   class="btn btn-outline-info btn-sm">
+                                    <i class="fab fa-twitter me-2"></i>Partager sur Twitter
+                                </a>
+                                <a href="{{ $certification->getFacebookShareUrl() }}" 
+                                   target="_blank" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fab fa-facebook me-2"></i>Partager sur Facebook
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -194,19 +203,4 @@
 </style>
 @endpush
 
-@push('scripts')
-<script>
-function shareOnLinkedIn() {
-    const url = encodeURIComponent(window.location.href);
-    const title = encodeURIComponent('Mon certificat EcoEvents - ' + '{{ $certification->reservation->event->title }}');
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
-}
-
-function shareOnTwitter() {
-    const url = encodeURIComponent(window.location.href);
-    const text = encodeURIComponent('Je viens d\'obtenir mon certificat de participation EcoEvents ! 🌱');
-    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
-}
-</script>
-@endpush
 @endsection

@@ -2,11 +2,13 @@
 
 @section('title', 'Créer un Événement')
 
+
 @section('content')
 <div class="container">
+
     <div class="row">
         <div class="col-12">
-            <div>
+            <div >
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-4">
                         <i class="fas fa-calendar-plus me-2" style="color: #2d5a27;"></i><strong>Créer un nouvel événement</strong>
@@ -22,14 +24,14 @@
                 </div>
                 <div class="card-body">
                     @if(session('error'))
-                    <div class="alert alert-danger">
-                        <strong>Erreur :</strong> {{ session('error') }}
-                    </div>
+                        <div class="alert alert-danger">
+                            <strong>Erreur :</strong> {{ session('error') }}
+                        </div>
                     @endif
                     @if(session('debug'))
-                    <div class="alert alert-warning">
-                        <strong>Debug :</strong> {{ session('debug') }}
-                    </div>
+                        <div class="alert alert-warning">
+                            <strong>Debug :</strong> {{ session('debug') }}
+                        </div>
                     @endif
 
                     <!-- VOICE RECOGNITION & DROPDOWN VIEWER SECTION -->
@@ -118,7 +120,7 @@
 
                     <form action="{{ route('events.store') }}" method="POST" enctype="multipart/form-data" id="eventForm" novalidate>
                         @csrf
-
+                        
                         <div class="row">
                             <!-- Left Column - Form Fields -->
                             <div class="col-md-8">
@@ -127,17 +129,16 @@
                                     <label for="title" class="form-label">
                                         <i class="fas fa-heading me-2" style="color: #2d5a27;"></i>Titre de l'événement <span class="text-danger">*</span>
                                     </label>
-                                    <input type="text"
-                                        class="form-control @error('title') is-invalid @enderror"
-                                        id="title"
-                                        name="title"
-                                        value="{{ old('title') }}"
-                                        required
-                                        placeholder="Ex: Nettoyage de la plage">
+                                    <input type="text" 
+                                           class="form-control @error('title') is-invalid @enderror" 
+                                           id="title" 
+                                           name="title" 
+                                           value="{{ old('title') }}" 
+                                           required 
+                                           placeholder="Ex: Nettoyage de la plage">
                                     @error('title')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                    <small class="voice-command-hint">Dites: "Titre: [votre titre]"</small>
                                 </div>
 
                                 <!-- Description -->
@@ -145,16 +146,15 @@
                                     <label for="description" class="form-label">
                                         <i class="fas fa-align-left me-2" style="color: #2d5a27;"></i>Description <span class="text-danger">*</span>
                                     </label>
-                                    <textarea class="form-control @error('description') is-invalid @enderror"
-                                        id="description"
-                                        name="description"
-                                        rows="4"
-                                        required
-                                        placeholder="Décrivez votre événement...">{{ old('description') }}</textarea>
+                                    <textarea class="form-control @error('description') is-invalid @enderror" 
+                                              id="description" 
+                                              name="description" 
+                                              rows="4" 
+                                              required 
+                                              placeholder="Décrivez votre événement...">{{ old('description') }}</textarea>
                                     @error('description')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                    <small class="voice-command-hint">Dites: "Description: [votre description]"</small>
                                 </div>
 
                                 <!-- Date and Time -->
@@ -164,17 +164,16 @@
                                             <label for="date" class="form-label">
                                                 <i class="fas fa-calendar-day me-2" style="color: #2d5a27;"></i>Date et heure <span class="text-danger">*</span>
                                             </label>
-                                            <input type="datetime-local"
-                                                class="form-control @error('date') is-invalid @enderror"
-                                                id="date"
-                                                name="date"
-                                                value="{{ old('date') }}"
-                                                required
-                                                min="{{ now()->format('Y-m-d\TH:i') }}">
+                                            <input type="datetime-local" 
+                                                   class="form-control @error('date') is-invalid @enderror" 
+                                                   id="date" 
+                                                   name="date" 
+                                                   value="{{ old('date') }}" 
+                                                   required 
+                                                   min="{{ now()->format('Y-m-d\TH:i') }}">
                                             @error('date')
-                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
-                                            <small class="voice-command-hint">Dites: "Demain" ou "Après-demain"</small>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -182,10 +181,10 @@
                                             <label for="duration" class="form-label">
                                                 <i class="fas fa-clock me-2" style="color: #2d5a27;"></i>Durée <span class="text-danger">*</span>
                                             </label>
-                                            <select class="form-select @error('duration') is-invalid @enderror"
-                                                id="duration"
-                                                name="duration"
-                                                required>
+                                            <select class="form-select @error('duration') is-invalid @enderror" 
+                                                    id="duration" 
+                                                    name="duration" 
+                                                    required>
                                                 <option value="">Sélectionnez une durée</option>
                                                 <option value="1 heure" {{ old('duration') == '1 heure' ? 'selected' : '' }}>1 heure</option>
                                                 <option value="2 heures" {{ old('duration') == '2 heures' ? 'selected' : '' }}>2 heures</option>
@@ -196,39 +195,42 @@
                                                 <option value="Week-end" {{ old('duration') == 'Week-end' ? 'selected' : '' }}>Week-end</option>
                                             </select>
                                             @error('duration')
-                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
-                                            <small class="voice-command-hint">Dites: "Durée: 2 heures"</small>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row mb-3">
-                                    <!-- Location Dropdown -->
-                                    <div class="col-md-6">
-                                        <label for="location_id" class="form-label">
-                                            <i class="fas fa-map-marker-alt me-2" style="color: #2d5a27;"></i>Lieu <span class="text-danger">*</span>
-                                        </label>
-                                        @php
-                                        $locations = \App\Models\Location::where('in_repair', false)->get();
-                                        @endphp
-                                        <select class="form-select @error('location_id') is-invalid @enderror" id="location_id" name="location_id" required>
-                                            <option value="">Sélectionnez un lieu</option>
-                                            @foreach($locations as $location)
-                                            <option value="{{ $location->id }}" {{ old('location_id') == $location->id ? 'selected' : '' }}>{{ $location->name }} ({{ $location->city }})</option>
-                                            @endforeach
-                                        </select>
-                                        @error('location_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        <small class="voice-command-hint">Dites: "Lieu: [nom du lieu]"</small>
-                                    </div>
 
-                                    <div class="col-md-6">
-                                        <label for="campaign_id" class="form-label @error('campaign_id') is-invalid @enderror" style="color: #2d5a27;">
-                                            <i class="fas fa-bullhorn me-2" style="color: #2d5a27;"></i>Campagne <span class="text-danger">*</span>
-                                        </label>
-                                        <select class="form-select @error('campaign_id') is-invalid @enderror"
-                                            id="campaign_id"
+                                <!-- Location Dropdown -->
+                                <div class="col-md-6">
+                                    <label for="location_id" class="form-label">
+                                        <i class="fas fa-map-marker-alt me-2" style="color: #2d5a27;"></i>Lieu <span class="text-danger">*</span>
+                                    </label>
+                                    @php
+                                        $locations = \App\Models\Location::where('in_repair', false)->get();
+                                    @endphp
+                                    <select class="form-select @error('location_id') is-invalid @enderror" id="location_id" name="location_id" required>
+                                        <option value="">Sélectionnez un lieu</option>
+                                        @foreach($locations as $location)
+                                            <option value="{{ $location->id }}" {{ old('location_id') == $location->id ? 'selected' : '' }}>{{ $location->name }} ({{ $location->city }})</option>
+                                        @endforeach
+                                    </select>
+                                    @error('location_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+
+                                  
+                                    <div class="col-md-6 ">
+                                    <label for="campaign_id" class="form-label  
+                                             @error('campaign_id') is-invalid @enderror" 
+                                             style="color: #2d5a27;">
+                                         <i class="fas fa-bullhorn me-2" style="color: #2d5a27;"></i>Campagne
+                                    </label>
+                                    <select class="form-select @error('campaign_id') is-invalid @enderror"
+                                            id="campaign_id" 
                                             name="campaign_id">
                                             <option value="">Sélectionnez une campagne</option>
                                             @php
@@ -292,31 +294,34 @@
                                     </div>
                                 
 
+                                </div>
+                                </div>
                                 <div class="mb-3">
                                     <label for="max_participants" class="form-label">
                                         <i class="fas fa-users me-2" style="color: #2d5a27;"></i>Nombre maximum de participants
                                     </label>
-                                    <input type="number"
-                                        class="form-control @error('max_participants') is-invalid @enderror"
-                                        id="max_participants"
-                                        name="max_participants"
-                                        value="{{ old('max_participants') }}"
-                                        min="1"
-                                        placeholder="Laissez vide pour illimité">
+                                    <input type="number" 
+                                           class="form-control @error('max_participants') is-invalid @enderror" 
+                                           id="max_participants" 
+                                           name="max_participants" 
+                                           value="{{ old('max_participants') }}" 
+                                           min="1" 
+                                           placeholder="Laissez vide pour illimité">
                                     @error('max_participants')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                     <small class="form-text text-muted">Optionnel - Laissez vide si pas de limite</small>
-                                    <small class="voice-command-hint">Dites: "50 participants"</small>
                                 </div>
-                            </div>
+                              
+</div>
+
 
                             <!-- Right Column - More Fields, Images and Actions -->
                             <div class="col-md-4 ">
                                 <!-- Max Participants -->
-                                <div class="alert alert-info mt-10 mb-4">
+                         <div class="alert alert-info mt-10 mb-4">
                                     <i class="fas fa-info-circle me-2 "></i>
-                                    <strong>Important :</strong> Après la création, votre événement sera en statut "Brouillon".
+                                    <strong>Important :</strong> Après la création, votre événement sera en statut "Brouillon". 
                                     Vous pourrez le soumettre pour approbation depuis la liste de vos événements.
                                 </div>
 
@@ -337,14 +342,14 @@
                                         </div>
                                     </div>
                                     @error('images.*')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                     <small class="form-text text-muted">
                                         Vous pouvez sélectionner plusieurs images. Formats acceptés: JPG, PNG, GIF. Max: 2MB par image.
                                     </small>
                                     <!-- Image preview -->
                                     <div id="imagePreview" class="mt-3 row g-2"></div>
-                                </div>
+                                </div>                               
 
                                 <!-- Buttons -->
                                 <div class="d-flex justify-content-between mt-4 mb-30">
@@ -355,6 +360,8 @@
                                         <i class="fas fa-save me-2"></i>Créer l'événement
                                     </button>
                                 </div>
+
+                                 
                             </div>
                         </div>
                     </form>
@@ -935,81 +942,74 @@
 
 @push('styles')
 <style>
-    /* ===== UNIQUE VOICE OPTIONS STYLES ===== */
-    .voiceOptionsCardXYZ {
-        border: 2px solid #e8f5e8 !important;
-        border-radius: 12px !important;
-        box-shadow: 0 4px 15px rgba(45, 90, 39, 0.1) !important;
-        transition: all 0.3s ease !important;
-        margin-bottom: 1rem !important;
-        overflow: hidden !important;
-    }
+.drag-drop-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
 
-    .voiceOptionsCardXYZ:hover {
-        transform: translateY(-5px) !important;
-        box-shadow: 0 8px 25px rgba(45, 90, 39, 0.2) !important;
-    }
+.drag-drop-area:hover {
+    border-color: #2d5a27;
+    background-color: #f0f9f0;
+}
 
-    .voiceOptionsHeader789 {
-        background: linear-gradient(135deg, #2d5a27 0%, #3a7a32 100%) !important;
-        color: white !important;
-        border-bottom: 3px solid #4caF50 !important;
-        padding: 1rem 1.25rem !important;
-        font-weight: 600 !important;
-    }
+.drag-drop-area.drag-over {
+    border-color: #2d5a27;
+    background-color: #e8f5e8;
+}
 
-    .voiceOptionsBodyDEF {
-        padding: 1rem !important;
-        background: linear-gradient(135deg, #f8fff8 0%, #ffffff 100%) !important;
-        max-height: 300px !important;
-        overflow-y: auto !important;
-    }
+.drag-drop-content {
+    pointer-events: none;
+}
 
-    .voiceOptionsList777 {
-        border: none !important;
-        border-radius: 8px !important;
-        overflow: hidden !important;
-    }
+.drag-drop-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 16px;
+}
 
-    .voiceOptionsItem888 {
-        background-color: white !important;
-        border: 1px solid #e8f5e8 !important;
-        padding: 0.75rem 1rem !important;
-        font-weight: 500 !important;
-        color: #2d5a27 !important;
-        transition: all 0.3s ease !important;
-        margin: 0 !important;
-        border-radius: 0 !important;
-    }
+.drag-drop-area h5 {
+    color: #495057;
+    font-weight: 500;
+    margin-bottom: 8px;
+    font-size: 16px;
+}
 
-    .voiceOptionsItem888:nth-child(even) {
-        background-color: #f8fff8 !important;
-    }
+.drag-drop-area .text-muted {
+    color: #6c757d !important;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
 
-    .voiceOptionsItem888:hover {
-        background-color: #2d5a27 !important;
-        color: white !important;
-        transform: translateX(5px) !important;
-        box-shadow: 0 2px 8px rgba(45, 90, 39, 0.3) !important;
-    }
+#browseBtn {
+    pointer-events: all;
+    background-color: white;
+    border: 1px solid #2d5a27;
+    color: #2d5a27
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
 
-    .voiceCommandHelp555 {
-        background: linear-gradient(135deg, #e8f4f8 0%, #d4edda 100%) !important;
-        border: 2px solid #b3e0f0 !important;
-        border-radius: 10px !important;
-        color: #055160 !important;
-        font-size: 0.95rem !important;
-        box-shadow: 0 2px 15px rgba(0, 123, 255, 0.1) !important;
-    }
+#browseBtn:hover {
+    background-color: #2d5a27;
+    color: white;
+}
 
-    .voiceCommandHelp555 strong {
-        color: #2d5a27 !important;
-    }
+.card-img-top {
+    object-fit: cover;
+}
 
-    .voiceCommandHelp555 em {
-        color: #155724 !important;
-        font-style: italic !important;
-    }
+.remove-new-image {
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
 
     /* Animation for options container */
     @keyframes voiceOptionsEntranceABC {
@@ -1024,15 +1024,15 @@
         }
     }
 
-    #voiceOptionsContainer {
-        animation: voiceOptionsEntranceABC 0.5s ease-out !important;
-    }
+.alert-info {
+    background-color: #e8f4f8;
+    border-color: #b3e0f0;
+    color: #055160;
+}
 
-    /* Voice Recognition Styles */
-    .btn-outline-eco {
-        border-color: #2d5a27;
-        color: #2d5a27;
-    }
+.alert-info i {
+    color: #055160;
+}
 
     .btn-outline-eco:hover,
     .btn-outline-eco.listening {
@@ -1074,14 +1074,7 @@
 
     /* Existing drag & drop styles */
     .drag-drop-area {
-        border: 2px dashed #dee2e6;
-        border-radius: 8px;
-        padding: 40px 20px;
-        text-align: center;
-        background-color: #f8f9fa;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        margin-bottom: 10px;
+        padding: 30px 15px;
     }
 
     .drag-drop-area:hover {
@@ -1163,5 +1156,6 @@
             margin-bottom: 1rem;
         }
     }
+}
 </style>
 @endpush
