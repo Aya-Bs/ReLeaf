@@ -244,7 +244,9 @@
 
                                     </div>
                                     <!-- Sponsor combobox (single field: type to filter, empty shows all) -->
-                                    <div class="row mb-3">
+                                    
+                                </div>
+<div class="row mb-3">
                                         <div class="col-md-12">
                                             <label for="sponsor_input" class="form-label">
                                                 <i class="fas fa-handshake me-2" style="color: #2d5a27;"></i>Sélectionner un sponsor (optionnel)
@@ -288,30 +290,7 @@
                                             <small class="text-muted">Le sponsor choisi recevra une demande pour parrainer cet événement et pourra l'accepter ou la refuser.</small>
                                         </div>
                                     </div>
-                                </div>
-
-                                <!-- Sponsor selectable with search -->
-                                <div class="row mb-3">
-                                    <div class="col-md-12">
-                                        <label for="sponsor_search" class="form-label">
-                                            <i class="fas fa-handshake me-2" style="color: #2d5a27;"></i>Sélectionner un sponsor (optionnel)
-                                        </label>
-                                        @php
-                                        $sponsors = \App\Models\Sponsor::validated()->with('user')->get();
-                                        @endphp
-
-                                        <select class="form-select" id="sponsor_id" name="sponsor_id">
-                                            <option value="">Aucun sponsor</option>
-                                            @foreach($sponsors as $s)
-                                            <option value="{{ $s->id }}" data-search="{{ strtolower(($s->company_name ?? '') . ' ' . ($s->user->name ?? '') . ' ' . ($s->city ?? '') ) }}" {{ old('sponsor_id') == $s->id ? 'selected' : '' }}>
-                                                {{ $s->company_name ?? ($s->user->name ?? 'Sponsor') }}
-                                                @if($s->city) - {{ $s->city }} @endif
-                                            </option>
-                                            @endforeach
-                                        </select>
-                                        <small class="text-muted">Le sponsor choisi recevra une demande pour parrainer cet événement et pourra l'accepter ou la refuser.</small>
-                                    </div>
-                                </div>
+                                
 
                                 <div class="mb-3">
                                     <label for="max_participants" class="form-label">
