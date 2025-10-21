@@ -191,10 +191,10 @@
                 </div>
                 <div class="card-body text-center">
                     @if($resource->image_url)
-                    <img src="{{ Storage::url($resource->image_url) }}"
-                        alt="{{ $resource->name }}"
-                        class="resource-image img-fluid rounded"
-                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <img src="{{ asset('storage/' . $resource->image_url) }}" 
+                         alt="{{ $resource->name }}" 
+                         class="resource-main-image"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                     <div class="resource-image-placeholder" style="display: none;">
                         @switch($resource->resource_type)
                         @case('money') <i class="fas fa-money-bill-wave fa-3x text-muted"></i> @break

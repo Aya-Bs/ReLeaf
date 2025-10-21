@@ -113,7 +113,7 @@
                             <td>
                                 <div class="d-flex align-items-center">
                                     @if($campaign->image_url)
-                                        <img src="{{ Storage::url($campaign->image_url) }}"
+                                        <img src="{{ asset('storage/' . $campaign->image_url) }}"
                                              alt="{{ $campaign->name }}"
                                              class="rounded me-3"
                                              style="width: 40px; height: 40px; object-fit: cover;">

@@ -231,7 +231,7 @@
     <!-- Cover Image -->
     <div class="cover-wrap">
         @if($resource->image_url)
-            <img class="cover-img" src="{{ Storage::url($resource->image_url) }}" alt="{{ $resource->name }}">
+            <img class="cover-img" src="{{ asset('storage/' . $resource->image_url) }}" alt="{{ $resource->name }}">
         @else
             <div class="cover-placeholder">
                 <i class="fas fa-image"></i>

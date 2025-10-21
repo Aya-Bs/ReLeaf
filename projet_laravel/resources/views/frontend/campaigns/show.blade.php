@@ -66,10 +66,10 @@
             <!-- Campaign Image -->
             @if($campaign->image_url)
             <div class="card mb-4">
-                <img src="{{ Storage::url($campaign->image_url) }}"
-                    alt="{{ $campaign->name }}"
-                    class="card-img-top campaign-main-image"
-                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <img src="{{ asset('storage/' . $campaign->image_url) }}" 
+                         alt="{{ $campaign->name }}" 
+                         class="campaign-main-image"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <div class="card-body text-center bg-light" style="display: none;">
                     <i class="fas fa-image text-muted fa-3x mb-2"></i>
                     <p class="text-muted mb-0">Image non disponible</p>

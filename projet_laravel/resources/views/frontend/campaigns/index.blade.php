@@ -124,8 +124,16 @@
                 @foreach($userCampaigns as $campaign)
                 <div class="campaign-card">
                     <div class="card">
-                        <img src="{{ $campaign->image_url ? Storage::url($campaign->image_url) : asset('images/events/jardin-urbain.svg') }}" class="card-img-top" alt="{{ $campaign->name }}">
-                        <div class="card-body">
+                         @if($campaign->image_url)
+            <img src="{{ asset('storage/' . $campaign->image_url) }}" 
+                 class="card-img-top" 
+                 alt="{{ $campaign->name }}"
+                 onerror="this.src='{{ asset('images/events/jardin-urbain.svg') }}'">
+        @else
+            <div class="card-img-top placeholder-image">
+                <i class="fas fa-leaf"></i>
+            </div>
+        @endif                        <div class="card-body">
                             <h5 class="card-title">{{ $campaign->name }}</h5>
                             <p class="card-text">{{ ucfirst($campaign->category) }}</p>
                             <p class="card-text text-muted">{{ $campaign->start_date->format('d/m/Y') }} - {{ $campaign->end_date->format('d/m/Y') }}</p>
