@@ -41,13 +41,13 @@
                                     <i class="fas fa-microphone me-2"></i>
                                     <span id="voiceStatus">Activer la Reconnaissance Vocale</span>
                                 </button>
-                                
+
                                 <!-- Dropdown Viewer Button -->
                                 <button type="button" id="dropdownViewerBtn" class="btn btn-outline-info">
                                     <i class="fas fa-list me-2"></i>
                                     <span id="dropdownViewerText">Voir les Options Disponibles</span>
                                 </button>
-                                
+
                                 <!-- Voice Feedback -->
                                 <div id="voiceFeedback" class="alert alert-info d-none align-items-center mb-0" style="flex: 1;">
                                     <div class="spinner-border spinner-border-sm me-2" role="status"></div>
@@ -85,7 +85,7 @@
                                 <div class="card-body voiceOptionsBodyDEF">
                                     <ul class="list-group voiceOptionsList777">
                                         @php
-                                            $locations = \App\Models\Location::where('in_repair', false)->get();
+                                        $locations = \App\Models\Location::where('in_repair', false)->get();
                                         @endphp
                                         @foreach($locations as $location)
                                         <li class="list-group-item voiceOptionsItem888">"{{ $location->name }} à {{ $location->city }}"</li>
@@ -241,7 +241,52 @@
                                         @error('campaign_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
-                                        <small class="voice-command-hint">Dites: "Campagne: [nom de la campagne]"</small>
+
+                                    </div>
+                                    <!-- Sponsor combobox (single field: type to filter, empty shows all) -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-12">
+                                            <label for="sponsor_input" class="form-label">
+                                                <i class="fas fa-handshake me-2" style="color: #2d5a27;"></i>Sélectionner un sponsor (optionnel)
+                                            </label>
+                                            @php
+                                            $sponsors = \App\Models\Sponsor::validated()->with('user')->get();
+                                            $selectedSponsor = null;
+                                            if (old('sponsor_id')) {
+                                            $selectedSponsor = $sponsors->firstWhere('id', old('sponsor_id'));
+                                            }
+                                            $selectedDisplay = $selectedSponsor ? (($selectedSponsor->company_name ?? ($selectedSponsor->user->name ?? 'Sponsor')) . ($selectedSponsor->city ? ' - ' . $selectedSponsor->city : '')) : '';
+                                            @endphp
+                                            <div class="position-relative" id="sponsor-combobox">
+                                                <div class="input-group">
+                                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                                    <input type="text" id="sponsor_input" class="form-control" placeholder="Tapez pour chercher un sponsor..." autocomplete="off" value="{{ $selectedDisplay }}">
+                                                    <button class="btn btn-outline-secondary" type="button" id="sponsor_clear" title="Effacer">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                                <input type="hidden" name="sponsor_id" id="sponsor_id" value="{{ old('sponsor_id') }}">
+                                                <div id="sponsor_dropdown" class="dropdown-menu w-100" style="max-height: 240px; overflow-y: auto;">
+                                                    <button type="button" class="dropdown-item" data-id="" data-label="Aucun sponsor (désélectionner)">
+                                                        Aucun sponsor
+                                                    </button>
+                                                    <div class="dropdown-divider"></div>
+                                                    @foreach($sponsors as $s)
+                                                    @php
+                                                    $label = ($s->company_name ?? ($s->user->name ?? 'Sponsor')) . ($s->city ? ' - ' . $s->city : '');
+                                                    $search = strtolower(($s->company_name ?? '') . ' ' . ($s->user->name ?? '') . ' ' . ($s->city ?? ''));
+                                                    @endphp
+                                                    <button type="button" class="dropdown-item sponsor-option" data-id="{{ $s->id }}" data-search="{{ $search }}" data-label="{{ $label }}">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fas fa-building me-2 text-muted"></i>
+                                                            <span>{{ $label }}</span>
+                                                        </div>
+                                                    </button>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">Le sponsor choisi recevra une demande pour parrainer cet événement et pourra l'accepter ou la refuser.</small>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -254,7 +299,7 @@
                                         @php
                                         $sponsors = \App\Models\Sponsor::validated()->with('user')->get();
                                         @endphp
-                                        
+
                                         <select class="form-select" id="sponsor_id" name="sponsor_id">
                                             <option value="">Aucun sponsor</option>
                                             @foreach($sponsors as $s)
@@ -343,423 +388,517 @@
 
 @push('scripts')
 <script>
-// Voice Recognition Functionality
-class VoiceFormFiller {
-    constructor() {
-        this.recognition = null;
-        this.isListening = false;
-        this.areOptionsVisible = false;
-        this.init();
-    }
-
-    init() {
-        // Check browser support
-        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-            this.showError('La reconnaissance vocale n\'est pas supportée par votre navigateur.');
-            document.getElementById('voiceControlBtn').disabled = true;
-            return;
-        }
-
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        this.recognition = new SpeechRecognition();
-        
-        // Configure recognition - SINGLE UTTERANCE (stops automatically)
-        this.recognition.continuous = false;
-        this.recognition.interimResults = false;
-        this.recognition.lang = 'fr-FR';
-
-        // Event handlers
-        this.recognition.onstart = () => this.onRecognitionStart();
-        this.recognition.onresult = (event) => this.onRecognitionResult(event);
-        this.recognition.onerror = (event) => this.onRecognitionError(event);
-        this.recognition.onend = () => this.onRecognitionEnd();
-
-        // Bind buttons
-        document.getElementById('voiceControlBtn').addEventListener('click', () => this.toggleListening());
-        document.getElementById('dropdownViewerBtn').addEventListener('click', () => this.toggleOptionsVisibility());
-    }
-
-    toggleListening() {
-        if (this.isListening) {
-            this.stopListening();
-        } else {
-            this.startListening();
-        }
-    }
-
-    startListening() {
-        try {
-            this.recognition.start();
-            this.isListening = true;
-        } catch (error) {
-            this.showError('Erreur lors du démarrage de la reconnaissance vocale.');
-        }
-    }
-
-    stopListening() {
-        if (this.isListening) {
-            this.recognition.stop();
+    // Voice Recognition Functionality
+    class VoiceFormFiller {
+        constructor() {
+            this.recognition = null;
             this.isListening = false;
+            this.areOptionsVisible = false;
+            this.init();
         }
-    }
 
-    onRecognitionStart() {
-        const btn = document.getElementById('voiceControlBtn');
-        const status = document.getElementById('voiceStatus');
-        const feedback = document.getElementById('voiceFeedback');
-        
-        btn.classList.add('listening');
-        status.textContent = '🎤 Écoute en cours... Parlez maintenant';
-        feedback.classList.remove('d-none');
-        this.updateFeedback('🎤 Je vous écoute... Dites votre commande puis attendez');
-    }
-
-    onRecognitionResult(event) {
-        const transcript = event.results[0][0].transcript;
-        const transcriptLower = transcript.toLowerCase();
-        console.log('Raw transcript:', transcript);
-        console.log('Lower transcript:', transcriptLower);
-        
-        this.updateFeedback(`✅ Reconnu: "${transcript}"`);
-        
-        // Process the command
-        this.processVoiceCommand(transcript, transcriptLower);
-    }
-
-    onRecognitionError(event) {
-        if (event.error !== 'no-speech') {
-            this.showError(`Erreur de reconnaissance: ${event.error}`);
-        }
-        this.isListening = false;
-        this.updateUIAfterStop();
-    }
-
-    onRecognitionEnd() {
-        console.log('Recognition ended automatically');
-        this.isListening = false;
-        this.updateUIAfterStop();
-    }
-
-    updateUIAfterStop() {
-        const btn = document.getElementById('voiceControlBtn');
-        const status = document.getElementById('voiceStatus');
-        
-        btn.classList.remove('listening');
-        status.textContent = 'Activer la Reconnaissance Vocale';
-        
-        setTimeout(() => {
-            this.updateFeedback('✅ Prêt pour la prochaine commande. Cliquez pour parler à nouveau.');
-        }, 1000);
-        
-        setTimeout(() => {
-            if (!this.isListening) {
-                document.getElementById('voiceFeedback').classList.add('d-none');
+        init() {
+            // Check browser support
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                this.showError('La reconnaissance vocale n\'est pas supportée par votre navigateur.');
+                document.getElementById('voiceControlBtn').disabled = true;
+                return;
             }
-        }, 4000);
-    }
 
-    processVoiceCommand(transcript, transcriptLower) {
-        console.log('Processing voice command:', transcriptLower);
-        
-        let foundAny = false;
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            this.recognition = new SpeechRecognition();
 
-        // FLEXIBLE TITLE DETECTION
-        if (this.detectTitle(transcript, transcriptLower)) {
-            foundAny = true;
-        }
-        
-        // FLEXIBLE DESCRIPTION DETECTION
-        if (this.detectDescription(transcript, transcriptLower)) {
-            foundAny = true;
-        }
-        
-        // FLEXIBLE DURATION DETECTION
-        if (this.detectDuration(transcriptLower)) {
-            foundAny = true;
-        }
-        
-        // FLEXIBLE LOCATION DETECTION
-        if (this.detectLocation(transcriptLower)) {
-            foundAny = true;
-        }
-        
-        // FLEXIBLE CAMPAIGN DETECTION
-        if (this.detectCampaign(transcriptLower)) {
-            foundAny = true;
-        }
-        
-        // FLEXIBLE PARTICIPANTS DETECTION
-        if (this.detectParticipants(transcriptLower)) {
-            foundAny = true;
-        }
-        
-        // FLEXIBLE DATE DETECTION
-        if (this.detectDate(transcriptLower)) {
-            foundAny = true;
+            // Configure recognition - SINGLE UTTERANCE (stops automatically)
+            this.recognition.continuous = false;
+            this.recognition.interimResults = false;
+            this.recognition.lang = 'fr-FR';
+
+            // Event handlers
+            this.recognition.onstart = () => this.onRecognitionStart();
+            this.recognition.onresult = (event) => this.onRecognitionResult(event);
+            this.recognition.onerror = (event) => this.onRecognitionError(event);
+            this.recognition.onend = () => this.onRecognitionEnd();
+
+            // Bind buttons
+            document.getElementById('voiceControlBtn').addEventListener('click', () => this.toggleListening());
+            document.getElementById('dropdownViewerBtn').addEventListener('click', () => this.toggleOptionsVisibility());
         }
 
-        // AUTO-STOP VOICE COMMANDS
-        if (this.detectStopCommands(transcriptLower)) {
-            this.stopListening();
-            this.updateFeedback('🛑 Microphone arrêté par commande vocale');
-            return;
-        }
-
-        if (!foundAny) {
-            this.updateFeedback('❌ Aucune commande valide détectée. Essayez: "Titre: Mon événement"');
-        }
-    }
-
-    // NEW: Toggle options visibility
-    toggleOptionsVisibility() {
-        this.areOptionsVisible = !this.areOptionsVisible;
-        
-        const optionsContainer = document.getElementById('voiceOptionsContainer');
-        const helpSection = document.getElementById('voiceCommandHelp');
-        const dropdownBtn = document.getElementById('dropdownViewerBtn');
-        const dropdownText = document.getElementById('dropdownViewerText');
-        
-        if (this.areOptionsVisible) {
-            optionsContainer.style.display = 'flex';
-            helpSection.style.display = 'block';
-            dropdownBtn.classList.add('btn-info');
-            dropdownText.textContent = 'Masquer les Options';
-            this.updateFeedback('📋 Options disponibles affichées');
-        } else {
-            optionsContainer.style.display = 'none';
-            helpSection.style.display = 'none';
-            dropdownBtn.classList.remove('btn-info');
-            dropdownText.textContent = 'Voir les Options Disponibles';
-            this.updateFeedback('📋 Options masquées');
-        }
-    }
-
-    detectStopCommands(transcriptLower) {
-        const stopCommands = [
-            'stop', 'arrête', 'arrêter', 'stop écoute', 'arrête écoute', 
-            'stop microphone', 'arrête microphone', 'fin', 'terminé', 
-            'c\'est fini', 'c\'est tout', 'merci', 'ok', 'd\'accord', 
-            'ça suffit', 'silence'
-        ];
-
-        for (const command of stopCommands) {
-            if (transcriptLower.includes(command)) {
-                return true;
+        toggleListening() {
+            if (this.isListening) {
+                this.stopListening();
+            } else {
+                this.startListening();
             }
         }
-        return false;
-    }
 
-    detectTitle(originalTranscript, transcriptLower) {
-        const titlePatterns = [
-            /titre\s*[:\-]?\s*(.+?)(?=,|$|description|date|durée|lieu|campagne|participants)/i,
-            /titre\s*[:\-]?\s*(.+)/i,
-            /intitulé\s*[:\-]?\s*(.+)/i,
-            /nom\s*[:\-]?\s*(.+)/i
-        ];
+        startListening() {
+            try {
+                this.recognition.start();
+                this.isListening = true;
+            } catch (error) {
+                this.showError('Erreur lors du démarrage de la reconnaissance vocale.');
+            }
+        }
 
-        for (const pattern of titlePatterns) {
-            const match = originalTranscript.match(pattern);
-            if (match && match[1]) {
-                const title = match[1].trim();
-                if (title && title.length > 0) {
-                    document.getElementById('title').value = title;
-                    this.updateFeedback(`📝 Titre défini: "${title}"`);
+        stopListening() {
+            if (this.isListening) {
+                this.recognition.stop();
+                this.isListening = false;
+            }
+        }
+
+        onRecognitionStart() {
+            const btn = document.getElementById('voiceControlBtn');
+            const status = document.getElementById('voiceStatus');
+            const feedback = document.getElementById('voiceFeedback');
+
+            btn.classList.add('listening');
+            status.textContent = '🎤 Écoute en cours... Parlez maintenant';
+            feedback.classList.remove('d-none');
+            this.updateFeedback('🎤 Je vous écoute... Dites votre commande puis attendez');
+        }
+
+        onRecognitionResult(event) {
+            const transcript = event.results[0][0].transcript;
+            const transcriptLower = transcript.toLowerCase();
+            console.log('Raw transcript:', transcript);
+            console.log('Lower transcript:', transcriptLower);
+
+            this.updateFeedback(`✅ Reconnu: "${transcript}"`);
+
+            // Process the command
+            this.processVoiceCommand(transcript, transcriptLower);
+        }
+
+        onRecognitionError(event) {
+            if (event.error !== 'no-speech') {
+                this.showError(`Erreur de reconnaissance: ${event.error}`);
+            }
+            this.isListening = false;
+            this.updateUIAfterStop();
+        }
+
+        onRecognitionEnd() {
+            console.log('Recognition ended automatically');
+            this.isListening = false;
+            this.updateUIAfterStop();
+        }
+
+        updateUIAfterStop() {
+            const btn = document.getElementById('voiceControlBtn');
+            const status = document.getElementById('voiceStatus');
+
+            btn.classList.remove('listening');
+            status.textContent = 'Activer la Reconnaissance Vocale';
+
+            setTimeout(() => {
+                this.updateFeedback('✅ Prêt pour la prochaine commande. Cliquez pour parler à nouveau.');
+            }, 1000);
+
+            setTimeout(() => {
+                if (!this.isListening) {
+                    document.getElementById('voiceFeedback').classList.add('d-none');
+                }
+            }, 4000);
+        }
+
+        processVoiceCommand(transcript, transcriptLower) {
+            console.log('Processing voice command:', transcriptLower);
+
+            let foundAny = false;
+
+            // FLEXIBLE TITLE DETECTION
+            if (this.detectTitle(transcript, transcriptLower)) {
+                foundAny = true;
+            }
+
+            // FLEXIBLE DESCRIPTION DETECTION
+            if (this.detectDescription(transcript, transcriptLower)) {
+                foundAny = true;
+            }
+
+            // FLEXIBLE DURATION DETECTION
+            if (this.detectDuration(transcriptLower)) {
+                foundAny = true;
+            }
+
+            // FLEXIBLE LOCATION DETECTION
+            if (this.detectLocation(transcriptLower)) {
+                foundAny = true;
+            }
+
+            // FLEXIBLE CAMPAIGN DETECTION
+            if (this.detectCampaign(transcriptLower)) {
+                foundAny = true;
+            }
+
+            // FLEXIBLE PARTICIPANTS DETECTION
+            if (this.detectParticipants(transcriptLower)) {
+                foundAny = true;
+            }
+
+            // FLEXIBLE DATE DETECTION
+            if (this.detectDate(transcriptLower)) {
+                foundAny = true;
+            }
+
+            // AUTO-STOP VOICE COMMANDS
+            if (this.detectStopCommands(transcriptLower)) {
+                this.stopListening();
+                this.updateFeedback('🛑 Microphone arrêté par commande vocale');
+                return;
+            }
+
+            if (!foundAny) {
+                this.updateFeedback('❌ Aucune commande valide détectée. Essayez: "Titre: Mon événement"');
+            }
+        }
+
+        // NEW: Toggle options visibility
+        toggleOptionsVisibility() {
+            this.areOptionsVisible = !this.areOptionsVisible;
+
+            const optionsContainer = document.getElementById('voiceOptionsContainer');
+            const helpSection = document.getElementById('voiceCommandHelp');
+            const dropdownBtn = document.getElementById('dropdownViewerBtn');
+            const dropdownText = document.getElementById('dropdownViewerText');
+
+            if (this.areOptionsVisible) {
+                optionsContainer.style.display = 'flex';
+                helpSection.style.display = 'block';
+                dropdownBtn.classList.add('btn-info');
+                dropdownText.textContent = 'Masquer les Options';
+                this.updateFeedback('📋 Options disponibles affichées');
+            } else {
+                optionsContainer.style.display = 'none';
+                helpSection.style.display = 'none';
+                dropdownBtn.classList.remove('btn-info');
+                dropdownText.textContent = 'Voir les Options Disponibles';
+                this.updateFeedback('📋 Options masquées');
+            }
+        }
+
+        detectStopCommands(transcriptLower) {
+            const stopCommands = [
+                'stop', 'arrête', 'arrêter', 'stop écoute', 'arrête écoute',
+                'stop microphone', 'arrête microphone', 'fin', 'terminé',
+                'c\'est fini', 'c\'est tout', 'merci', 'ok', 'd\'accord',
+                'ça suffit', 'silence'
+            ];
+
+            for (const command of stopCommands) {
+                if (transcriptLower.includes(command)) {
                     return true;
                 }
             }
+            return false;
         }
-        return false;
-    }
 
-    detectDescription(originalTranscript, transcriptLower) {
-        const descPatterns = [
-            /description\s*[:\-]?\s*(.+?)(?=,|$|titre|date|durée|lieu|campagne|participants)/i,
-            /description\s*[:\-]?\s*(.+)/i,
-            /décris\s*[:\-]?\s*(.+)/i,
-            /décrire\s*[:\-]?\s*(.+)/i
-        ];
+        detectTitle(originalTranscript, transcriptLower) {
+            const titlePatterns = [
+                /titre\s*[:\-]?\s*(.+?)(?=,|$|description|date|durée|lieu|campagne|participants)/i,
+                /titre\s*[:\-]?\s*(.+)/i,
+                /intitulé\s*[:\-]?\s*(.+)/i,
+                /nom\s*[:\-]?\s*(.+)/i
+            ];
 
-        for (const pattern of descPatterns) {
-            const match = originalTranscript.match(pattern);
-            if (match && match[1]) {
-                const description = match[1].trim();
-                if (description && description.length > 0) {
-                    document.getElementById('description').value = description;
-                    this.updateFeedback(`📄 Description définie: "${description.substring(0, 50)}..."`);
+            for (const pattern of titlePatterns) {
+                const match = originalTranscript.match(pattern);
+                if (match && match[1]) {
+                    const title = match[1].trim();
+                    if (title && title.length > 0) {
+                        document.getElementById('title').value = title;
+                        this.updateFeedback(`📝 Titre défini: "${title}"`);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        detectDescription(originalTranscript, transcriptLower) {
+            const descPatterns = [
+                /description\s*[:\-]?\s*(.+?)(?=,|$|titre|date|durée|lieu|campagne|participants)/i,
+                /description\s*[:\-]?\s*(.+)/i,
+                /décris\s*[:\-]?\s*(.+)/i,
+                /décrire\s*[:\-]?\s*(.+)/i
+            ];
+
+            for (const pattern of descPatterns) {
+                const match = originalTranscript.match(pattern);
+                if (match && match[1]) {
+                    const description = match[1].trim();
+                    if (description && description.length > 0) {
+                        document.getElementById('description').value = description;
+                        this.updateFeedback(`📄 Description définie: "${description.substring(0, 50)}..."`);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        detectDuration(transcriptLower) {
+            const durationMap = {
+                '1 heure': '1 heure',
+                'une heure': '1 heure',
+                '1h': '1 heure',
+                '2 heures': '2 heures',
+                'deux heures': '2 heures',
+                '2h': '2 heures',
+                '3 heures': '3 heures',
+                'trois heures': '3 heures',
+                '3h': '3 heures',
+                '4 heures': '4 heures',
+                'quatre heures': '4 heures',
+                '4h': '4 heures',
+                'demi-journée': 'Demi-journée',
+                'demi journée': 'Demi-journée',
+                'demi-journee': 'Demi-journée',
+                'demi journee': 'Demi-journée',
+                'journée entière': 'Journée entière',
+                'journee entiere': 'Journée entière',
+                'journée': 'Journée entière',
+                'journee': 'Journée entière',
+                'week-end': 'Week-end',
+                'weekend': 'Week-end',
+                'fin de semaine': 'Week-end'
+            };
+
+            for (const [voiceCommand, durationValue] of Object.entries(durationMap)) {
+                if (transcriptLower.includes('durée') && transcriptLower.includes(voiceCommand)) {
+                    document.getElementById('duration').value = durationValue;
+                    this.updateFeedback(`⏱️ Durée définie: ${durationValue}`);
                     return true;
                 }
             }
+            return false;
         }
-        return false;
-    }
 
-    detectDuration(transcriptLower) {
-        const durationMap = {
-            '1 heure': '1 heure', 'une heure': '1 heure', '1h': '1 heure',
-            '2 heures': '2 heures', 'deux heures': '2 heures', '2h': '2 heures',
-            '3 heures': '3 heures', 'trois heures': '3 heures', '3h': '3 heures',
-            '4 heures': '4 heures', 'quatre heures': '4 heures', '4h': '4 heures',
-            'demi-journée': 'Demi-journée', 'demi journée': 'Demi-journée',
-            'demi-journee': 'Demi-journée', 'demi journee': 'Demi-journée',
-            'journée entière': 'Journée entière', 'journee entiere': 'Journée entière',
-            'journée': 'Journée entière', 'journee': 'Journée entière',
-            'week-end': 'Week-end', 'weekend': 'Week-end', 'fin de semaine': 'Week-end'
-        };
 
-        for (const [voiceCommand, durationValue] of Object.entries(durationMap)) {
-            if (transcriptLower.includes('durée') && transcriptLower.includes(voiceCommand)) {
-                document.getElementById('duration').value = durationValue;
-                this.updateFeedback(`⏱️ Durée définie: ${durationValue}`);
+        detectLocation(transcriptLower) {
+            const locationSelect = document.getElementById('location_id');
+            const locations = JSON.parse(`{!! json_encode($locations->pluck('name', 'id')) !!}`);
+
+            for (const [id, name] of Object.entries(locations)) {
+                const locationName = name.toLowerCase();
+                if (transcriptLower.includes(locationName)) {
+                    locationSelect.value = id;
+                    this.updateFeedback(`📍 Lieu sélectionné: ${name}`);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        detectCampaign(transcriptLower) {
+            const campaignSelect = document.getElementById('campaign_id');
+            const campaigns = JSON.parse(`{!! json_encode($campaigns->pluck('name', 'id')) !!}`);
+
+            for (const [id, name] of Object.entries(campaigns)) {
+                const campaignName = name.toLowerCase();
+                if (transcriptLower.includes(campaignName)) {
+                    campaignSelect.value = id;
+                    this.updateFeedback(`📢 Campagne sélectionnée: ${name}`);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        detectParticipants(transcriptLower) {
+            const participantMatch = transcriptLower.match(/(\d+)\s*(participants?|personnes?|people)/);
+            if (participantMatch) {
+                const count = participantMatch[1];
+                document.getElementById('max_participants').value = count;
+                this.updateFeedback(`👥 Participants définis: ${count}`);
                 return true;
             }
+            return false;
         }
-        return false;
-    }
 
-    detectLocation(transcriptLower) {
-        const locationSelect = document.getElementById('location_id');
-        const locations = @json($locations->pluck('name', 'id'));
-        
-        for (const [id, name] of Object.entries(locations)) {
-            const locationName = name.toLowerCase();
-            if (transcriptLower.includes(locationName)) {
-                locationSelect.value = id;
-                this.updateFeedback(`📍 Lieu sélectionné: ${name}`);
+        detectDate(transcriptLower) {
+            if (transcriptLower.includes('demain')) {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                this.setDateTimeField(tomorrow);
+                this.updateFeedback('📅 Date définie: Demain');
+                return true;
+            } else if (transcriptLower.includes('après-demain') || transcriptLower.includes('après demain')) {
+                const dayAfterTomorrow = new Date();
+                dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+                this.setDateTimeField(dayAfterTomorrow);
+                this.updateFeedback('📅 Date définie: Après-demain');
                 return true;
             }
+            return false;
         }
-        return false;
+
+        setDateTimeField(date) {
+            const formattedDate = date.toISOString().slice(0, 16);
+            document.getElementById('date').value = formattedDate;
+        }
+
+        updateFeedback(message) {
+            document.getElementById('feedbackText').textContent = message;
+        }
+
+        showError(message) {
+            const feedback = document.getElementById('voiceFeedback');
+            feedback.classList.remove('alert-info', 'd-none');
+            feedback.classList.add('alert-danger');
+            this.updateFeedback(message);
+
+            setTimeout(() => {
+                feedback.classList.add('d-none');
+                feedback.classList.remove('alert-danger');
+                feedback.classList.add('alert-info');
+            }, 5000);
+        }
     }
 
-    detectCampaign(transcriptLower) {
-        const campaignSelect = document.getElementById('campaign_id');
-        const campaigns = @json($campaigns->pluck('name', 'id'));
-        
-        for (const [id, name] of Object.entries(campaigns)) {
-            const campaignName = name.toLowerCase();
-            if (transcriptLower.includes(campaignName)) {
-                campaignSelect.value = id;
-                this.updateFeedback(`📢 Campagne sélectionnée: ${name}`);
-                return true;
+    // Set min datetime and sponsor combobox logic (moved outside class to fix syntax)
+    document.addEventListener('DOMContentLoaded', function() {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        const dateInput = document.getElementById('date');
+        if (dateInput) {
+            dateInput.min = now.toISOString().slice(0, 16);
+        }
+
+        // Sponsor combobox logic
+        const cb = document.getElementById('sponsor-combobox');
+        const input = document.getElementById('sponsor_input');
+        const hiddenId = document.getElementById('sponsor_id');
+        const dropdown = document.getElementById('sponsor_dropdown');
+        const clearBtn = document.getElementById('sponsor_clear');
+
+        if (cb && input && hiddenId && dropdown && clearBtn) {
+            function openDropdown() {
+                dropdown.classList.add('show');
+                dropdown.style.display = 'block';
             }
+
+            function closeDropdown() {
+                dropdown.classList.remove('show');
+                dropdown.style.display = 'none';
+            }
+
+            function filterOptions(term) {
+                const t = (term || '').trim().toLowerCase();
+                const opts = dropdown.querySelectorAll('.sponsor-option');
+                let visibleCount = 0;
+                opts.forEach(btn => {
+                    const hay = (btn.getAttribute('data-search') || '').toLowerCase();
+                    const show = !t || hay.includes(t);
+                    btn.style.display = show ? '' : 'none';
+                    if (show) visibleCount++;
+                });
+                // Show/hide divider depending on availability
+                const divider = dropdown.querySelector('.dropdown-divider');
+                if (divider) divider.style.display = visibleCount > 0 ? '' : 'none';
+            }
+
+            function setSelection(id, label) {
+                hiddenId.value = id || '';
+                input.value = label || '';
+                closeDropdown();
+            }
+
+            // Show all on focus/empty
+            input.addEventListener('focus', () => {
+                filterOptions('');
+                openDropdown();
+            });
+            input.addEventListener('input', () => {
+                filterOptions(input.value);
+                openDropdown();
+            });
+
+            // Click options
+            dropdown.addEventListener('click', (e) => {
+                const item = e.target.closest('.dropdown-item');
+                if (!item) return;
+                const id = item.getAttribute('data-id') || '';
+                const label = item.getAttribute('data-label') || item.textContent.trim();
+                setSelection(id, id ? label : '');
+            });
+
+            // Clear selection
+            clearBtn.addEventListener('click', () => setSelection('', ''));
+
+            // Close on outside click
+            document.addEventListener('click', (e) => {
+                if (!cb.contains(e.target)) {
+                    closeDropdown();
+                }
+            });
         }
-        return false;
+    });
+
+    // Drag & Drop functionality
+    const dragDropArea = document.getElementById('dragDropArea');
+    const fileInput = document.getElementById('images');
+    const browseBtn = document.getElementById('browseBtn');
+
+    // Browse button click
+    browseBtn.addEventListener('click', function() {
+        fileInput.click();
+    });
+
+    // File input change
+    fileInput.addEventListener('change', function(e) {
+        handleFiles(e.target.files);
+    });
+
+    // Drag & drop events
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dragDropArea.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
     }
 
-    detectParticipants(transcriptLower) {
-        const participantMatch = transcriptLower.match(/(\d+)\s*(participants?|personnes?|people)/);
-        if (participantMatch) {
-            const count = participantMatch[1];
-            document.getElementById('max_participants').value = count;
-            this.updateFeedback(`👥 Participants définis: ${count}`);
-            return true;
-        }
-        return false;
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dragDropArea.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dragDropArea.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight() {
+        dragDropArea.classList.add('drag-over');
     }
 
-    detectDate(transcriptLower) {
-        if (transcriptLower.includes('demain')) {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            this.setDateTimeField(tomorrow);
-            this.updateFeedback('📅 Date définie: Demain');
-            return true;
-        } else if (transcriptLower.includes('après-demain') || transcriptLower.includes('après demain')) {
-            const dayAfterTomorrow = new Date();
-            dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
-            this.setDateTimeField(dayAfterTomorrow);
-            this.updateFeedback('📅 Date définie: Après-demain');
-            return true;
-        }
-        return false;
+    function unhighlight() {
+        dragDropArea.classList.remove('drag-over');
     }
 
-    setDateTimeField(date) {
-        const formattedDate = date.toISOString().slice(0, 16);
-        document.getElementById('date').value = formattedDate;
-    }
+    dragDropArea.addEventListener('drop', function(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+        fileInput.files = files;
+    });
 
-    updateFeedback(message) {
-        document.getElementById('feedbackText').textContent = message;
-    }
+    // Handle selected files
+    function handleFiles(files) {
+        const preview = document.getElementById('imagePreview');
+        preview.innerHTML = '';
 
-    showError(message) {
-        const feedback = document.getElementById('voiceFeedback');
-        feedback.classList.remove('alert-info', 'd-none');
-        feedback.classList.add('alert-danger');
-        this.updateFeedback(message);
-        
-        setTimeout(() => {
-            feedback.classList.add('d-none');
-            feedback.classList.remove('alert-danger');
-            feedback.classList.add('alert-info');
-        }, 5000);
-    }
-}
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
 
-// Drag & Drop functionality
-const dragDropArea = document.getElementById('dragDropArea');
-const fileInput = document.getElementById('images');
-const browseBtn = document.getElementById('browseBtn');
-
-// Browse button click
-browseBtn.addEventListener('click', function() {
-    fileInput.click();
-});
-
-// File input change
-fileInput.addEventListener('change', function(e) {
-    handleFiles(e.target.files);
-});
-
-// Drag & drop events
-['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-    dragDropArea.addEventListener(eventName, preventDefaults, false);
-});
-
-function preventDefaults(e) {
-    e.preventDefault();
-    e.stopPropagation();
-}
-
-['dragenter', 'dragover'].forEach(eventName => {
-    dragDropArea.addEventListener(eventName, highlight, false);
-});
-
-['dragleave', 'drop'].forEach(eventName => {
-    dragDropArea.addEventListener(eventName, unhighlight, false);
-});
-
-function highlight() {
-    dragDropArea.classList.add('drag-over');
-}
-
-function unhighlight() {
-    dragDropArea.classList.remove('drag-over');
-}
-
-dragDropArea.addEventListener('drop', function(e) {
-    const dt = e.dataTransfer;
-    const files = dt.files;
-    handleFiles(files);
-    fileInput.files = files;
-});
-
-// Handle selected files
-function handleFiles(files) {
-    const preview = document.getElementById('imagePreview');
-    preview.innerHTML = '';
-
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-
-            reader.onload = function(e) {
-                const col = document.createElement('div');
-                col.className = 'col-6 col-md-4 mb-2';
-                col.innerHTML = `
+                reader.onload = function(e) {
+                    const col = document.createElement('div');
+                    col.className = 'col-6 col-md-4 mb-2';
+                    col.innerHTML = `
                 <div class="card position-relative">
                     <img src="${e.target.result}" class="card-img-top" style="height: 100px; object-fit: cover;">
                     <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 remove-new-image" data-file-name="${file.name}" style="padding: 0.25rem 0.5rem;">
@@ -770,48 +909,48 @@ function handleFiles(files) {
                     </div>
                 </div>
             `;
-                preview.appendChild(col);
+                    preview.appendChild(col);
 
-                // Add remove functionality for new images
-                col.querySelector('.remove-new-image').addEventListener('click', function() {
-                    removeNewImage(this, file.name);
-                });
-            };
+                    // Add remove functionality for new images
+                    col.querySelector('.remove-new-image').addEventListener('click', function() {
+                        removeNewImage(this, file.name);
+                    });
+                };
 
-            reader.readAsDataURL(file);
-        }
-    }
-}
-
-// Remove new image before upload
-function removeNewImage(button, fileName) {
-    if (confirm('Supprimer cette image ?')) {
-        const card = button.closest('.col-6');
-        card.remove();
-
-        // Remove file from input
-        const dt = new DataTransfer();
-        const files = fileInput.files;
-
-        for (let i = 0; i < files.length; i++) {
-            if (files[i].name !== fileName) {
-                dt.items.add(files[i]);
+                reader.readAsDataURL(file);
             }
         }
-
-        fileInput.files = dt.files;
     }
-}
 
-// Initialize voice recognition when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    new VoiceFormFiller();
-    
-    // Set min datetime for date field
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    document.getElementById('date').min = now.toISOString().slice(0, 16);
-});
+    // Remove new image before upload
+    function removeNewImage(button, fileName) {
+        if (confirm('Supprimer cette image ?')) {
+            const card = button.closest('.col-6');
+            card.remove();
+
+            // Remove file from input
+            const dt = new DataTransfer();
+            const files = fileInput.files;
+
+            for (let i = 0; i < files.length; i++) {
+                if (files[i].name !== fileName) {
+                    dt.items.add(files[i]);
+                }
+            }
+
+            fileInput.files = dt.files;
+        }
+    }
+
+    // Initialize voice recognition when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        new VoiceFormFiller();
+
+        // Set min datetime for date field
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('date').min = now.toISOString().slice(0, 16);
+    });
 </script>
 @endpush
 
@@ -899,6 +1038,7 @@ document.addEventListener('DOMContentLoaded', function() {
             opacity: 0;
             transform: translateY(-20px);
         }
+
         100% {
             opacity: 1;
             transform: translateY(0);
@@ -915,7 +1055,8 @@ document.addEventListener('DOMContentLoaded', function() {
         color: #2d5a27;
     }
 
-    .btn-outline-eco:hover, .btn-outline-eco.listening {
+    .btn-outline-eco:hover,
+    .btn-outline-eco.listening {
         background-color: #2d5a27;
         color: white;
     }
@@ -925,9 +1066,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+
+        100% {
+            transform: scale(1);
+        }
     }
 
     .voice-command-hint {
@@ -1005,6 +1154,18 @@ document.addEventListener('DOMContentLoaded', function() {
         color: #055160;
     }
 
+    .alert-info i {
+        color: #055160;
+    }
+
+    /* Sponsor combobox */
+    #sponsor-combobox .dropdown-menu {
+        display: none;
+        max-height: 240px;
+        overflow-y: auto;
+        z-index: 1050;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .col-md-6 {
@@ -1018,7 +1179,7 @@ document.addEventListener('DOMContentLoaded', function() {
         #voiceOptionsContainer {
             flex-direction: column;
         }
-        
+
         .voiceOptionsCardXYZ {
             margin-bottom: 1rem;
         }

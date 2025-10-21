@@ -208,6 +208,56 @@
     </div>
 </section>
 
+<!-- Top Sponsors Section -->
+<section class="top-sponsors-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-4">
+                <h2 class="section-title"><span class="text-success">Sponsors à l'honneur</span></h2>
+                <p class="text-muted">Merci à nos sponsors dont l'engagement renforce l'impact de nos actions</p>
+            </div>
+        </div>
+        @if(isset($topSponsors) && $topSponsors->count())
+        <div class="row g-3 justify-content-center">
+            @foreach($topSponsors as $entry)
+            @php $s = $entry['sponsor']; $tier = $entry['tier']; @endphp
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card sponsor-card h-100 shadow-sm border-0 text-center p-3">
+                    <div class="mb-2">
+                        @if(!empty($s->logo_url))
+                        <img class="logo" src="{{ $s->logo_url }}" alt="{{ $s->company_name ?? 'Sponsor' }}">
+                        @else
+                        <div class="logo d-inline-flex align-items-center justify-content-center bg-light" style="width:64px;height:64px;border-radius:50%;">
+                            <i class="fas fa-building text-secondary"></i>
+                        </div>
+                        @endif
+                    </div>
+                    <h6 class="mb-0">{{ $s->company_name ?? ($s->user->name ?? 'Sponsor') }}</h6>
+                    <small class="text-muted">{{ $s->city ?? '' }}</small>
+                    @php
+                    $badges = app(\App\Services\SponsorRewardService::class)->getBadges($s->id);
+                    $primaryBadge = $badges[0] ?? null;
+                    @endphp
+                    @if($primaryBadge)
+                    <div class="mt-2">
+                        @if(!empty($primaryBadge['image_url']))
+                        <img src="{{ asset($primaryBadge['image_url']) }}" alt="{{ $primaryBadge['label'] }}" style="height:20px;">
+                        @else
+                        <span class="badge bg-success-subtle text-success border border-success">
+                            {{ $primaryBadge['label'] }}
+                        </span>
+                        @endif
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @else
+        <div class="alert alert-light border text-center">Devenez sponsor et rejoignez nos partenaires engagés.</div>
+        @endif
+    </div>
+</section>
 <!-- CTA sponsor -->
 <section class="cta-section py-5 bg-success text-white">
     <div class="container">

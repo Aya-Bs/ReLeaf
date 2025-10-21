@@ -60,7 +60,7 @@ $collected = \App\Models\Donation::where('event_id', $event->id)
                                 </div>
                                 @endif
 
-                                <form action="{{ route('donations.store', $event) }}" method="POST" id="donation-form" data-has-sponsor="{{ (Auth::check() && Auth::user()->role === 'sponsor' && Auth::user()->sponsor) ? 'true' : 'false' }}">
+                                <form action="{{ route('donations.store', $event) }}" method="POST" id="donation-form" novalidate data-has-sponsor="{{ (Auth::check() && Auth::user()->role === 'sponsor' && Auth::user()->sponsor) ? 'true' : 'false' }}">
                                     @csrf
 
                                     @php
@@ -90,7 +90,7 @@ $collected = \App\Models\Donation::where('event_id', $event->id)
                                         <div class="col-md-6 mb-3 mb-md-0">
                                             <label for="donor_name" class="form-label">Votre nom *</label>
                                             <input type="text" class="form-control @error('donor_name') is-invalid @enderror"
-                                                id="donor_name" name="donor_name" value="{{ old('donor_name', Auth::user()->name ?? '') }}" required>
+                                                id="donor_name" name="donor_name" value="{{ old('donor_name', Auth::user()->name ?? '') }}">
                                             @error('donor_name')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -98,7 +98,7 @@ $collected = \App\Models\Donation::where('event_id', $event->id)
                                         <div class="col-md-6">
                                             <label for="donor_email" class="form-label">Votre email *</label>
                                             <input type="email" class="form-control @error('donor_email') is-invalid @enderror"
-                                                id="donor_email" name="donor_email" value="{{ old('donor_email', Auth::user()->email ?? '') }}" required>
+                                                id="donor_email" name="donor_email" value="{{ old('donor_email', Auth::user()->email ?? '') }}">
                                             @error('donor_email')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -110,8 +110,8 @@ $collected = \App\Models\Donation::where('event_id', $event->id)
                                         <div class="col-12">
                                             <label for="amount" class="form-label fw-bold">Montant du don</label>
                                             <div class="input-group">
-                                                <input type="number" class="form-control" id="amount" name="amount"
-                                                    placeholder="Ex: 100" required min="1" value="{{ old('amount') }}">
+                                                <input type="number" class="form-control @error('amount') is-invalid @enderror" id="amount" name="amount"
+                                                    placeholder="Ex: 100" value="{{ old('amount') }}">
                                                 <select class="form-select flex-grow-0" style="width: auto;" name="currency" id="currency">
                                                     <option value="EUR" {{ old('currency') == 'EUR' ? 'selected' : '' }}>EUR</option>
                                                     <option value="USD" {{ old('currency') == 'USD' ? 'selected' : '' }}>USD</option>
@@ -126,7 +126,7 @@ $collected = \App\Models\Donation::where('event_id', $event->id)
                                         <div class="col-12">
                                             <label for="payment_method" class="form-label">Méthode de paiement *</label>
                                             <select class="form-select @error('payment_method') is-invalid @enderror"
-                                                id="payment_method" name="payment_method" required>
+                                                id="payment_method" name="payment_method">
                                                 <option value="">Sélectionnez une méthode</option>
                                                 <option value="card" {{ old('payment_method') === 'card' ? 'selected' : '' }}>Carte bancaire</option>
                                                 <option value="paypal" {{ old('payment_method') === 'paypal' ? 'selected' : '' }}>PayPal</option>
@@ -152,13 +152,16 @@ $collected = \App\Models\Donation::where('event_id', $event->id)
                                         </div>
                                     </div>
 
-                                    <!-- Submit Button -->
+                                    <!-- Submit Buttons -->
                                     <div class="row">
                                         <div class="col-12 text-center">
-                                            <button type="submit" class="btn btn-success btn-lg px-5">
+                                            <button type="submit" class="btn btn-success btn-lg px-5 js-donate-submit" data-default-label="Faire le don" data-card-label="Payer par carte">
                                                 <i class="fas fa-heart me-2"></i>
-                                                Faire le don
+                                                <span class="js-donate-label">Faire le don</span>
                                             </button>
+                                            <div class="form-text mt-2" id="card-hint" style="display:none;">
+                                                Vous serez redirigé vers une page de paiement sécurisée Stripe.
+                                            </div>
                                         </div>
                                     </div>
                                 </form>
@@ -182,6 +185,22 @@ $collected = \App\Models\Donation::where('event_id', $event->id)
         const hiddenType = form.querySelector('input[name="type"]').value;
         if (hiddenType === 'sponsor' && sponsorNameField) {
             sponsorNameField.style.display = 'flex';
+        }
+
+        // Toggle button label when card is selected
+        const method = document.getElementById('payment_method');
+        const labelSpan = document.querySelector('.js-donate-label');
+        const hint = document.getElementById('card-hint');
+
+        function refreshLabel() {
+            if (!method || !labelSpan) return;
+            const isCard = method.value === 'card';
+            labelSpan.textContent = isCard ? 'Payer par carte' : 'Faire le don';
+            if (hint) hint.style.display = isCard ? 'block' : 'none';
+        }
+        if (method) {
+            method.addEventListener('change', refreshLabel);
+            refreshLabel();
         }
     });
 </script>

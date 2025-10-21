@@ -21,6 +21,11 @@ return [
             'verify' => false // Désactive la vérification SSL en développement
         ],
     ],
+    'stripe' => [
+        'secret' => env('STRIPE_SECRET'),
+        'publishable_key' => env('STRIPE_PUBLISHABLE_KEY'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+    ],
     'climatiq' => [
         'api_key' => env('CLIMATIQ_API_KEY'),
         'base_url' => 'https://beta3.api.climatiq.io/',
@@ -40,3 +45,4 @@ return [
         ],
     ],
 ];
+    

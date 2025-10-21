@@ -31,7 +31,14 @@ class Event extends Model
         'images',
         'user_id',
         'duration',
-        'campaign_id'
+        'campaign_id',
+        // Flyer fields
+        'flyer_path',
+        'flyer_image_path',
+        'flyer_generated_at',
+        'flyer_status',
+        'flyer_style',
+        'flyer_prompt',
     ];
 
     public function location()
@@ -47,17 +54,18 @@ class Event extends Model
     protected $casts = [
         'date' => 'datetime',
         'images' => 'array',
+        'flyer_generated_at' => 'datetime',
     ];
 
 
-        /**
+    /**
      * Get the campaign that owns the event.
      */
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(Campaign::class);
     }
-    
+
     /**
      * Get the user that owns the event.
      */
@@ -106,7 +114,7 @@ class Event extends Model
         return $query->where('status', 'draft');
     }
 
-   
+
 
     /**
      * Scope pour les événements à venir.
@@ -157,19 +165,19 @@ class Event extends Model
     }
 
     public function isRejected(): bool
-{
-    return $this->status === 'rejected';
-}
+    {
+        return $this->status === 'rejected';
+    }
 
     public function isFull(): bool
     {
         $confirmedReservations = $this->reservations()
-                                    ->where('status', 'confirmed')
-                                    ->count();
+            ->where('status', 'confirmed')
+            ->count();
         return $confirmedReservations >= $this->max_participants;
     }
 
-    
+
 
     /**
      * Get available spots count.
@@ -177,13 +185,13 @@ class Event extends Model
     public function getAvailableSpots(): int
     {
         $activeReservations = $this->reservations()
-                                    ->whereIn('status', ['pending', 'confirmed'])
-                                    ->count();
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->count();
         return max(0, $this->max_participants - $activeReservations);
     }
 
 
-     /**
+    /**
      * Scope for events by organizer
      */
     public function scopeByOrganizer($query, $userId)
@@ -199,7 +207,7 @@ class Event extends Model
     {
         return $this->waitingList()->where('status', 'waiting')->count();
     }
-      
+
     /**
      * Scope to get events that have available seats.
      * Usage: Event::withAvailableSeats()->get()
@@ -239,12 +247,12 @@ class Event extends Model
         if (!$this->images) {
             return [];
         }
-        
+
         return collect($this->images)->map(function ($image) {
             return Storage::url($image);
         })->toArray();
     }
- /**
+    /**
      * Get all assignments for this event.
      */
     public function assignments(): MorphMany
@@ -273,7 +281,6 @@ class Event extends Model
     }
 }
 
-    /**
-     * Check if event can be edited (only draft or pending events)
-     */
-
+/**
+ * Check if event can be edited (only draft or pending events)
+ */
