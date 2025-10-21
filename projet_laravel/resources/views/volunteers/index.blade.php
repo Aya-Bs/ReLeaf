@@ -78,6 +78,74 @@
                 </div>
             </div>
 
+            <!-- Top 3 Volontaires -->
+            @if($topVolunteers->count() > 0)
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-trophy me-2"></i>Top 3 Volontaires</h4>
+                    <small>Les volontaires avec le plus de missions accomplies</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach($topVolunteers as $index => $volunteer)
+                        <div class="col-lg-4 col-md-6 mb-3">
+                            <div class="card top-volunteer-card h-100 {{ $index === 0 ? 'border-warning' : '' }}">
+                                <div class="card-body text-center">
+                                    <div class="position-relative mb-3">
+                                        @if($index === 0)
+                                            <div class="position-absolute top-0 start-50 translate-middle">
+                                                <i class="fas fa-crown text-warning" style="font-size: 1.5rem;"></i>
+                                            </div>
+                                        @endif
+                                        <img src="{{ $volunteer->user->avatar_url }}" 
+                                             alt="{{ $volunteer->full_name }}" 
+                                             class="rounded-circle mx-auto d-block" 
+                                             width="80" height="80">
+                                        @if($index < 3)
+                                            <div class="position-absolute bottom-0 end-0">
+                                                <span class="badge bg-{{ $index === 0 ? 'warning' : ($index === 1 ? 'secondary' : 'bronze') }} rounded-circle d-flex align-items-center justify-content-center" 
+                                                      style="width: 30px; height: 30px; font-size: 0.8rem;">
+                                                    {{ $index + 1 }}
+                                                </span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    
+                                    <h5 class="card-title mb-1">{{ $volunteer->full_name }}</h5>
+                                    <p class="text-muted small mb-2">{{ ucfirst($volunteer->experience_level) }}</p>
+                                    
+                                    <div class="row text-center mb-3">
+                                        <div class="col-6">
+                                            <div class="fw-bold text-success">{{ $volunteer->completed_assignments_count }}</div>
+                                            <small class="text-muted">Missions</small>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="fw-bold text-primary">{{ $volunteer->total_hours_worked }}</div>
+                                            <small class="text-muted">Heures</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex flex-wrap justify-content-center gap-1 mb-3">
+                                        @foreach(array_slice($volunteer->skills_list, 0, 3) as $skill)
+                                            <span class="badge bg-light text-dark">{{ $skill }}</span>
+                                        @endforeach
+                                        @if(count($volunteer->skills_list) > 3)
+                                            <span class="badge bg-light text-muted">+{{ count($volunteer->skills_list) - 3 }}</span>
+                                        @endif
+                                    </div>
+                                    
+                                    <a href="{{ route('volunteers.show', $volunteer) }}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye me-1"></i>Voir Profil
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- Liste des volontaires -->
             <div class="row">
                 @forelse($volunteers as $volunteer)
@@ -173,6 +241,31 @@
 }
 
 .volunteer-card .card-body {
+    padding: 1.5rem;
+}
+
+.top-volunteer-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.top-volunteer-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.top-volunteer-card.border-warning {
+    border-color: #ffc107 !important;
+    box-shadow: 0 4px 20px rgba(255, 193, 7, 0.3);
+}
+
+.badge.bg-bronze {
+    background-color: #cd7f32 !important;
+    color: white;
+}
+
+.top-volunteer-card .card-body {
     padding: 1.5rem;
 }
 </style>

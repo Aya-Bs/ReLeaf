@@ -51,7 +51,18 @@ class VolunteerController extends Controller
 
         $volunteers = $query->paginate(15);
 
-        return view('volunteers.index', compact('volunteers'));
+        // Get top 3 volunteers by completed assignments
+        $topVolunteers = Volunteer::with('user')
+            ->where('approval_status', 'approved')
+            ->where('status', 'active')
+            ->withCount(['assignments as completed_assignments_count' => function($query) {
+                $query->where('status', 'completed');
+            }])
+            ->orderBy('completed_assignments_count', 'desc')
+            ->limit(3)
+            ->get();
+
+        return view('volunteers.index', compact('volunteers', 'topVolunteers'));
     }
 
     /**
