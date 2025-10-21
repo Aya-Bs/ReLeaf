@@ -566,8 +566,8 @@ Route::middleware(['auth'])->group(function () {
         // Lister par entité assignable (Event/Campaign)
         Route::get('/{type}/{id}', [AssignmentController::class, 'forAssignable'])->name('for-assignable');
     });
-});
-Route::middleware(['auth'])->prefix('ajax')->group(function () {
+
+    Route::middleware(['auth'])->prefix('ajax')->group(function () {
     Route::post('/seat/lock', [App\Http\Controllers\ReservationController::class, 'lockSeat'])->name('ajax.seat.lock');
     Route::post('/seat/release', [App\Http\Controllers\ReservationController::class, 'releaseSeat'])->name('ajax.seat.release');
     Route::get('/event/{event}/seats-status', [App\Http\Controllers\ReservationController::class, 'getSeatsStatus'])->name('ajax.seats.status');
