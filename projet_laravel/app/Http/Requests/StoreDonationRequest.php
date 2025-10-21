@@ -23,12 +23,12 @@ class StoreDonationRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'donor_name' => 'required|string|max:255',
-            'donor_email' => 'required|email|max:255',
-            'amount' => 'required|numeric|min:1|max:100000',
-            'currency' => 'required|string|in:EUR,USD,TND',
-            'type' => 'required|in:sponsor,individual',
-            'payment_method' => 'required|string|max:50',
+            'donor_name' => 'bail|required|string|max:255',
+            'donor_email' => 'bail|required|email:rfc,dns|max:255',
+            'amount' => 'bail|required|numeric|min:1|max:100000',
+            'currency' => 'bail|required|string|in:EUR,USD,TND',
+            'type' => 'bail|required|in:sponsor,individual',
+            'payment_method' => 'bail|required|string|in:card,paypal,bank_transfer,check',
             'notes' => 'nullable|string|max:500',
         ];
 
@@ -56,6 +56,7 @@ class StoreDonationRequest extends FormRequest
         return [
             'donor_name.required' => 'Votre nom est obligatoire.',
             'donor_email.required' => 'Votre email est obligatoire.',
+            'donor_email.email' => 'Votre email doit être valide.',
             'amount.required' => 'Le montant du don est obligatoire.',
             'amount.numeric' => 'Le montant doit être un nombre.',
             'amount.min' => 'Le montant minimum est de 1.',
@@ -66,6 +67,22 @@ class StoreDonationRequest extends FormRequest
             'type.in' => 'Le type doit être sponsor ou individual.',
             'sponsor_name.required' => 'Le nom du sponsor est requis (ou votre compte sponsor doit être associé).',
             'payment_method.required' => 'La méthode de paiement est obligatoire.',
+            'payment_method.in' => 'La méthode de paiement doit être Carte bancaire, PayPal, Virement ou Chèque.',
+        ];
+    }
+
+    /**
+     * Custom attributes for nicer field names in errors.
+     */
+    public function attributes(): array
+    {
+        return [
+            'donor_name' => 'nom',
+            'donor_email' => 'email',
+            'amount' => 'montant',
+            'currency' => 'devise',
+            'payment_method' => 'méthode de paiement',
+            'sponsor_name' => 'nom du sponsor',
         ];
     }
 }

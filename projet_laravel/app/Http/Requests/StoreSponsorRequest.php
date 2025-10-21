@@ -22,8 +22,8 @@ class StoreSponsorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'company_name' => 'required|string|max:255',
-            'contact_email' => 'required|email|unique:sponsors,contact_email',
+            'company_name' => 'bail|required|string|max:255',
+            'contact_email' => 'bail|required|email:rfc,dns|unique:sponsors,contact_email',
             'contact_phone' => 'nullable|string|max:20',
             'website' => 'nullable|url|max:255',
             'address' => 'nullable|string|max:500',
@@ -49,6 +49,21 @@ class StoreSponsorRequest extends FormRequest
             'motivation.min' => 'La motivation doit contenir au moins 50 caractères.',
             'sponsorship_type.required' => 'Le type de sponsoring est obligatoire.',
             'sponsorship_type.in' => 'Le type de sponsoring doit être argent, matériel ou service.',
+        ];
+    }
+
+    /**
+     * Custom attributes for nicer field names.
+     */
+    public function attributes(): array
+    {
+        return [
+            'company_name' => "nom de l'entreprise",
+            'contact_email' => 'email de contact',
+            'contact_phone' => 'téléphone',
+            'website' => 'site web',
+            'motivation' => 'motivation',
+            'sponsorship_type' => 'type de sponsoring',
         ];
     }
 }

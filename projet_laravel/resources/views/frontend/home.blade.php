@@ -64,9 +64,7 @@
                                         <a href="{{ route('campaigns.index') }}" class="btn btn-outline-light btn-lg">
                                             <i class="fas fa-list me-2"></i>Toutes les campagnes
                                         </a>
-                                        <a href="{{ route('events.index') }}" class="btn btn-outline-light btn-lg">
-                                            <i class="fas fa-donate me-2"></i>Faire un don
-                                        </a>
+                                       
                                     </div>
                                 </div>
                             </div>

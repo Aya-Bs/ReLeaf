@@ -543,17 +543,17 @@ Route::middleware(['auth'])->group(function () {
 // Routes pour les APIs carbone
 Route::get('/carbon/apis/test', [CampaignController::class, 'testApis'])
     ->name('carbon.apis.test');
-    
+
 Route::get('/campaigns/{campaign}/carbon-report', [CampaignController::class, 'carbonReport'])
     ->name('campaigns.carbon-report');
-    
-Route::get('/resources/{resource}/carbon-footprint', function($resourceId) {
+
+Route::get('/resources/{resource}/carbon-footprint', function ($resourceId) {
     $resource = \App\Models\Resource::findOrFail($resourceId);
     $calculator = new \App\Services\CarbonCalculatorService();
-    
+
     $footprint = $calculator->calculateResourceFootprint($resource);
     $method = config('services.carbon_interface.api_key') ? 'carbon_interface' : 'ademe';
-    
+
     return response()->json([
         'resource_id' => $resource->id,
         'resource_name' => $resource->name,
