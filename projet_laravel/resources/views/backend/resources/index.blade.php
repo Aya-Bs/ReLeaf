@@ -124,7 +124,7 @@
                                     <td>
                                         <div class="d-flex align-items-center">
                                             @if($resource->image_url)
-                                                <img src="{{ Storage::url($resource->image_url) }}" 
+                                                <img src="{{ asset('storage/' . $resource->image_url) }}" 
                                                      alt="{{ $resource->name }}" 
                                                      class="rounded me-3"
                                                      style="width: 40px; height: 40px; object-fit: cover;">

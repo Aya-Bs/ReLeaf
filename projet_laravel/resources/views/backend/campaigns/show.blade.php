@@ -293,7 +293,7 @@
     <!-- Cover Image -->
     <div class="cover-wrap">
         @if($campaign->image_url)
-            <img class="cover-img" src="{{ Storage::url($campaign->image_url) }}" alt="{{ $campaign->name }}">
+            <img class="cover-img" src="{{ asset('storage/' . $campaign->image_url) }}" alt="{{ $campaign->name }}">
         @else
             <div class="cover-placeholder">
                 <i class="fas fa-image"></i>
