@@ -272,6 +272,138 @@ Route::middleware(['auth', 'role:sponsor', \App\Http\Middleware\EnsureSponsorPro
     Route::post('/demande-suppression', [BackendSponsorController::class, 'requestDeletion'])->name('self.requestDeletion');
     Route::post('/delete-now', [BackendSponsorController::class, 'selfDeleteNow'])->name('self.deleteNow');
 });
+/*
+|--------------------------------------------------------------------------
+| ROUTES Blog & Review - ACCESSIBLES À TOUS LES UTILISATEURS CONNECTÉS
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    // Tous les blogs sous forme de cards (public pour utilisateur connecté)
+    Route::get('/blogs/cards', [BlogController::class, 'cards'])->name('blogs.cards');
+
+    Route::get('/blogs/myblogs', [BlogController::class, 'myBlogs'])->name('blogs.myblogs');
+
+    // Routes pour créer, éditer et supprimer les blogs
+    Route::get('/blogs/create', [BlogController::class, 'create'])->name('blogs.create');
+    Route::post('/blogs', [BlogController::class, 'store'])->name('blogs.store');
+    Route::get('/blogs/{blog}/edit', [BlogController::class, 'edit'])->name('blogs.edit');
+    Route::put('/blogs/{blog}', [BlogController::class, 'update'])->name('blogs.update');
+    Route::delete('/blogs/{blog}', [BlogController::class, 'destroy'])->name('blogs.destroy');
+    Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');
+
+
+    // Détails d’un blog
+    Route::get('/blogs/{blog}', [BlogController::class, 'show'])->name('blogs.show');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/blogs/{blog}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::get('/blogs/{blog}/reviews', [ReviewController::class, 'index'])->name('reviews.index');
+    Route::get('/reviews/{review}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
+    Route::put('/reviews/{id}', [ReviewController::class, 'update'])->name('reviews.update');
+    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+    // web.php
+   Route::get('/blogs/filter', [BlogController::class, 'filter'])->name('blogs.filter');
+
+});
+
+
+
+
+});
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| ROUTES EVENTS & LOCATIONS
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Routes pour les utilisateurs normaux (voient tous les événements)
+    Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events.index');
+    Route::get('/events/{event}', [\App\Http\Controllers\Backend\EventController::class, 'show'])->name('events.show');
+
+    // Routes pour les organisateurs (gestion de leurs événements)
+    Route::middleware(['role:organizer'])->group(function () {
+        Route::get('/my-events', [\App\Http\Controllers\Backend\EventController::class, 'index'])->name('events.my-events');
+        Route::get('/my-events/create', [\App\Http\Controllers\Backend\EventController::class, 'create'])->name('events.create');
+        Route::post('/my-events', [\App\Http\Controllers\Backend\EventController::class, 'store'])->name('events.store');
+        Route::get('/my-events/{event}/edit', [\App\Http\Controllers\Backend\EventController::class, 'edit'])->name('events.edit');
+        Route::put('/my-events/{event}', [\App\Http\Controllers\Backend\EventController::class, 'update'])->name('events.update');
+        Route::delete('/my-events/{event}', [\App\Http\Controllers\Backend\EventController::class, 'destroy'])->name('events.destroy');
+        Route::post('/my-events/{event}/submit', [\App\Http\Controllers\Backend\EventController::class, 'submitForApproval'])->name('events.submit');
+        Route::post('/my-events/{event}/cancel', [\App\Http\Controllers\Backend\EventController::class, 'cancel'])->name('events.cancel');
+        Route::post('/my-events/{event}/remove-image', [\App\Http\Controllers\Backend\EventController::class, 'removeImage'])->name('events.remove-image');
+    });
+
+    // Gestion des lieux (locations)
+    Route::resource('locations', App\Http\Controllers\LocationController::class);
+
+    // Routes pour les dons d'événements
+    Route::get('/events/{event}/donations', [DonationController::class, 'eventDonations'])->name('events.donations');
+});
+
+// Routes pour les dons (accessibles à tous)
+Route::get('/events/{event}/donate', [DonationController::class, 'create'])->name('donations.create');
+Route::post('/events/{event}/donate', [DonationController::class, 'store'])->name('donations.store');
+Route::get('/donations/{donation}/success', [DonationController::class, 'success'])->name('donations.success');
+// Authenticated user/sponsor donation management
+Route::middleware(['auth'])->group(function () {
+    Route::get('/mes-dons', [DonationController::class, 'index'])->name('donations.list');
+    Route::get('/donations/{donation}/edit', [DonationController::class, 'edit'])->name('donations.edit');
+    Route::put('/donations/{donation}', [DonationController::class, 'update'])->name('donations.update');
+    Route::delete('/donations/{donation}', [DonationController::class, 'destroy'])->name('donations.destroy');
+});
+
+// Sponsor Dashboard
+Route::middleware(['auth', 'role:sponsor', \App\Http\Middleware\EnsureSponsorProfile::class])->prefix('sponsors')->name('sponsor.')->group(function () {
+    Route::get('/dashboard', [SponsorDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', [\App\Http\Controllers\Sponsor\ProfileController::class, 'show'])->name('profile');
+    Route::get('/profil', function () {
+        return redirect()->route('profile.show');
+    })->name('self.edit');
+    Route::post('/demande-suppression', [BackendSponsorController::class, 'requestDeletion'])->name('self.requestDeletion');
+    Route::post('/delete-now', [BackendSponsorController::class, 'selfDeleteNow'])->name('self.deleteNow');
+    // Sponsorship requests
+    Route::get('/requests', [\App\Http\Controllers\Sponsor\SponsorshipRequestController::class, 'index'])->name('requests.index');
+    Route::post('/requests/{sponsorEvent}/accept', [\App\Http\Controllers\Sponsor\SponsorshipRequestController::class, 'accept'])->name('requests.accept');
+    Route::post('/requests/{sponsorEvent}/decline', [\App\Http\Controllers\Sponsor\SponsorshipRequestController::class, 'decline'])->name('requests.decline');
+});
+/*
+|--------------------------------------------------------------------------
+| ROUTES Blog & Review - ACCESSIBLES À TOUS LES UTILISATEURS CONNECTÉS
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    // Tous les blogs sous forme de cards (public pour utilisateur connecté)
+    Route::get('/blogs/cards', [BlogController::class, 'cards'])->name('blogs.cards');
+
+    Route::get('/blogs/myblogs', [BlogController::class, 'myBlogs'])->name('blogs.myblogs');
+
+    // Routes pour créer, éditer et supprimer les blogs
+    Route::get('/blogs/create', [BlogController::class, 'create'])->name('blogs.create');
+    Route::post('/blogs', [BlogController::class, 'store'])->name('blogs.store');
+    Route::get('/blogs/{blog}/edit', [BlogController::class, 'edit'])->name('blogs.edit');
+    Route::put('/blogs/{blog}', [BlogController::class, 'update'])->name('blogs.update');
+    Route::delete('/blogs/{blog}', [BlogController::class, 'destroy'])->name('blogs.destroy');
+    Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');
+
+
+    // Détails d’un blog
+    Route::get('/blogs/{blog}', [BlogController::class, 'show'])->name('blogs.show');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/blogs/{blog}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::get('/blogs/{blog}/reviews', [ReviewController::class, 'index'])->name('reviews.index');
+    Route::get('/reviews/{review}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
+    Route::put('/reviews/{id}', [ReviewController::class, 'update'])->name('reviews.update');
+    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+});
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -314,6 +446,48 @@ Route::middleware(['auth'])->group(function () {
              ->name('pledge');
         Route::get('/high-priority', [ResourceController::class, 'highPriority'])
              ->name('high-priority');
+    });
+
+    // Redirections conviviales pour anciens liens
+    Route::get('/home/volunteers', fn() => redirect()->route('volunteers.index'))->name('home.volunteers');
+    Route::get('/volunteer', fn() => redirect()->route('volunteers.index'));
+    Route::get('/assignement', fn() => redirect()->route('assignments.index'));
+
+    // ROUTES VOLUNTEERS
+    Route::prefix('volunteers')->name('volunteers.')->group(function () {
+        Route::get('/', [VolunteerController::class, 'index'])->name('index');
+        Route::get('/create', [VolunteerController::class, 'create'])->name('create');
+        Route::post('/', [VolunteerController::class, 'store'])->name('store');
+        Route::get('/{volunteer}', [VolunteerController::class, 'show'])->name('show');
+        Route::get('/{volunteer}/edit', [VolunteerController::class, 'edit'])->name('edit');
+        Route::put('/{volunteer}', [VolunteerController::class, 'update'])->name('update');
+        Route::delete('/{volunteer}', [VolunteerController::class, 'destroy'])->name('destroy');
+
+        // Actions spécifiques
+        Route::get('/assignments/available', [VolunteerController::class, 'availableAssignments'])->name('assignments.available');
+        Route::post('/apply', [VolunteerController::class, 'apply'])->name('apply');
+    });
+
+    // ROUTES ASSIGNMENTS
+    Route::prefix('assignments')->name('assignments.')->group(function () {
+        Route::get('/', [AssignmentController::class, 'index'])->name('index');
+        Route::get('/create', [AssignmentController::class, 'create'])->name('create');
+        Route::post('/', [AssignmentController::class, 'store'])->name('store');
+        Route::get('/{assignment}', [AssignmentController::class, 'show'])->name('show');
+        Route::get('/{assignment}/edit', [AssignmentController::class, 'edit'])->name('edit');
+        Route::put('/{assignment}', [AssignmentController::class, 'update'])->name('update');
+        Route::delete('/{assignment}', [AssignmentController::class, 'destroy'])->name('destroy');
+
+        // Actions
+        Route::post('/{assignment}/approve', [AssignmentController::class, 'approve'])->name('approve');
+        Route::post('/{assignment}/reject', [AssignmentController::class, 'reject'])->name('reject');
+        Route::post('/{assignment}/complete', [AssignmentController::class, 'complete'])->name('complete');
+        Route::post('/{assignment}/cancel', [AssignmentController::class, 'cancel'])->name('cancel');
+        Route::post('/{assignment}/update-hours', [AssignmentController::class, 'updateHours'])->name('update-hours');
+
+        // Lister par entité assignable (Event/Campaign)
+        Route::get('/{type}/{id}', [AssignmentController::class, 'forAssignable'])->name('for-assignable');
+    });
     });
 
     // Redirections conviviales pour anciens liens

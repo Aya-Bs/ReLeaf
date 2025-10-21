@@ -9,6 +9,42 @@
             <div>
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-4">
+                        <i class="fas fa-blog me-2" style="color: #2d5a27;"></i>
+                        <strong>Créer un nouveau blog</strong>
+                    </h4>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-4" style="background: transparent; padding: 0; margin: 0;">
+                            <li class="breadcrumb-item">
+                                <a href="{{ route('home') }}" style="color: #2d5a27;">Accueil</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{{ route('blogs.index') }}" style="color: #2d5a27;">Blogs</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page" style="color: #2d5a27;">
+                                <strong>Créer</strong>
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+
+                <div class="card-body">
+                    {{-- ✅ Message de succès --}}
+                    @if(session('success'))
+                        <div class="alert alert-success">{{ session('success') }}</div>
+                    @endif
+
+                    {{-- ✅ Bloc d'affichage des erreurs globales --}}
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <strong>Veuillez corriger les erreurs suivantes :</strong>
+                            <ul class="mt-2 mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                         <i class="fas fa-blog me-2" style="color: #2d5a27;"></i><strong>Créer un nouveau blog</strong>
                     </h4>
                     <nav aria-label="breadcrumb">
@@ -31,6 +67,9 @@
                                 <!-- Title -->
                                 <div class="mb-3">
                                     <label for="title" class="form-label">
+                                        <i class="fas fa-heading me-2" style="color: #2d5a27;"></i>
+                                        Titre <span class="text-danger">*</span>
+
                                         <i class="fas fa-heading me-2" style="color: #2d5a27;"></i>Titre <span class="text-danger">*</span>
                                     </label>
                                     <input type="text"
@@ -48,6 +87,8 @@
                                 <!-- Content -->
                                 <div class="mb-3">
                                     <label for="content" class="form-label">
+                                        <i class="fas fa-align-left me-2" style="color: #2d5a27;"></i>
+                                        Contenu <span class="text-danger">*</span>
                                         <i class="fas fa-align-left me-2" style="color: #2d5a27;"></i>Contenu <span class="text-danger">*</span>
                                     </label>
                                     <textarea class="form-control @error('content') is-invalid @enderror"
@@ -64,6 +105,8 @@
                                 <!-- Tags -->
                                 <div class="mb-3">
                                     <label for="tags" class="form-label">
+                                        <i class="fas fa-tags me-2" style="color: #2d5a27;"></i>
+                                        Tags
                                         <i class="fas fa-tags me-2" style="color: #2d5a27;"></i>Tags <span class="text-danger">*</span>
                                     </label>
                                     <input type="text"
@@ -84,6 +127,21 @@
                                 <!-- Image Upload -->
                                 <div class="mb-4">
                                     <label class="form-label">
+                                        <i class="fas fa-images me-2" style="color: #2d5a27;"></i>
+                                        Image du blog <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="drag-drop-area @error('image') is-invalid @enderror" id="dragDropArea"
+                                         style="border:2px dashed #2d5a27; border-radius:12px; background:#f4fbf4; padding:1.2rem 0.5rem; text-align:center;">
+                                        <div class="drag-drop-content">
+                                            <i class="fas fa-cloud-upload-alt" style="font-size:2.1rem; color:#2d5a27; margin-bottom:0.5rem;"></i>
+                                            <div style="font-size:1.05rem; color:#2d5a27; font-weight:500;">
+                                                Glissez et déposez l'image
+                                            </div>
+                                            <div style="color:#2d5a27; margin:0.25rem 0; font-size:0.95rem;">ou</div>
+                                            <div>
+                                                <button type="button" class="btn btn-outline-success btn-sm" id="browseBtn"
+                                                        style="border-color:#2d5a27; color:#2d5a27;">Parcourir</button>
+
                                         <i class="fas fa-images me-2" style="color: #2d5a27;"></i>Image du blog
                                     </label>
                                     <div class="drag-drop-area @error('image') is-invalid @enderror" id="dragDropArea" style="border:2px dashed #2d5a27; border-radius:12px; background:#f4fbf4; padding:1.2rem 0.5rem; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center;">
@@ -105,6 +163,9 @@
 
                                 <!-- Submit Button -->
                                 <div class="d-flex justify-content-end mt-4">
+                                    <button type="submit" class="btn btn-eco"
+                                            style="background-color:#2d5a27; color:white;">
+
                                     <button type="submit" class="btn btn-eco" style="background-color:#2d5a27; color:white;">
                                         <i class="fas fa-save me-2"></i>Créer le blog
                                     </button>
@@ -121,6 +182,8 @@
 
 @push('scripts')
 <script>
+// Drag & Drop pour l'image
+
 // Drag & Drop for blog image
 const dragDropArea = document.getElementById('dragDropArea');
 const fileInput = document.getElementById('image');

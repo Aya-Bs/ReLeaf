@@ -6,6 +6,17 @@
 <div class="container">
     <h2 class="mb-4">Tous les Blogs</h2>
 
+    {{-- Formulaire de filtre par titre --}}
+    <form method="GET" action="{{ route('blogs.index') }}" class="mb-4 row g-2">
+        <div class="col-md-10">
+            <input type="text" name="title" value="{{ request('title') }}" class="form-control" placeholder="Rechercher par titre">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+        </div>
+    </form>
+
+
     @if($blogs->isEmpty())
         <div class="alert alert-info">Aucun blog disponible.</div>
     @else
@@ -40,6 +51,12 @@
                 </div>
             @endforeach
         </div>
+
+        {{-- Pagination --}}
+        <div class="d-flex justify-content-center mt-3">
+            {{ $blogs->withQueryString()->links() }}
+        </div>
+
     @endif
 </div>
 @endsection

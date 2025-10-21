@@ -99,6 +99,23 @@
                         <label class="form-label d-block">Note :</label>
                         <div class="rating">
                             @for($i = 5; $i >= 1; $i--)
+                                <input type="radio" name="rating" id="star{{ $i }}" value="{{ $i }}" {{ old('rating') == $i ? 'checked' : '' }}>
+                                <label for="star{{ $i }}">★</label>
+                            @endfor
+                        </div>
+                        @error('rating')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <textarea name="comment" class="form-control @error('comment') is-invalid @enderror" rows="3" placeholder="Votre commentaire...">{{ old('comment') }}</textarea>
+                        @error('comment')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+
                                 <input type="radio" name="rating" id="star{{ $i }}" value="{{ $i }}">
                                 <label for="star{{ $i }}">★</label>
                             @endfor
@@ -156,6 +173,7 @@ function confirmDelete(id) {
         }
     });
 }
+</script>
 
 function editReview(id, currentComment, currentRating) {
     Swal.fire({
