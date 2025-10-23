@@ -1,0 +1,72 @@
+FROM php:8.2-fpm-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    git \
+    curl \
+    libpng-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    nodejs \
+    npm \
+    oniguruma-dev \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libwebp-dev \
+    mysql-client \
+    nginx
+
+# Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy application files
+COPY projet_laravel/ /var/www/html/
+
+# Install dependencies
+RUN composer install --optimize-autoloader --no-dev
+
+# Build assets
+RUN npm install && npm run build
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html
+RUN chmod -R 755 /var/www/html/storage
+
+# Configure Nginx
+RUN echo 'server { \
+    listen 80; \
+    server_name localhost; \
+    root /var/www/html/public; \
+    index index.php; \
+    location / { \
+        try_files $uri $uri/ /index.php?$query_string; \
+    } \
+    location ~ \.php$ { \
+        fastcgi_pass 127.0.0.1:9000; \
+        fastcgi_index index.php; \
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
+        include fastcgi_params; \
+    } \
+}' > /etc/nginx/http.d/default.conf
+
+# Expose ports
+EXPOSE 80 9000
+
+# Start script
+COPY <<EOF /start.sh
+#!/bin/sh
+php-fpm -D
+nginx -g 'daemon off;'
+EOF
+
+RUN chmod +x /start.sh
+
+CMD ["/start.sh"]

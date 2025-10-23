@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  app:
+    image: firaszn/releaf:35  # ou le numéro de build spécifique
+    container_name: releaf-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./projet_laravel/storage:/var/www/html/storage
+      - ./projet_laravel/bootstrap/cache:/var/www/html/bootstrap/cache
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+    networks:
+      - releaf-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: releaf-nginx
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:8081:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./projet_laravel/public:/var/www/html/public
+    depends_on:
+      - app
+    networks:
+      - releaf-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: releaf-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: releaf_production
+      MYSQL_USER: releaf_user
+      MYSQL_PASSWORD: releaf_password
+      MYSQL_ROOT_PASSWORD: root_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - releaf-network
+
+volumes:
+  mysql_data:
+
+networks:
+  releaf-network:
+    driver: bridge

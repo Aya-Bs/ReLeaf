@@ -344,13 +344,23 @@ server {
 }
 EOF
 
-                            docker-compose down --remove-orphans || true
-                            docker-compose up -d
+                            if command -v docker >/dev/null 2>&1; then
+                                docker compose down --remove-orphans || true
+                                docker compose up -d
+                            else
+                                echo "Docker not found, trying alternative..."
+                                docker-compose down --remove-orphans || true
+                                docker-compose up -d
+                            fi
                             
                             echo "Waiting for services to start..."
                             sleep 30
                             
-                            docker-compose ps
+                            if command -v docker >/dev/null 2>&1; then
+                                docker compose ps || echo "Failed to check compose status"
+                            else
+                                docker-compose ps || echo "Failed to check compose status"
+                            fi
                         '''
                     } catch (Exception e) {
                         echo "Docker Compose deployment failed: ${e.getMessage()}"
