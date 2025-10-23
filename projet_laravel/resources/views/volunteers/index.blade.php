@@ -116,8 +116,8 @@
                                     
                                     <div class="row text-center mb-3">
                                         <div class="col-6">
-                                            <div class="fw-bold text-success">{{ $volunteer->completed_assignments_count }}</div>
-                                            <small class="text-muted">Missions</small>
+                                            <div class="fw-bold text-success">{{ $volunteer->points ?? 0 }}</div>
+                                            <small class="text-muted">Points</small>
                                         </div>
                                         <div class="col-6">
                                             <div class="fw-bold text-primary">{{ $volunteer->total_hours_worked }}</div>
@@ -178,21 +178,17 @@
 
                             <div class="row text-center mb-3">
                                 <div class="col-4">
-                                    <small class="text-muted">Missions</small>
-                                    <div class="fw-bold">{{ $volunteer->active_assignments_count }}</div>
+                                    <small class="text-muted">Points</small>
+                                    <div class="fw-bold text-success">{{ $volunteer->points ?? 0 }}</div>
                                 </div>
                                 <div class="col-4">
                                     <small class="text-muted">Heures</small>
                                     <div class="fw-bold">{{ $volunteer->total_hours_worked }}</div>
                                 </div>
                                 <div class="col-4">
-                                    <small class="text-muted">Note</small>
-                                    <div class="fw-bold">
-                                        @if($volunteer->rating > 0)
-                                            {{ number_format($volunteer->rating, 1) }}/5
-                                        @else
-                                            N/A
-                                        @endif
+                                    <small class="text-muted">Rang</small>
+                                    <div class="fw-bold {{ $volunteer->getRankingClass() }}">
+                                        {{ $volunteer->getRankingBadge() }}
                                     </div>
                                 </div>
                             </div>

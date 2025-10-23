@@ -1,17 +1,11 @@
 <?php
 
-// Route de test simple
-Route::get('/test-simple', function() {
-    return 'Test simple fonctionne !';
-});
-
-// Route spécifique pour les missions disponibles (AVANT les routes avec paramètres)
-Route::get('/volunteers/available-missions', [\App\Http\Controllers\VolunteerMissionController::class, 'availableMissions'])
-    ->name('volunteers.available-missions');
-
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Backend\AdminController;
 use App\Http\Controllers\Backend\SponsorController as BackendSponsorController;
 use App\Http\Controllers\Backend\UserController as BackendUserController;
+use App\Http\Controllers\Backend\VolunteerController as BackendVolunteerController;
+use App\Http\Controllers\Backend\AssignmentController as BackendAssignmentController;
 use App\Http\Controllers\CertificateVerificationController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\Frontend\HomeController;
@@ -19,20 +13,28 @@ use App\Http\Controllers\Frontend\ProfileController as FrontendProfileController
 use App\Http\Controllers\Frontend\SponsorController as FrontendSponsorController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Sponsor\DashboardController as SponsorDashboardController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Backend\CampaignController;
 use App\Http\Controllers\Backend\ResourceController;
 use App\Http\Controllers\Backend\EventController; 
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\VolunteerController;
-use App\Http\Controllers\AssignmentController; 
-use App\Http\Controllers\SocialShareController; 
+use App\Http\Controllers\AssignmentController;
+use App\Http\Controllers\VolunteerMissionController;
+use App\Http\Controllers\VolunteerBadgeController;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\SocialShareController;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes - EcoEvents
 |--------------------------------------------------------------------------
 */
+
+// Route de test simple
+Route::get('/test-simple', function() {
+    return 'Test simple fonctionne !';
+});
 
 // Page d'accueil - Redirection vers login
 Route::get('/', function () {
@@ -93,16 +95,18 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
 
     // Demandes d'événements (pending & rejected)
     Route::get('/events/requests/pending', function () {
-    $events = \App\Models\Event::where('status', 'pending')->orderBy('created_at', 'desc')->paginate(3);
+        $events = \App\Models\Event::where('status', 'pending')->orderBy('created_at', 'desc')->paginate(3);
         return view('backend.events.requests.pending', compact('events'));
     })->name('events.requests.pending');
 
     Route::get('/events/requests/rejected', function () {
-    $events = \App\Models\Event::where('status', 'rejected')->orderBy('created_at', 'desc')->paginate(5);
+        $events = \App\Models\Event::where('status', 'rejected')->orderBy('created_at', 'desc')->paginate(5);
         return view('backend.events.requests.rejected', compact('events'));
     })->name('events.requests.rejected');
+    
     // Backend Locations CRUD
     Route::resource('locations', App\Http\Controllers\Backend\LocationController::class);
+    
     // Page de bienvenue admin
     Route::get('/', [AdminController::class, 'welcome'])->name('welcome');
 
@@ -114,22 +118,22 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
     Route::post('users/{user}/toggle-eco-ambassador', [BackendUserController::class, 'toggleEcoAmbassador'])
         ->name('users.toggle-eco-ambassador');
 
-    // Gestion des volontaires
-    Route::resource('volunteers', \App\Http\Controllers\Backend\VolunteerController::class);
-    Route::post('volunteers/{volunteer}/approve', [\App\Http\Controllers\Backend\VolunteerController::class, 'approve'])
+    // Gestion des volontaires (Backend)
+    Route::resource('volunteers', BackendVolunteerController::class);
+    Route::post('volunteers/{volunteer}/approve', [BackendVolunteerController::class, 'approve'])
         ->name('volunteers.approve');
-    Route::post('volunteers/{volunteer}/reject', [\App\Http\Controllers\Backend\VolunteerController::class, 'reject'])
+    Route::post('volunteers/{volunteer}/reject', [BackendVolunteerController::class, 'reject'])
         ->name('volunteers.reject');
-    Route::post('volunteers/{volunteer}/reset', [\App\Http\Controllers\Backend\VolunteerController::class, 'reset'])
+    Route::post('volunteers/{volunteer}/reset', [BackendVolunteerController::class, 'reset'])
         ->name('volunteers.reset');
 
-    // Gestion des missions
-    Route::resource('assignments', \App\Http\Controllers\Backend\AssignmentController::class);
-    Route::post('assignments/{assignment}/approve', [\App\Http\Controllers\Backend\AssignmentController::class, 'approve'])
+    // Gestion des missions (Backend)
+    Route::resource('assignments', BackendAssignmentController::class);
+    Route::post('assignments/{assignment}/approve', [BackendAssignmentController::class, 'approve'])
         ->name('assignments.approve');
-    Route::post('assignments/{assignment}/reject', [\App\Http\Controllers\Backend\AssignmentController::class, 'reject'])
+    Route::post('assignments/{assignment}/reject', [BackendAssignmentController::class, 'reject'])
         ->name('assignments.reject');
-    Route::post('assignments/{assignment}/complete', [\App\Http\Controllers\Backend\AssignmentController::class, 'complete'])
+    Route::post('assignments/{assignment}/complete', [BackendAssignmentController::class, 'complete'])
         ->name('assignments.complete');
 
     // Gestion des sponsors
@@ -147,6 +151,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
     Route::get('donations', [DonationController::class, 'adminIndex'])->name('donations.index');
     Route::post('donations/{donation}/confirm', [DonationController::class, 'confirm'])->name('donations.confirm');
     Route::post('donations/{donation}/cancel', [DonationController::class, 'cancel'])->name('donations.cancel');
+    
     Route::get('/events', function () {
         $query = \App\Models\Event::with('user')
             ->where('status', '!=', 'draft');
@@ -168,11 +173,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
         $event->load('user'); // Charger la relation user
         return view('backend.events.show', compact('event'));
     })->name('events.show');
-
-
-    
-    
-
 
     // ✅ AJOUTÉ : Gestion des campagnes (backend) - Même pattern que events
     Route::get('/campaigns', function () {
@@ -207,12 +207,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('backend.')->group(f
         $resource->load('campaign.organizer');
         return view('backend.resources.show', compact('resource'));
     })->name('resources.show');
-
-   
 });
-
-
-
 
 /*
 |--------------------------------------------------------------------------
@@ -247,7 +242,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Routes pour les dons d'événements
     Route::get('/events/{event}/donations', [DonationController::class, 'eventDonations'])->name('events.donations');
-    
 });
 
 // Routes pour les dons (accessibles à tous)
@@ -273,7 +267,12 @@ Route::middleware(['auth', 'role:sponsor', \App\Http\Middleware\EnsureSponsorPro
     })->name('self.edit');
     Route::post('/demande-suppression', [BackendSponsorController::class, 'requestDeletion'])->name('self.requestDeletion');
     Route::post('/delete-now', [BackendSponsorController::class, 'selfDeleteNow'])->name('self.deleteNow');
+    // Sponsorship requests
+    Route::get('/requests', [\App\Http\Controllers\Sponsor\SponsorshipRequestController::class, 'index'])->name('requests.index');
+    Route::post('/requests/{sponsorEvent}/accept', [\App\Http\Controllers\Sponsor\SponsorshipRequestController::class, 'accept'])->name('requests.accept');
+    Route::post('/requests/{sponsorEvent}/decline', [\App\Http\Controllers\Sponsor\SponsorshipRequestController::class, 'decline'])->name('requests.decline');
 });
+
 /*
 |--------------------------------------------------------------------------
 | ROUTES Blog & Review - ACCESSIBLES À TOUS LES UTILISATEURS CONNECTÉS
@@ -293,8 +292,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/blogs/{blog}', [BlogController::class, 'destroy'])->name('blogs.destroy');
     Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');
 
-
-    // Détails d’un blog
+    // Détails d'un blog
     Route::get('/blogs/{blog}', [BlogController::class, 'show'])->name('blogs.show');
 });
 
@@ -306,102 +304,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
     // web.php
    Route::get('/blogs/filter', [BlogController::class, 'filter'])->name('blogs.filter');
-
 });
-
-
-
-
-
-/*
-|--------------------------------------------------------------------------
-| ROUTES EVENTS & LOCATIONS
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth', 'verified'])->group(function () {
-    // Routes pour les utilisateurs normaux (voient tous les événements)
-    Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events.index');
-    Route::get('/events/{event}', [\App\Http\Controllers\Backend\EventController::class, 'show'])->name('events.show');
-
-    // Routes pour les organisateurs (gestion de leurs événements)
-    Route::middleware(['role:organizer'])->group(function () {
-        Route::get('/my-events', [\App\Http\Controllers\Backend\EventController::class, 'index'])->name('events.my-events');
-        Route::get('/my-events/create', [\App\Http\Controllers\Backend\EventController::class, 'create'])->name('events.create');
-        Route::post('/my-events', [\App\Http\Controllers\Backend\EventController::class, 'store'])->name('events.store');
-        Route::get('/my-events/{event}/edit', [\App\Http\Controllers\Backend\EventController::class, 'edit'])->name('events.edit');
-        Route::put('/my-events/{event}', [\App\Http\Controllers\Backend\EventController::class, 'update'])->name('events.update');
-        Route::delete('/my-events/{event}', [\App\Http\Controllers\Backend\EventController::class, 'destroy'])->name('events.destroy');
-        Route::post('/my-events/{event}/submit', [\App\Http\Controllers\Backend\EventController::class, 'submitForApproval'])->name('events.submit');
-        Route::post('/my-events/{event}/cancel', [\App\Http\Controllers\Backend\EventController::class, 'cancel'])->name('events.cancel');
-        Route::post('/my-events/{event}/remove-image', [\App\Http\Controllers\Backend\EventController::class, 'removeImage'])->name('events.remove-image');
-    });
-
-    // Gestion des lieux (locations)
-    Route::resource('locations', App\Http\Controllers\LocationController::class);
-
-    // Routes pour les dons d'événements
-    Route::get('/events/{event}/donations', [DonationController::class, 'eventDonations'])->name('events.donations');
-});
-
-// Routes pour les dons (accessibles à tous)
-Route::get('/events/{event}/donate', [DonationController::class, 'create'])->name('donations.create');
-Route::post('/events/{event}/donate', [DonationController::class, 'store'])->name('donations.store');
-Route::get('/donations/{donation}/success', [DonationController::class, 'success'])->name('donations.success');
-// Authenticated user/sponsor donation management
-Route::middleware(['auth'])->group(function () {
-    Route::get('/mes-dons', [DonationController::class, 'index'])->name('donations.list');
-    Route::get('/donations/{donation}/edit', [DonationController::class, 'edit'])->name('donations.edit');
-    Route::put('/donations/{donation}', [DonationController::class, 'update'])->name('donations.update');
-    Route::delete('/donations/{donation}', [DonationController::class, 'destroy'])->name('donations.destroy');
-});
-
-// Sponsor Dashboard
-Route::middleware(['auth', 'role:sponsor', \App\Http\Middleware\EnsureSponsorProfile::class])->prefix('sponsors')->name('sponsor.')->group(function () {
-    Route::get('/dashboard', [SponsorDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/profile', [\App\Http\Controllers\Sponsor\ProfileController::class, 'show'])->name('profile');
-    Route::get('/profil', function () {
-        return redirect()->route('profile.show');
-    })->name('self.edit');
-    Route::post('/demande-suppression', [BackendSponsorController::class, 'requestDeletion'])->name('self.requestDeletion');
-    Route::post('/delete-now', [BackendSponsorController::class, 'selfDeleteNow'])->name('self.deleteNow');
-    // Sponsorship requests
-    Route::get('/requests', [\App\Http\Controllers\Sponsor\SponsorshipRequestController::class, 'index'])->name('requests.index');
-    Route::post('/requests/{sponsorEvent}/accept', [\App\Http\Controllers\Sponsor\SponsorshipRequestController::class, 'accept'])->name('requests.accept');
-    Route::post('/requests/{sponsorEvent}/decline', [\App\Http\Controllers\Sponsor\SponsorshipRequestController::class, 'decline'])->name('requests.decline');
-});
-/*
-|--------------------------------------------------------------------------
-| ROUTES Blog & Review - ACCESSIBLES À TOUS LES UTILISATEURS CONNECTÉS
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth'])->group(function () {
-    // Tous les blogs sous forme de cards (public pour utilisateur connecté)
-    Route::get('/blogs/cards', [BlogController::class, 'cards'])->name('blogs.cards');
-
-    Route::get('/blogs/myblogs', [BlogController::class, 'myBlogs'])->name('blogs.myblogs');
-
-    // Routes pour créer, éditer et supprimer les blogs
-    Route::get('/blogs/create', [BlogController::class, 'create'])->name('blogs.create');
-    Route::post('/blogs', [BlogController::class, 'store'])->name('blogs.store');
-    Route::get('/blogs/{blog}/edit', [BlogController::class, 'edit'])->name('blogs.edit');
-    Route::put('/blogs/{blog}', [BlogController::class, 'update'])->name('blogs.update');
-    Route::delete('/blogs/{blog}', [BlogController::class, 'destroy'])->name('blogs.destroy');
-    Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');
-
-
-    // Détails d’un blog
-    Route::get('/blogs/{blog}', [BlogController::class, 'show'])->name('blogs.show');
-});
-
-Route::middleware(['auth'])->group(function () {
-    Route::post('/blogs/{blog}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
-    Route::get('/blogs/{blog}/reviews', [ReviewController::class, 'index'])->name('reviews.index');
-    Route::get('/reviews/{review}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
-    Route::put('/reviews/{id}', [ReviewController::class, 'update'])->name('reviews.update');
-    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
-});
-
-
 
 /*
 |--------------------------------------------------------------------------
@@ -412,6 +315,8 @@ Route::middleware(['auth'])->group(function () {
     // ✅ ROUTES CAMPAIGNS - Accessibles à tous les utilisateurs connectés
     Route::prefix('campaigns')->name('campaigns.')->group(function () {
         Route::get('/', [CampaignController::class, 'index'])->name('index');
+        // Public listing of all campaigns for users
+        Route::get('/all', [CampaignController::class, 'all'])->name('all');
         Route::get('/create', [CampaignController::class, 'create'])->name('create');
         Route::post('/', [CampaignController::class, 'store'])->name('store');
         Route::get('/{campaign}', [CampaignController::class, 'show'])->name('show');
@@ -419,31 +324,34 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{campaign}', [CampaignController::class, 'update'])->name('update');
         Route::delete('/{campaign}', [CampaignController::class, 'destroy'])->name('destroy');
         Route::post('/{campaign}/request-deletion', [CampaignController::class, 'requestDeletion'])
-             ->name('request-deletion');
-        
+            ->name('request-deletion');
+
         // Routes supplémentaires
         Route::post('/{campaign}/toggle-visibility', [CampaignController::class, 'toggleVisibility'])
-             ->name('toggle-visibility');
+            ->name('toggle-visibility');
         Route::get('/statistics', [CampaignController::class, 'statistics'])->name('statistics');
     });
 
-    // ✅ ROUTES RESOURCES - Chemin personnalisé : /resources  
+    // ✅ ROUTES RESOURCES - Chemin personnalisé : /resources
     Route::prefix('resources')->name('resources.')->group(function () {
         Route::get('/', [ResourceController::class, 'index'])->name('index');
+        // Public-style listing of all resources for users
+        Route::get('/all', [ResourceController::class, 'all'])->name('all');
+        // Non-parameter routes must be declared before the dynamic {resource} route
+        Route::get('/high-priority', [ResourceController::class, 'highPriority'])
+            ->name('high-priority');
         Route::get('/create', [ResourceController::class, 'create'])->name('create');
         Route::post('/', [ResourceController::class, 'store'])->name('store');
         Route::get('/{resource}', [ResourceController::class, 'show'])->name('show');
         Route::get('/{resource}/edit', [ResourceController::class, 'edit'])->name('edit');
         Route::put('/{resource}', [ResourceController::class, 'update'])->name('update');
         Route::delete('/{resource}', [ResourceController::class, 'destroy'])->name('destroy');
-        
+
         // Routes supplémentaires
         Route::post('/{resource}/update-status', [ResourceController::class, 'updateStatus'])
-             ->name('update-status');
+            ->name('update-status');
         Route::post('/{resource}/pledge', [ResourceController::class, 'pledge'])
-             ->name('pledge');
-        Route::get('/high-priority', [ResourceController::class, 'highPriority'])
-             ->name('high-priority');
+            ->name('pledge');
     });
 
     // Redirections conviviales pour anciens liens
@@ -451,7 +359,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/volunteer', fn() => redirect()->route('volunteers.index'));
     Route::get('/assignement', fn() => redirect()->route('assignments.index'));
 
-    // ROUTES VOLUNTEERS
+    /*
+    |--------------------------------------------------------------------------
+    | VOLUNTEER & ASSIGNMENT ROUTES
+    |--------------------------------------------------------------------------
+    */
+    
+    // Route spécifique pour les missions disponibles (AVANT les routes avec paramètres)
+    Route::get('/volunteers/available-missions', [VolunteerMissionController::class, 'availableMissions'])
+        ->name('volunteers.available-missions');
+
+    // ROUTES VOLUNTEERS (Frontend)
     Route::prefix('volunteers')->name('volunteers.')->group(function () {
         Route::get('/', [VolunteerController::class, 'index'])->name('index');
         Route::get('/create', [VolunteerController::class, 'create'])->name('create');
@@ -466,89 +384,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/apply', [VolunteerController::class, 'apply'])->name('apply');
     });
 
-    // ROUTES ASSIGNMENTS
-    Route::prefix('assignments')->name('assignments.')->group(function () {
-        Route::get('/', [AssignmentController::class, 'index'])->name('index');
-        Route::get('/create', [AssignmentController::class, 'create'])->name('create');
-        Route::post('/', [AssignmentController::class, 'store'])->name('store');
-        Route::get('/{assignment}', [AssignmentController::class, 'show'])->name('show');
-        Route::get('/{assignment}/edit', [AssignmentController::class, 'edit'])->name('edit');
-        Route::put('/{assignment}', [AssignmentController::class, 'update'])->name('update');
-        Route::delete('/{assignment}', [AssignmentController::class, 'destroy'])->name('destroy');
-
-        // Actions
-        Route::post('/{assignment}/approve', [AssignmentController::class, 'approve'])->name('approve');
-        Route::post('/{assignment}/reject', [AssignmentController::class, 'reject'])->name('reject');
-        Route::post('/{assignment}/complete', [AssignmentController::class, 'complete'])->name('complete');
-        Route::post('/{assignment}/cancel', [AssignmentController::class, 'cancel'])->name('cancel');
-        Route::post('/{assignment}/update-hours', [AssignmentController::class, 'updateHours'])->name('update-hours');
-
-        // Lister par entité assignable (Event/Campaign)
-        Route::get('/{type}/{id}', [AssignmentController::class, 'forAssignable'])->name('for-assignable');
-    });
-    });
-
-    // Redirections conviviales pour anciens liens
-    Route::get('/home/volunteers', fn() => redirect()->route('volunteers.index'))->name('home.volunteers');
-    Route::get('/volunteer', fn() => redirect()->route('volunteers.index'));
-    Route::get('/assignement', fn() => redirect()->route('assignments.index'));
-
-    // ROUTES VOLUNTEERS
-    Route::prefix('volunteers')->name('volunteers.')->group(function () {
-        Route::get('/', [VolunteerController::class, 'index'])->name('index');
-        Route::get('/create', [VolunteerController::class, 'create'])->name('create');
-        Route::post('/', [VolunteerController::class, 'store'])->name('store');
-        Route::get('/{volunteer}', [VolunteerController::class, 'show'])->name('show');
-        Route::get('/{volunteer}/edit', [VolunteerController::class, 'edit'])->name('edit');
-        Route::put('/{volunteer}', [VolunteerController::class, 'update'])->name('update');
-        Route::delete('/{volunteer}', [VolunteerController::class, 'destroy'])->name('destroy');
-
-        // Actions spécifiques
-        Route::get('/assignments/available', [VolunteerController::class, 'availableAssignments'])->name('assignments.available');
-        Route::post('/apply', [VolunteerController::class, 'apply'])->name('apply');
-    });
-
-    // ROUTES ASSIGNMENTS
-    Route::prefix('assignments')->name('assignments.')->group(function () {
-        Route::get('/', [AssignmentController::class, 'index'])->name('index');
-        Route::get('/create', [AssignmentController::class, 'create'])->name('create');
-        Route::post('/', [AssignmentController::class, 'store'])->name('store');
-        Route::get('/{assignment}', [AssignmentController::class, 'show'])->name('show');
-        Route::get('/{assignment}/edit', [AssignmentController::class, 'edit'])->name('edit');
-        Route::put('/{assignment}', [AssignmentController::class, 'update'])->name('update');
-        Route::delete('/{assignment}', [AssignmentController::class, 'destroy'])->name('destroy');
-
-        // Actions
-        Route::post('/{assignment}/approve', [AssignmentController::class, 'approve'])->name('approve');
-        Route::post('/{assignment}/reject', [AssignmentController::class, 'reject'])->name('reject');
-        Route::post('/{assignment}/complete', [AssignmentController::class, 'complete'])->name('complete');
-        Route::post('/{assignment}/cancel', [AssignmentController::class, 'cancel'])->name('cancel');
-        Route::post('/{assignment}/update-hours', [AssignmentController::class, 'updateHours'])->name('update-hours');
-
-        // Lister par entité assignable (Event/Campaign)
-        Route::get('/{type}/{id}', [AssignmentController::class, 'forAssignable'])->name('for-assignable');
-    });
-    // Redirections conviviales pour anciens liens
-    Route::get('/home/volunteers', fn() => redirect()->route('volunteers.index'))->name('home.volunteers');
-    Route::get('/volunteer', fn() => redirect()->route('volunteers.index'));
-    Route::get('/assignement', fn() => redirect()->route('assignments.index'));
-
-    // ROUTES VOLUNTEERS
-    Route::prefix('volunteers')->name('volunteers.')->group(function () {
-        Route::get('/', [VolunteerController::class, 'index'])->name('index');
-        Route::get('/create', [VolunteerController::class, 'create'])->name('create');
-        Route::post('/', [VolunteerController::class, 'store'])->name('store');
-        Route::get('/{volunteer}', [VolunteerController::class, 'show'])->name('show');
-        Route::get('/{volunteer}/edit', [VolunteerController::class, 'edit'])->name('edit');
-        Route::put('/{volunteer}', [VolunteerController::class, 'update'])->name('update');
-        Route::delete('/{volunteer}', [VolunteerController::class, 'destroy'])->name('destroy');
-
-        // Actions spécifiques
-        Route::get('/assignments/available', [VolunteerController::class, 'availableAssignments'])->name('assignments.available');
-        Route::post('/apply', [VolunteerController::class, 'apply'])->name('apply');
-    });
-
-    // ROUTES ASSIGNMENTS
+    // ROUTES ASSIGNMENTS (Frontend)
     Route::prefix('assignments')->name('assignments.')->group(function () {
         Route::get('/', [AssignmentController::class, 'index'])->name('index');
         Route::get('/create', [AssignmentController::class, 'create'])->name('create');
@@ -569,11 +405,23 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{type}/{id}', [AssignmentController::class, 'forAssignable'])->name('for-assignable');
     });
 
-    Route::middleware(['auth'])->prefix('ajax')->group(function () {
+    // Routes pour les missions de volontaires
+    Route::post('/volunteers/apply-mission', [VolunteerMissionController::class, 'applyForMission'])
+        ->name('volunteers.apply-mission');
+    Route::get('/volunteers/mission-details', [VolunteerMissionController::class, 'showMissionDetails'])
+        ->name('volunteers.mission-details');
+
+    // Routes pour les badges volontaires
+    Route::get('/volunteers/{volunteer}/badge', [VolunteerBadgeController::class, 'showBadge'])->name('volunteers.badge.show');
+    Route::get('/volunteers/{volunteer}/badge/download', [VolunteerBadgeController::class, 'generateBadge'])->name('volunteers.badge.download');
+});
+
+Route::middleware(['auth'])->prefix('ajax')->group(function () {
     Route::post('/seat/lock', [App\Http\Controllers\ReservationController::class, 'lockSeat'])->name('ajax.seat.lock');
     Route::post('/seat/release', [App\Http\Controllers\ReservationController::class, 'releaseSeat'])->name('ajax.seat.release');
     Route::get('/event/{event}/seats-status', [App\Http\Controllers\ReservationController::class, 'getSeatsStatus'])->name('ajax.seats.status');
 });
+
 // Routes pour les listes d'attente
 Route::middleware(['auth'])->group(function () {
     Route::post('/events/{event}/waiting-list/join', [App\Http\Controllers\WaitingListController::class, 'join'])->name('waiting-list.join');
@@ -618,68 +466,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Destroy: allow DELETE (preferred) while keeping POST fallback if Blade form doesn't spoof method
     Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy'])->name('reservations.destroy');
     Route::post('/reservations/{reservation}/delete', [ReservationController::class, 'destroy'])->name('reservations.destroy.fallback');
-    Route::middleware(['auth'])->prefix('ajax')->group(function () {
-    Route::post('/seat/lock', [App\Http\Controllers\ReservationController::class, 'lockSeat'])->name('ajax.seat.lock');
-    Route::post('/seat/release', [App\Http\Controllers\ReservationController::class, 'releaseSeat'])->name('ajax.seat.release');
-    Route::get('/event/{event}/seats-status', [App\Http\Controllers\ReservationController::class, 'getSeatsStatus'])->name('ajax.seats.status');
 });
-// Routes pour les listes d'attente
-Route::middleware(['auth'])->group(function () {
-    Route::post('/events/{event}/waiting-list/join', [App\Http\Controllers\WaitingListController::class, 'join'])->name('waiting-list.join');
-    Route::post('/events/{event}/waiting-list/leave', [App\Http\Controllers\WaitingListController::class, 'leave'])->name('waiting-list.leave');
-});
-
-    // Routes admin pour les listes d'attente
-    Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/waiting-lists', [App\Http\Controllers\WaitingListController::class, 'adminIndex'])->name('waiting-lists.index');
-        Route::post('/waiting-lists/{waitingList}/promote', [App\Http\Controllers\WaitingListController::class, 'promote'])->name('waiting-lists.promote');
-    });
-
-    // Routes pour les certifications utilisateur
-    Route::middleware(['auth'])->prefix('my-certificates')->name('user.certificates.')->group(function () {
-        Route::get('/', [App\Http\Controllers\CertificateController::class, 'index'])->name('index');
-        Route::get('/{code}', [App\Http\Controllers\CertificateController::class, 'show'])->name('show');
-        Route::get('/{code}/download', [App\Http\Controllers\CertificateController::class, 'download'])->name('download');
-        Route::get('/{code}/view', [App\Http\Controllers\CertificateController::class, 'view'])->name('view');
-    });
-
-    // Route publique pour la vérification des certificats
-    Route::get('/verify-certificate', [App\Http\Controllers\CertificateController::class, 'verify'])->name('certificates.verify');
-    Route::get('/verify-certificate/{code}', [App\Http\Controllers\CertificateController::class, 'verify'])->name('certificates.verify.code');
-
-    // Routes du Chatbot IA
-    Route::get('/chatbot', [App\Http\Controllers\ChatbotController::class, 'index'])->name('chatbot.index');
-    Route::post('/chatbot/message', [App\Http\Controllers\ChatbotController::class, 'processMessage'])->name('chatbot.message');
-    Route::delete('/chatbot/clear', [App\Http\Controllers\ChatbotController::class, 'clearConversation'])->name('chatbot.clear');
-    Route::get('/chatbot/suggestions', [App\Http\Controllers\ChatbotController::class, 'getSuggestions'])->name('chatbot.suggestions');
-
-    // Routes admin pour les certifications
-    Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/certificates', [App\Http\Controllers\CertificateController::class, 'adminIndex'])->name('certificates.index');
-        Route::post('/certificates/grant/{reservation}', [App\Http\Controllers\CertificateController::class, 'grantCertificate'])->name('certificates.grant');
-    });
-
-// Admin routes for reservations & waiting reservations management (expected by views: admin.reservations.*)
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/reservations', [ReservationController::class, 'adminIndex'])->name('reservations.index');
-    Route::post('/reservations/{reservation}/confirm', [ReservationController::class, 'confirm'])->name('reservations.confirm');
-    Route::post('/reservations/{reservation}/reject', [ReservationController::class, 'reject'])->name('reservations.reject');
-    // Destroy: allow DELETE (preferred) while keeping POST fallback if Blade form doesn't spoof method
-    Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy'])->name('reservations.destroy');
-    Route::post('/reservations/{reservation}/delete', [ReservationController::class, 'destroy'])->name('reservations.destroy.fallback');
-});
-});
-
-
-Route::middleware(['auth'])->group(function () {
-    Route::post('/volunteers/apply-mission', 'App\Http\Controllers\VolunteerMissionController@applyForMission')
-        ->name('volunteers.apply-mission');
-    Route::get('/volunteers/mission-details', 'App\Http\Controllers\VolunteerMissionController@showMissionDetails')
-        ->name('volunteers.mission-details');
-});
-
-
-
 
 // Routes pour les APIs carbone
 Route::get('/carbon/apis/test', [CampaignController::class, 'testApis'])
@@ -704,13 +491,6 @@ Route::get('/resources/{resource}/carbon-footprint', function($resourceId) {
     ]);
 })->name('resources.carbon-footprint');
 
-
-
-
-
-
-
-
 // Route de test
 Route::get('/test', 'App\Http\Controllers\TestController@test');
 
@@ -732,10 +512,7 @@ Route::get('/certificates/verify/{token}', [CertificateVerificationController::c
 Route::post('/api/certificates/verify', [CertificateVerificationController::class, 'apiVerify'])
     ->name('certificates.api.verify');
 
-
-
-
-        Route::get('/events/{event}/share/test', [SocialShareController::class, 'testShare'])
+Route::get('/events/{event}/share/test', [SocialShareController::class, 'testShare'])
     ->name('events.social-share.test')
     ->middleware('auth');
     
@@ -744,14 +521,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/events/{event}/share', [SocialShareController::class, 'create'])->name('events.social-share.create');
     Route::post('/events/{event}/share', [SocialShareController::class, 'store'])->name('events.social-share.store');
     Route::get('/events/{event}/share/statistics', [SocialShareController::class, 'statistics'])->name('events.social-share.statistics');
-
-
-});
-
-// Routes pour les badges volontaires
-Route::middleware(['auth'])->group(function () {
-    Route::get('/volunteers/{volunteer}/badge', [App\Http\Controllers\VolunteerBadgeController::class, 'showBadge'])->name('volunteers.badge.show');
-    Route::get('/volunteers/{volunteer}/badge/download', [App\Http\Controllers\VolunteerBadgeController::class, 'generateBadge'])->name('volunteers.badge.download');
 });
 
 require __DIR__ . '/auth.php';

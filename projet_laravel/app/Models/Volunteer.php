@@ -27,7 +27,9 @@ class Volunteer extends Model
         'previous_volunteer_experience',
         'approval_status',
         'approved_at',
-        'approved_by'
+        'approved_by',
+        'points',
+        'ranking'
     ];
 
     protected $casts = [
@@ -36,6 +38,8 @@ class Volunteer extends Model
         'preferred_regions' => 'array',
         'max_hours_per_week' => 'integer',
         'approved_at' => 'datetime',
+        'points' => 'integer',
+        'ranking' => 'integer',
     ];
 
     // Relations
@@ -246,6 +250,66 @@ class Volunteer extends Model
     public function isRejected(): bool
     {
         return $this->approval_status === 'rejected';
+    }
+
+    // Points and Ranking methods
+    public function addPoints(int $points): void
+    {
+        $this->increment('points', $points);
+        $this->updateRanking();
+    }
+
+    public function getPointsFromRating(float $rating): int
+    {
+        return match(true) {
+            $rating >= 5.0 => 10,
+            $rating >= 4.0 => 8,
+            $rating >= 3.0 => 6,
+            $rating >= 2.0 => 3,
+            $rating >= 1.0 => 1,
+            default => 0
+        };
+    }
+
+    public function updateRanking(): void
+    {
+        // Get all volunteers ordered by points (descending)
+        $volunteers = self::where('approval_status', 'approved')
+            ->where('status', 'active')
+            ->orderBy('points', 'desc')
+            ->orderBy('created_at', 'asc') // Earlier volunteers get better ranking in case of tie
+            ->get();
+
+        // Update ranking for each volunteer
+        foreach ($volunteers as $index => $volunteer) {
+            $volunteer->update(['ranking' => $index + 1]);
+        }
+    }
+
+    public function getRankingBadge(): string
+    {
+        if ($this->ranking <= 3) {
+            return match($this->ranking) {
+                1 => '🥇',
+                2 => '🥈', 
+                3 => '🥉',
+                default => '🏆'
+            };
+        }
+        return '#' . $this->ranking;
+    }
+
+    public function getRankingClass(): string
+    {
+        if ($this->ranking <= 3) {
+            return match($this->ranking) {
+                1 => 'text-warning',
+                2 => 'text-secondary',
+                3 => 'text-bronze',
+                default => 'text-primary'
+            };
+        }
+        return 'text-muted';
     }
 }
 

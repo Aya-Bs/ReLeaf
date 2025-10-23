@@ -116,6 +116,32 @@ class AssignmentController extends Controller
     }
 
     /**
+     * Complete an assignment.
+     */
+    public function complete(Request $request, Assignment $assignment)
+    {
+        if (!$assignment->canBeCompleted()) {
+            return redirect()->back()
+                ->with('error', 'Cette mission ne peut pas être terminée.');
+        }
+
+        $validated = $request->validate([
+            'hours_worked' => 'required|integer|min:0',
+            'rating' => 'required|numeric|min:1|max:5',
+            'feedback' => 'nullable|string|max:1000',
+        ]);
+
+        $assignment->complete(
+            $validated['hours_worked'],
+            $validated['rating'],
+            $validated['feedback'] ?? null
+        );
+
+        return redirect()->back()
+            ->with('success', 'Mission terminée avec succès ! Points attribués au volontaire.');
+    }
+
+    /**
      * Remove the specified assignment.
      */
     public function destroy(Assignment $assignment)

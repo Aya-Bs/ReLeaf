@@ -187,7 +187,15 @@ class Assignment extends Model
             $updateData['feedback'] = $feedback;
         }
 
-        return $this->update($updateData);
+        $result = $this->update($updateData);
+
+        // Add points to volunteer based on rating
+        if ($result && $rating !== null) {
+            $points = $this->volunteer->getPointsFromRating($rating);
+            $this->volunteer->addPoints($points);
+        }
+
+        return $result;
     }
 
     public function cancel(string $reason = null): bool

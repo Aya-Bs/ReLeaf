@@ -183,6 +183,12 @@
                                                     <i class="fas fa-times"></i>
                                                 </button>
                                             </form>
+                                        @elseif($assignment->status === 'approved')
+                                            <button type="button" class="btn btn-sm btn-primary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#completeModal{{ $assignment->id }}">
+                                                <i class="fas fa-flag-checkered"></i> Terminer
+                                            </button>
                                         @endif
                                         <form method="POST" action="{{ route('backend.assignments.destroy', $assignment) }}" 
                                               style="display: inline;" 
@@ -213,4 +219,50 @@
         @endif
     </div>
 </div>
+
+<!-- Complete Assignment Modals -->
+@foreach($assignments as $assignment)
+    @if($assignment->status === 'approved')
+    <div class="modal fade" id="completeModal{{ $assignment->id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Terminer la mission</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ route('backend.assignments.complete', $assignment) }}">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="hours_worked_{{ $assignment->id }}" class="form-label">Heures travaillées *</label>
+                            <input type="number" class="form-control" id="hours_worked_{{ $assignment->id }}" 
+                                   name="hours_worked" min="0" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="rating_{{ $assignment->id }}" class="form-label">Note du volontaire *</label>
+                            <select class="form-select" id="rating_{{ $assignment->id }}" name="rating" required>
+                                <option value="">Sélectionner une note</option>
+                                <option value="5">⭐⭐⭐⭐⭐ Excellent (10 points)</option>
+                                <option value="4">⭐⭐⭐⭐ Très bien (8 points)</option>
+                                <option value="3">⭐⭐⭐ Bien (6 points)</option>
+                                <option value="2">⭐⭐ Moyen (3 points)</option>
+                                <option value="1">⭐ Insuffisant (1 point)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="feedback_{{ $assignment->id }}" class="form-label">Commentaires</label>
+                            <textarea class="form-control" id="feedback_{{ $assignment->id }}" 
+                                      name="feedback" rows="3" placeholder="Commentaires sur la performance du volontaire..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Terminer la mission</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
+@endforeach
 @endsection

@@ -51,14 +51,12 @@ class VolunteerController extends Controller
 
         $volunteers = $query->paginate(15);
 
-        // Get top 3 volunteers by completed assignments
+        // Get top 3 volunteers by points
         $topVolunteers = Volunteer::with('user')
             ->where('approval_status', 'approved')
             ->where('status', 'active')
-            ->withCount(['assignments as completed_assignments_count' => function($query) {
-                $query->where('status', 'completed');
-            }])
-            ->orderBy('completed_assignments_count', 'desc')
+            ->orderBy('points', 'desc')
+            ->orderBy('created_at', 'asc') // Earlier volunteers get better ranking in case of tie
             ->limit(3)
             ->get();
 

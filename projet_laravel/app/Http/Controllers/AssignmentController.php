@@ -210,10 +210,16 @@ class AssignmentController extends Controller
     }
 
     /**
-     * Complete an assignment.
+     * Complete an assignment (Admin only).
      */
     public function complete(Request $request, Assignment $assignment)
     {
+        // Only admins can complete assignments
+        if (!Auth::user()->isAdmin()) {
+            return redirect()->back()
+                ->with('error', 'Seuls les administrateurs peuvent terminer les missions.');
+        }
+
         if (!$assignment->canBeCompleted()) {
             return redirect()->back()
                 ->with('error', 'Cette mission ne peut pas être terminée.');
@@ -221,18 +227,18 @@ class AssignmentController extends Controller
 
         $validated = $request->validate([
             'hours_worked' => 'required|integer|min:0',
-            'rating' => 'nullable|numeric|min:0|max:5',
+            'rating' => 'required|numeric|min:1|max:5',
             'feedback' => 'nullable|string|max:1000',
         ]);
 
         $assignment->complete(
             $validated['hours_worked'],
-            $validated['rating'] ?? null,
+            $validated['rating'],
             $validated['feedback'] ?? null
         );
 
         return redirect()->back()
-            ->with('success', 'Mission terminée avec succès !');
+            ->with('success', 'Mission terminée avec succès ! Points attribués au volontaire.');
     }
 
     /**
